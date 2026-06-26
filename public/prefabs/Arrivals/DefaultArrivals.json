@@ -1,0 +1,1254 @@
+{
+  "name": "DefaultArrivals",
+  "width": 9,
+  "height": 4,
+  "tiles": [
+    {
+      "dx": 0,
+      "dy": 0,
+      "tileId": "FloorSteel"
+    },
+    {
+      "dx": 1,
+      "dy": 0,
+      "tileId": "FloorSteel"
+    },
+    {
+      "dx": 2,
+      "dy": 0,
+      "tileId": "FloorSteel"
+    },
+    {
+      "dx": 3,
+      "dy": 0,
+      "tileId": "FloorSteel"
+    },
+    {
+      "dx": 4,
+      "dy": 0,
+      "tileId": "FloorSteel"
+    },
+    {
+      "dx": 5,
+      "dy": 0,
+      "tileId": "FloorSteel"
+    },
+    {
+      "dx": 6,
+      "dy": 0,
+      "tileId": "FloorSteel"
+    },
+    {
+      "dx": 7,
+      "dy": 0,
+      "tileId": "FloorSteel"
+    },
+    {
+      "dx": 8,
+      "dy": 0,
+      "tileId": "FloorSteel"
+    },
+    {
+      "dx": 0,
+      "dy": 1,
+      "tileId": "Plating"
+    },
+    {
+      "dx": 1,
+      "dy": 1,
+      "tileId": "FloorDark"
+    },
+    {
+      "dx": 2,
+      "dy": 1,
+      "tileId": "Plating"
+    },
+    {
+      "dx": 3,
+      "dy": 1,
+      "tileId": "Plating"
+    },
+    {
+      "dx": 4,
+      "dy": 1,
+      "tileId": "Plating"
+    },
+    {
+      "dx": 5,
+      "dy": 1,
+      "tileId": "Plating"
+    },
+    {
+      "dx": 6,
+      "dy": 1,
+      "tileId": "Plating"
+    },
+    {
+      "dx": 7,
+      "dy": 1,
+      "tileId": "FloorDark"
+    },
+    {
+      "dx": 8,
+      "dy": 1,
+      "tileId": "Plating"
+    },
+    {
+      "dx": 0,
+      "dy": 2,
+      "tileId": "Plating"
+    },
+    {
+      "dx": 1,
+      "dy": 2,
+      "tileId": "FloorDark"
+    },
+    {
+      "dx": 2,
+      "dy": 2,
+      "tileId": "Plating"
+    },
+    {
+      "dx": 6,
+      "dy": 2,
+      "tileId": "Plating"
+    },
+    {
+      "dx": 7,
+      "dy": 2,
+      "tileId": "FloorDark"
+    },
+    {
+      "dx": 8,
+      "dy": 2,
+      "tileId": "Plating"
+    },
+    {
+      "dx": 0,
+      "dy": 3,
+      "tileId": "Plating"
+    },
+    {
+      "dx": 1,
+      "dy": 3,
+      "tileId": "FloorDark"
+    },
+    {
+      "dx": 2,
+      "dy": 3,
+      "tileId": "Plating"
+    },
+    {
+      "dx": 3,
+      "dy": 3,
+      "tileId": "Lattice"
+    },
+    {
+      "dx": 4,
+      "dy": 3,
+      "tileId": "Lattice"
+    },
+    {
+      "dx": 5,
+      "dy": 3,
+      "tileId": "Lattice"
+    },
+    {
+      "dx": 6,
+      "dy": 3,
+      "tileId": "Plating"
+    },
+    {
+      "dx": 7,
+      "dy": 3,
+      "tileId": "FloorDark"
+    },
+    {
+      "dx": 8,
+      "dy": 3,
+      "tileId": "Plating"
+    }
+  ],
+  "entities": [
+    {
+      "dx": 7,
+      "dy": 1,
+      "prototype": "AirlockExternalGlass",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "0.5,54.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: 0.5,54.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 1,
+      "dy": 1,
+      "prototype": "AirlockExternalGlass",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-5.5,54.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -5.5,54.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 1,
+      "dy": 3,
+      "prototype": "AirlockExternalGlassShuttleEmergencyLocked",
+      "rotation": 3.141592653589793,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "3.141592653589793 rad",
+          "pos": "-5.5,56.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 3.141592653589793 rad",
+        "      pos: -5.5,56.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 7,
+      "dy": 3,
+      "prototype": "AirlockExternalGlassShuttleEmergencyLocked",
+      "rotation": 3.141592653589793,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "3.141592653589793 rad",
+          "pos": "0.5,56.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 3.141592653589793 rad",
+        "      pos: 0.5,56.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 1,
+      "dy": 0,
+      "prototype": "AirSensor",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-5.5,53.5",
+          "parent": 2
+        },
+        {
+          "type": "DeviceNetwork",
+          "deviceLists": [
+            4420
+          ]
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -5.5,53.5",
+        "      parent: 2",
+        "    - type: DeviceNetwork",
+        "      deviceLists:",
+        "      - 4420"
+      ]
+    },
+    {
+      "dx": 7,
+      "dy": 3,
+      "prototype": "AtmosDeviceFanDirectional",
+      "rotation": 3.141592653589793,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "3.141592653589793 rad",
+          "pos": "0.5,56.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 3.141592653589793 rad",
+        "      pos: 0.5,56.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 1,
+      "dy": 3,
+      "prototype": "AtmosDeviceFanDirectional",
+      "rotation": 3.141592653589793,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "3.141592653589793 rad",
+          "pos": "-5.5,56.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 3.141592653589793 rad",
+        "      pos: -5.5,56.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 0,
+      "dy": 0,
+      "prototype": "CableApcExtension",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-6.5,53.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -6.5,53.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 1,
+      "dy": 0,
+      "prototype": "CableApcExtension",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-5.5,53.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -5.5,53.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 2,
+      "dy": 0,
+      "prototype": "CableApcExtension",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-4.5,53.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -4.5,53.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 3,
+      "dy": 0,
+      "prototype": "CableApcExtension",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-3.5,53.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -3.5,53.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 4,
+      "dy": 0,
+      "prototype": "CableApcExtension",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-2.5,53.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -2.5,53.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 5,
+      "dy": 0,
+      "prototype": "CableApcExtension",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-1.5,53.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -1.5,53.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 6,
+      "dy": 0,
+      "prototype": "CableApcExtension",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-0.5,53.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -0.5,53.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 1,
+      "dy": 3,
+      "prototype": "CableApcExtension",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-5.5,56.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -5.5,56.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 1,
+      "dy": 2,
+      "prototype": "CableApcExtension",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-5.5,55.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -5.5,55.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 7,
+      "dy": 0,
+      "prototype": "CableApcExtension",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "0.5,53.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: 0.5,53.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 1,
+      "dy": 1,
+      "prototype": "CableApcExtension",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-5.5,54.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -5.5,54.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 7,
+      "dy": 1,
+      "prototype": "CableApcExtension",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "0.5,54.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: 0.5,54.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 7,
+      "dy": 2,
+      "prototype": "CableApcExtension",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "0.5,55.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: 0.5,55.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 7,
+      "dy": 3,
+      "prototype": "CableApcExtension",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "0.5,56.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: 0.5,56.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 8,
+      "dy": 0,
+      "prototype": "CableApcExtension",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "1.5,53.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: 1.5,53.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 4,
+      "dy": 0,
+      "prototype": "ClosetEmergencyFilledRandom",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-2.5,53.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -2.5,53.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 5,
+      "dy": 0,
+      "prototype": "ClosetEmergencyN2FilledRandom",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-1.5,53.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -1.5,53.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 3,
+      "dy": 0,
+      "prototype": "ClosetFireFilled",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-3.5,53.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -3.5,53.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 0,
+      "dy": 1,
+      "prototype": "Grille",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-6.5,54.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -6.5,54.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 0,
+      "dy": 2,
+      "prototype": "Grille",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-6.5,55.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -6.5,55.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 0,
+      "dy": 3,
+      "prototype": "Grille",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-6.5,56.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -6.5,56.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 2,
+      "dy": 1,
+      "prototype": "Grille",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-4.5,54.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -4.5,54.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 2,
+      "dy": 2,
+      "prototype": "Grille",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-4.5,55.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -4.5,55.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 2,
+      "dy": 3,
+      "prototype": "Grille",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-4.5,56.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -4.5,56.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 6,
+      "dy": 1,
+      "prototype": "Grille",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-0.5,54.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -0.5,54.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 6,
+      "dy": 2,
+      "prototype": "Grille",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-0.5,55.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -0.5,55.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 6,
+      "dy": 3,
+      "prototype": "Grille",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-0.5,56.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -0.5,56.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 4,
+      "dy": 1,
+      "prototype": "Grille",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-2.5,54.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -2.5,54.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 8,
+      "dy": 1,
+      "prototype": "Grille",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "1.5,54.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: 1.5,54.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 8,
+      "dy": 2,
+      "prototype": "Grille",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "1.5,55.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: 1.5,55.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 8,
+      "dy": 3,
+      "prototype": "Grille",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "1.5,56.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: 1.5,56.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 5,
+      "dy": 3,
+      "prototype": "Railing",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-1.5,56.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -1.5,56.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 4,
+      "dy": 3,
+      "prototype": "Railing",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-2.5,56.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -2.5,56.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 3,
+      "dy": 3,
+      "prototype": "Railing",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-3.5,56.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -3.5,56.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 6,
+      "dy": 2,
+      "prototype": "ReinforcedWindow",
+      "rotation": 1.5707963267948966,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "1.5707963267948966 rad",
+          "pos": "-0.5,55.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 1.5707963267948966 rad",
+        "      pos: -0.5,55.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 6,
+      "dy": 3,
+      "prototype": "ReinforcedWindow",
+      "rotation": 1.5707963267948966,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "1.5707963267948966 rad",
+          "pos": "-0.5,56.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 1.5707963267948966 rad",
+        "      pos: -0.5,56.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 8,
+      "dy": 1,
+      "prototype": "ReinforcedWindow",
+      "rotation": 1.5707963267948966,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "1.5707963267948966 rad",
+          "pos": "1.5,54.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 1.5707963267948966 rad",
+        "      pos: 1.5,54.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 2,
+      "dy": 2,
+      "prototype": "ReinforcedWindow",
+      "rotation": 1.5707963267948966,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "1.5707963267948966 rad",
+          "pos": "-4.5,55.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 1.5707963267948966 rad",
+        "      pos: -4.5,55.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 8,
+      "dy": 2,
+      "prototype": "ReinforcedWindow",
+      "rotation": 1.5707963267948966,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "1.5707963267948966 rad",
+          "pos": "1.5,55.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 1.5707963267948966 rad",
+        "      pos: 1.5,55.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 8,
+      "dy": 3,
+      "prototype": "ReinforcedWindow",
+      "rotation": 1.5707963267948966,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "1.5707963267948966 rad",
+          "pos": "1.5,56.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 1.5707963267948966 rad",
+        "      pos: 1.5,56.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 2,
+      "dy": 1,
+      "prototype": "ReinforcedWindow",
+      "rotation": 1.5707963267948966,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "1.5707963267948966 rad",
+          "pos": "-4.5,54.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 1.5707963267948966 rad",
+        "      pos: -4.5,54.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 6,
+      "dy": 1,
+      "prototype": "ReinforcedWindow",
+      "rotation": 1.5707963267948966,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "1.5707963267948966 rad",
+          "pos": "-0.5,54.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 1.5707963267948966 rad",
+        "      pos: -0.5,54.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 4,
+      "dy": 1,
+      "prototype": "ReinforcedWindow",
+      "rotation": 1.5707963267948966,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "1.5707963267948966 rad",
+          "pos": "-2.5,54.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 1.5707963267948966 rad",
+        "      pos: -2.5,54.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 2,
+      "dy": 3,
+      "prototype": "ReinforcedWindow",
+      "rotation": 1.5707963267948966,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "1.5707963267948966 rad",
+          "pos": "-4.5,56.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 1.5707963267948966 rad",
+        "      pos: -4.5,56.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 0,
+      "dy": 3,
+      "prototype": "ReinforcedWindow",
+      "rotation": 1.5707963267948966,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "1.5707963267948966 rad",
+          "pos": "-6.5,56.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 1.5707963267948966 rad",
+        "      pos: -6.5,56.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 0,
+      "dy": 2,
+      "prototype": "ReinforcedWindow",
+      "rotation": 1.5707963267948966,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "1.5707963267948966 rad",
+          "pos": "-6.5,55.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 1.5707963267948966 rad",
+        "      pos: -6.5,55.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 0,
+      "dy": 1,
+      "prototype": "ReinforcedWindow",
+      "rotation": 1.5707963267948966,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "1.5707963267948966 rad",
+          "pos": "-6.5,54.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 1.5707963267948966 rad",
+        "      pos: -6.5,54.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 3,
+      "dy": 1,
+      "prototype": "Screen",
+      "rotation": 0,
+      "components": [
+        {
+          "type": "Transform",
+          "pos": "-3.5,54.5",
+          "parent": 2
+        },
+        {
+          "type": "Fixtures",
+          "fixtures": {}
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      pos: -3.5,54.5",
+        "      parent: 2",
+        "    - type: Fixtures",
+        "      fixtures: {}"
+      ]
+    },
+    {
+      "dx": 5,
+      "dy": 1,
+      "prototype": "WallReinforced",
+      "rotation": 1.5707963267948966,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "1.5707963267948966 rad",
+          "pos": "-1.5,54.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 1.5707963267948966 rad",
+        "      pos: -1.5,54.5",
+        "      parent: 2"
+      ]
+    },
+    {
+      "dx": 3,
+      "dy": 1,
+      "prototype": "WallReinforced",
+      "rotation": 1.5707963267948966,
+      "components": [
+        {
+          "type": "Transform",
+          "rot": "1.5707963267948966 rad",
+          "pos": "-3.5,54.5",
+          "parent": 2
+        }
+      ],
+      "rawYamlLines": [
+        "    - type: Transform",
+        "      rot: 1.5707963267948966 rad",
+        "      pos: -3.5,54.5",
+        "      parent: 2"
+      ]
+    }
+  ],
+  "deviceLinks": []
+}

@@ -1,0 +1,36 @@
+{
+  "name": "ss14-map-editor",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:deploy": "node scripts/prebuild-resources.mjs && tsc && vite build",
+    "build:deploy-minimal": "node scripts/prebuild-resources.mjs --textures=minimal && tsc && vite build",
+    "build:deploy-full": "node scripts/prebuild-resources.mjs --textures=full && tsc && vite build",
+    "prebuild-resources": "node scripts/prebuild-resources.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.2.0",
+    "@fortawesome/free-solid-svg-icons": "^7.2.0",
+    "@fortawesome/react-fontawesome": "^3.2.0",
+    "js-yaml": "^4.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.1",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^25.3.5",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tailwindcss": "^4.2.1",
+    "typescript": "^5.7.0",
+    "vite": "^6.2.0",
+    "vitest": "^4.0.18"
+  }
+}

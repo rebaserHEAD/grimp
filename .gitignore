@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.vercel
+
+# Pre-baked SS14 resources are generated locally from your fork's Resources/
+# folder via `npm run prebuild-resources`. They are not committed.
+public/resources/
