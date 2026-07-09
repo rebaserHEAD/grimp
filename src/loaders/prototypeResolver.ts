@@ -20,7 +20,7 @@ export function resolveTiles(rawTiles: RawTilePrototype[]): Map<string, Resolved
   for (const raw of rawTiles) {
     const resolved: ResolvedTile = {
       id: raw.id,
-      name: raw.name ?? raw.id,
+      name: String(raw.name ?? raw.id),
       sprite: raw.sprite ?? null,
       variants: raw.variants ?? 1,
       isSubfloor: raw.isSubfloor ?? true,
@@ -286,9 +286,10 @@ export function resolveEntities(
 
     const resolved: ResolvedEntity = {
       id: proto.id,
-      name: proto.name ?? proto.id,
-      description: proto.description ?? '',
-      suffix: proto.suffix ?? '',
+      // Same coercion as tiles: YAML scalars are not guaranteed to be strings.
+      name: String(proto.name ?? proto.id),
+      description: String(proto.description ?? ''),
+      suffix: String(proto.suffix ?? ''),
       abstract: false,
       categories: proto.categories ?? [],
       placement: proto.placement ?? {},
