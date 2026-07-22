@@ -5,13 +5,25 @@ import {
   setActiveProvider,
 } from '../loaders/resourceProvider';
 import type { ResourceProvider } from '../loaders/resourceProvider';
+import { ElectronResourceProvider } from '../loaders/electronResourceProvider';
 import {
   buildFileMapFromFileList,
   buildFileMapFromDirectoryHandle,
   validateRepository,
+  validateKeys,
   summarizeRepository,
+  summarizeKeys,
 } from '../loaders/directoryScanner';
 import type { RepositorySummary } from '../loaders/directoryScanner';
+
+// Native fork bridge exposed by the Electron preload (absent in a browser).
+interface ElectronForkBridge {
+  available: boolean;
+  autoForkDir: string | null;
+  pickFork: (dir?: string) => Promise<{ root: string; name: string; keys: string[] } | { error: string } | null>;
+}
+const electronFork: ElectronForkBridge | undefined = (window as any).electronFork;
+const isElectron = !!electronFork?.available;
 
 type SelectorState = 'idle' | 'scanning' | 'summary' | 'error';
 
@@ -31,7 +43,7 @@ const supportsWebkitDirectory = (() => {
   const input = document.createElement('input');
   return 'webkitdirectory' in input;
 })();
-const canPickFolder = supportsDirectoryPicker || supportsWebkitDirectory;
+const canPickFolder = supportsDirectoryPicker || supportsWebkitDirectory || isElectron;
 
 export const ForkSelector: React.FC<ForkSelectorProps> = ({
   onReady,
@@ -43,11 +55,45 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({
   const [scanTotal, setScanTotal] = useState(0);
   const [summary, setSummary] = useState<RepositorySummary | null>(null);
   const [fileMap, setFileMap] = useState<Map<string, File> | null>(null);
+  const [electronKeys, setElectronKeys] = useState<{ keys: string[]; name: string } | null>(null);
   const [forkName, setForkName] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleOpenFolder = useCallback(async () => {
+    if (isElectron) {
+      setPhase('scanning');
+      setScanProgress(0);
+      let result;
+      try {
+        result = await electronFork!.pickFork();
+      } catch (err) {
+        setErrorMessage(String(err));
+        setPhase('error');
+        return;
+      }
+      if (!result) {
+        setPhase('idle'); // cancelled
+        return;
+      }
+      if ('error' in result) {
+        setErrorMessage(result.error);
+        setPhase('error');
+        return;
+      }
+      const validation = validateKeys(result.keys);
+      if (!validation.valid) {
+        setErrorMessage(validation.error ?? 'Invalid repository');
+        setPhase('error');
+        return;
+      }
+      setSummary(summarizeKeys(result.keys));
+      setElectronKeys({ keys: result.keys, name: result.name });
+      setForkName(result.name);
+      setPhase('summary');
+      return;
+    }
+
     if (supportsDirectoryPicker) {
       let handle: FileSystemDirectoryHandle;
       try {
@@ -131,10 +177,28 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({
   }, []);
 
   const handleLoad = useCallback(() => {
+    if (electronKeys) {
+      const provider = new ElectronResourceProvider(electronKeys.keys, electronKeys.name);
+      onReady(provider, electronKeys.name);
+      return;
+    }
     if (!fileMap) return;
     const provider = new FileSystemResourceProvider(fileMap, forkName);
     onReady(provider, forkName);
-  }, [fileMap, forkName, onReady]);
+  }, [electronKeys, fileMap, forkName, onReady]);
+
+  // Dev/automation: launch straight into a fork when SS14_FORK_DIR is set.
+  useEffect(() => {
+    if (!isElectron || !electronFork!.autoForkDir) return;
+    let cancelled = false;
+    (async () => {
+      const result = await electronFork!.pickFork(electronFork!.autoForkDir!);
+      if (cancelled || !result || 'error' in result) return;
+      if (!validateKeys(result.keys).valid) return;
+      onReady(new ElectronResourceProvider(result.keys, result.name), result.name);
+    })();
+    return () => { cancelled = true; };
+  }, [onReady]);
 
   const handleUseBuiltIn = useCallback(() => {
     const provider = new HttpResourceProvider('', builtInForkName);
@@ -145,6 +209,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({
     setPhase('idle');
     setSummary(null);
     setFileMap(null);
+    setElectronKeys(null);
     setForkName('');
     setErrorMessage('');
     setScanProgress(0);
@@ -333,16 +398,18 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({
                 <div className="bg-panel rounded-lg p-3 border border-subtle text-xs text-muted leading-relaxed flex flex-col gap-2">
                   <p>
                     <span className="text-primary font-medium">Privacy:</span>{' '}
-                    Your browser will ask for permission to read the selected folder.
-                    No files are uploaded or sent to any server. All processing happens
-                    locally in your browser.
+                    {isElectron
+                      ? 'Files are read on demand straight from the folder you pick. Nothing is uploaded or sent anywhere.'
+                      : 'Your browser will ask for permission to read the selected folder. No files are uploaded or sent to any server. All processing happens locally in your browser.'}
                   </p>
-                  <p>
-                    <span className="text-primary font-medium">Browser note:</span>{' '}
-                    {supportsDirectoryPicker
-                      ? 'Chrome and Edge use a native folder picker that reads files on demand. Your browser may ask you to confirm read access. This is standard and safe.'
-                      : <>Firefox and Safari do not support the <a href="https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API" target="_blank" rel="noopener noreferrer" className="text-accent underline hover:brightness-125">File System Access API</a>, so the editor uses a <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/webkitdirectory" target="_blank" rel="noopener noreferrer" className="text-accent underline hover:brightness-125">folder upload input</a> instead. Your browser may show an &quot;upload&quot; prompt. This is misleading; files stay on your machine and are never sent anywhere.</>}
-                  </p>
+                  {!isElectron && (
+                    <p>
+                      <span className="text-primary font-medium">Browser note:</span>{' '}
+                      {supportsDirectoryPicker
+                        ? 'Chrome and Edge use a native folder picker that reads files on demand. Your browser may ask you to confirm read access. This is standard and safe.'
+                        : <>Firefox and Safari do not support the <a href="https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API" target="_blank" rel="noopener noreferrer" className="text-accent underline hover:brightness-125">File System Access API</a>, so the editor uses a <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/webkitdirectory" target="_blank" rel="noopener noreferrer" className="text-accent underline hover:brightness-125">folder upload input</a> instead. Your browser may show an &quot;upload&quot; prompt. This is misleading; files stay on your machine and are never sent anywhere.</>}
+                    </p>
+                  )}
                 </div>
               </>
             ) : (

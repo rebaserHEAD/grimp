@@ -10,12 +10,16 @@
 // which is why the landing-screen background vanished. Serving dist/ as the
 // scheme root restores the origin-at-root assumption without editing any
 // upstream source.
-const { app, BrowserWindow, protocol, shell } = require('electron');
+const { app, BrowserWindow, protocol, shell, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
 const startUrl = process.env.ELECTRON_START_URL;
 const distDir = path.join(__dirname, '..', 'dist');
+
+// Resources/ directory of the currently loaded fork. The forkres:// handler
+// reads from here; set when the renderer picks a fork via fork:pick.
+let currentForkRoot = null;
 
 const MIME = {
   '.html': 'text/html',
@@ -44,8 +48,19 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } },
 ]);
 
+// Fork resources are served under this reserved prefix on the SAME app://
+// origin as the page. Same-origin matters: sprite thumbnails draw resource
+// images onto a canvas and call toDataURL(), which throws on a cross-origin
+// (tainted) canvas. Keeping fork files same-origin avoids the taint.
+const FORK_PREFIX = '/@fork';
+
 function serveFromDist(request) {
   let pathname = decodeURIComponent(new URL(request.url).pathname);
+
+  if (pathname === FORK_PREFIX || pathname.startsWith(FORK_PREFIX + '/')) {
+    return serveForkFile(pathname.slice(FORK_PREFIX.length) || '/');
+  }
+
   if (pathname === '/' || pathname === '') pathname = '/index.html';
 
   const filePath = path.normalize(path.join(distDir, pathname));
@@ -63,6 +78,74 @@ function serveFromDist(request) {
   } catch {
     return new Response('Not found', { status: 404 });
   }
+}
+
+// Serve a file (relPath, leading slash) from the loaded fork's Resources/ dir.
+function serveForkFile(relPath) {
+  if (!currentForkRoot) return new Response('No fork loaded', { status: 404 });
+
+  const filePath = path.normalize(path.join(currentForkRoot, relPath));
+  if (filePath !== currentForkRoot && !filePath.startsWith(currentForkRoot + path.sep)) {
+    return new Response('Forbidden', { status: 403 });
+  }
+
+  try {
+    const data = fs.readFileSync(filePath);
+    const ext = path.extname(filePath).toLowerCase();
+    return new Response(data, {
+      headers: { 'Content-Type': MIME[ext] || 'application/octet-stream' },
+    });
+  } catch {
+    return new Response('Not found', { status: 404 });
+  }
+}
+
+// Recursively collect file paths under absDir, keyed relative to Resources/
+// (e.g. "Prototypes/Tiles/floors.yml"). Matches the browser scanner's scope.
+function walkKeys(absDir, relPrefix, out) {
+  let entries;
+  try {
+    entries = fs.readdirSync(absDir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const entry of entries) {
+    const abs = path.join(absDir, entry.name);
+    const rel = `${relPrefix}/${entry.name}`;
+    if (entry.isDirectory()) walkKeys(abs, rel, out);
+    else if (entry.isFile()) out.push(rel);
+  }
+}
+
+// Resolve a picked directory to its Resources/ root and enumerate resource
+// keys. Returns { root, name, keys } or { error }.
+function loadForkFromDir(dir) {
+  let resourcesDir = path.join(dir, 'Resources');
+  if (!fs.existsSync(resourcesDir)) resourcesDir = dir; // maybe Resources/ was picked directly
+  if (!fs.existsSync(path.join(resourcesDir, 'Prototypes'))) {
+    return { error: 'No Prototypes/ directory found. Pick a fork root or its Resources/ folder.' };
+  }
+
+  const keys = [];
+  for (const top of ['Prototypes', 'Textures']) {
+    walkKeys(path.join(resourcesDir, top), top, keys);
+  }
+
+  currentForkRoot = resourcesDir;
+  return { root: resourcesDir, name: path.basename(dir), keys };
+}
+
+async function handlePickFork(_event, presetDir) {
+  let dir = presetDir || process.env.SS14_FORK_DIR || null;
+  if (!dir) {
+    const result = await dialog.showOpenDialog({
+      title: 'Select an SS14 fork folder',
+      properties: ['openDirectory'],
+    });
+    if (result.canceled || result.filePaths.length === 0) return null;
+    dir = result.filePaths[0];
+  }
+  return loadForkFromDir(dir);
 }
 
 function createWindow() {
@@ -94,6 +177,7 @@ app.whenReady().then(() => {
   if (!startUrl) {
     protocol.handle('app', serveFromDist);
   }
+  ipcMain.handle('fork:pick', handlePickFork);
   createWindow();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
