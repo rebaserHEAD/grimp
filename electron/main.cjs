@@ -13,6 +13,7 @@
 const { app, BrowserWindow, protocol, shell, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { installMenu, updateMenuState } = require('./menu.cjs');
 
 const startUrl = process.env.ELECTRON_START_URL;
 const distDir = path.join(__dirname, '..', 'dist');
@@ -171,6 +172,8 @@ function createWindow() {
     shell.openExternal(url);
     return { action: 'deny' };
   });
+
+  installMenu(win);
 }
 
 app.whenReady().then(() => {
@@ -178,6 +181,36 @@ app.whenReady().then(() => {
     protocol.handle('app', serveFromDist);
   }
   ipcMain.handle('fork:pick', handlePickFork);
+
+  // Native menu keeps its enabled/checked flags in sync with renderer state.
+  ipcMain.on('menu:state', (_event, state) => updateMenuState(state));
+
+  // Native import/export dialogs.
+  ipcMain.handle('dialog:open-yaml', async () => {
+    const result = await dialog.showOpenDialog(BrowserWindow.getFocusedWindow() ?? undefined, {
+      title: 'Import map',
+      filters: [{ name: 'YAML', extensions: ['yml', 'yaml'] }],
+      properties: ['openFile'],
+    });
+    if (result.canceled || result.filePaths.length === 0) return null;
+    try {
+      return fs.readFileSync(result.filePaths[0], 'utf8');
+    } catch {
+      return null;
+    }
+  });
+
+  ipcMain.handle('dialog:save-yaml', async (_event, { content, defaultName }) => {
+    const result = await dialog.showSaveDialog(BrowserWindow.getFocusedWindow() ?? undefined, {
+      title: 'Export map',
+      defaultPath: defaultName || 'station.yml',
+      filters: [{ name: 'YAML', extensions: ['yml', 'yaml'] }],
+    });
+    if (result.canceled || !result.filePath) return null;
+    fs.writeFileSync(result.filePath, content, 'utf8');
+    return result.filePath;
+  });
+
   createWindow();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

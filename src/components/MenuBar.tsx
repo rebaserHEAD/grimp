@@ -26,6 +26,9 @@ interface Props {
   onCloseShortcuts: () => void;
   forkName?: string;
   onSwitchFork?: () => void;
+  /** When true (Electron), the native menu owns File/Edit/View, so hide the
+   * in-app dropdowns and keep only the title, fork chip, and dirty indicator. */
+  nativeMenus?: boolean;
 }
 
 interface MenuItem {
@@ -103,7 +106,7 @@ export const MenuBar: React.FC<Props> = ({
   showPerfHUD, onTogglePerfHUD,
   showBenchmark, onToggleBenchmark,
   showShortcuts, onShowShortcuts, onCloseShortcuts,
-  forkName, onSwitchFork,
+  forkName, onSwitchFork, nativeMenus,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -188,7 +191,7 @@ export const MenuBar: React.FC<Props> = ({
         SS14 Map Editor
       </span>
 
-      {menus.map(menu => (
+      {!nativeMenus && menus.map(menu => (
         <MenuDropdown
           key={menu.name}
           label={menu.name}

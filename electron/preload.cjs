@@ -12,3 +12,23 @@ contextBridge.exposeInMainWorld('electronFork', {
   // Resolves to { root, name, keys } | { error } | null (cancelled).
   pickFork: (dir) => ipcRenderer.invoke('fork:pick', dir ?? null),
 });
+
+// Native application menu bridge. onCommand delivers menu clicks to the
+// renderer; setState pushes enabled/checked state back so the menu stays live.
+contextBridge.exposeInMainWorld('electronMenu', {
+  available: true,
+  onCommand: (cb) => {
+    const listener = (_e, command) => cb(command);
+    ipcRenderer.on('menu:command', listener);
+    return () => ipcRenderer.removeListener('menu:command', listener);
+  },
+  setState: (state) => ipcRenderer.send('menu:state', state),
+});
+
+// Native file dialogs for import/export. Resolves to file content / saved
+// path, or null when the user cancels.
+contextBridge.exposeInMainWorld('electronDialogs', {
+  available: true,
+  openYaml: () => ipcRenderer.invoke('dialog:open-yaml'),
+  saveYaml: (content, defaultName) => ipcRenderer.invoke('dialog:save-yaml', { content, defaultName }),
+});
