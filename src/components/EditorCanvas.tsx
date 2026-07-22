@@ -157,9 +157,27 @@ export const EditorCanvas: React.FC<Props> = ({
     return button === 1 || isSpaceHeldRef.current || toolRef.current?.name === 'pan';
   }, []);
 
+  // Safety net: end panning on any release or focus loss anywhere, not just on
+  // the canvas. A release over a side panel (or a pointer grab we didn't see)
+  // would otherwise leave isPanning stuck on. Pan-only; tool drags are ended by
+  // the canvas handlers.
+  useEffect(() => {
+    const endPan = () => { isPanning.current = false; };
+    window.addEventListener('mouseup', endPan);
+    window.addEventListener('blur', endPan);
+    return () => {
+      window.removeEventListener('mouseup', endPan);
+      window.removeEventListener('blur', endPan);
+    };
+  }, []);
+
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     setContextMenu(null);
     if (shouldPan(e.button)) {
+      // Middle-button mousedown otherwise triggers the browser's autoscroll,
+      // which captures the pointer and swallows the matching mouseup, leaving
+      // the pan stuck on (view drifts, clicks stop selecting).
+      e.preventDefault();
       isPanning.current = true;
       lastMouse.current = { x: e.clientX, y: e.clientY };
       return;
