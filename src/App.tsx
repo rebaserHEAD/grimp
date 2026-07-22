@@ -99,7 +99,7 @@ export const App: React.FC = () => {
   const [showEntities, setShowEntities] = useState(true);
   const [showSubFloor, setShowSubFloor] = useState(true);
   const [showConnections, setShowConnections] = useState(false);
-  const [showPerfHUD, setShowPerfHUD] = useState(true);
+  const [showPerfHUD, setShowPerfHUD] = useState(false);
   const [showBenchmark, setShowBenchmark] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [layerVisibility, setLayerVisibility] = useState<LayerVisibility>({ ...DEFAULT_LAYER_VISIBILITY });
@@ -265,7 +265,7 @@ export const App: React.FC = () => {
     setHighlightTile({ x, y, startTime: performance.now() });
   }, []);
 
-  const handleExport = useCallback(() => {
+  const handleExport = useCallback(async () => {
     try {
       const yaml = exportMap({
         meta: state.meta,
@@ -286,15 +286,81 @@ export const App: React.FC = () => {
         hasDocumentTerminator: state.hasDocumentTerminator,
         entityOrder: state.entityOrder,
       }, state.decalsDirty);
-      downloadYAML(yaml, 'station.yml');
-      setStatusMessage('Exported station.yml');
+      // Native save dialog in Electron; browser download otherwise.
+      if (window.electronDialogs?.available) {
+        const saved = await window.electronDialogs.saveYaml(yaml, 'station.yml');
+        setStatusMessage(saved ? `Exported ${saved}` : 'Export cancelled');
+      } else {
+        downloadYAML(yaml, 'station.yml');
+        setStatusMessage('Exported station.yml');
+      }
     } catch (err) {
       setStatusMessage(`Export failed: ${err}`);
     }
   }, [state.grid, state.entities, state.containedEntities, state.meta, state.gridUid, state.mapUid, state.tilemap, state.maps, state.gridUidList, state.grids, state.structuralEntityData, state.entityRawComponents, state.entityRawPreamble, state.chunkKeyOrder, state.lineEnding, state.hasDocumentTerminator, state.entityOrder]);
 
+  // Native open dialog for import (Electron); the browser build uses MenuBar's
+  // hidden file input instead.
+  const handleImportNative = useCallback(async () => {
+    if (!window.electronDialogs?.available) return;
+    const content = await window.electronDialogs.openYaml();
+    if (content != null) handleImport(content);
+  }, [handleImport]);
+
   const handleUndo = useCallback(() => dispatch({ type: 'UNDO' }), []);
   const handleRedo = useCallback(() => dispatch({ type: 'REDO' }), []);
+
+  // ── Native menu (Electron) ───────────────────────────────────────────────
+  // Route native menu clicks to the same handlers the in-app menu uses. Kept in
+  // a ref updated each render so the stable subscription always sees fresh state.
+  const menuCommandRef = useRef<(command: string) => void>(() => {});
+  menuCommandRef.current = (command: string) => {
+    switch (command) {
+      case 'file:new':
+        if (!state.dirty || window.confirm('Unsaved changes will be lost. Continue?')) handleNewMap();
+        break;
+      case 'file:import': handleImportNative(); break;
+      case 'file:export': handleExport(); break;
+      case 'edit:undo': handleUndo(); break;
+      case 'edit:redo': handleRedo(); break;
+      case 'view:showGrid': setShowGrid(g => !g); markSceneDirty(); break;
+      case 'view:showEntities': setShowEntities(e => !e); markSceneDirty(); break;
+      case 'view:showSpaceBackground': setShowSpaceBackground(b => !b); markSceneDirty(); break;
+      case 'view:showLighting':
+        dispatch({ type: 'SET_LIGHTING_ENABLED', enabled: !state.lightingEnabled });
+        markSceneDirty();
+        break;
+      case 'view:showPerfHUD': setShowPerfHUD(p => !p); break;
+      case 'view:showBenchmark': setShowBenchmark(b => !b); break;
+      case 'help:controls': setShowShortcuts(true); break;
+      case 'fork:switch': handleSwitchFork(); break;
+      case 'app:reload':
+        if (!state.dirty || window.confirm('Unsaved changes will be lost. Reload?')) window.location.reload();
+        break;
+    }
+  };
+
+  useEffect(() => {
+    if (!window.electronMenu?.available) return;
+    return window.electronMenu.onCommand((command) => menuCommandRef.current(command));
+  }, []);
+
+  // Keep the native menu's enabled/checked flags in sync with app state.
+  useEffect(() => {
+    window.electronMenu?.setState({
+      canUndo: state.undoStack.length > 0,
+      canRedo: state.redoStack.length > 0,
+      hasFork: !!forkName,
+      toggles: {
+        showGrid,
+        showEntities,
+        showSpaceBackground,
+        showLighting: state.lightingEnabled,
+        showPerfHUD,
+        showBenchmark,
+      },
+    });
+  }, [state.undoStack.length, state.redoStack.length, forkName, showGrid, showEntities, showSpaceBackground, state.lightingEnabled, showPerfHUD, showBenchmark]);
 
   // Grid management
   const handleSelectGrid = useCallback((index: number) => {
@@ -643,6 +709,7 @@ export const App: React.FC = () => {
         onCloseShortcuts={() => setShowShortcuts(false)}
         forkName={forkName}
         onSwitchFork={handleSwitchFork}
+        nativeMenus={!!window.electronMenu?.available}
       />
       <div className="flex flex-1 overflow-hidden">
         <Toolbar activeTool={state.activeTool} onSelectTool={handleSelectTool} />
