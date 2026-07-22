@@ -99,7 +99,7 @@ export const App: React.FC = () => {
   const [showEntities, setShowEntities] = useState(true);
   const [showSubFloor, setShowSubFloor] = useState(true);
   const [showConnections, setShowConnections] = useState(false);
-  const [showPerfHUD, setShowPerfHUD] = useState(true);
+  const [showPerfHUD, setShowPerfHUD] = useState(false);
   const [showBenchmark, setShowBenchmark] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [layerVisibility, setLayerVisibility] = useState<LayerVisibility>({ ...DEFAULT_LAYER_VISIBILITY });
