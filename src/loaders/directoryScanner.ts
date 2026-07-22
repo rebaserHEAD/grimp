@@ -133,22 +133,23 @@ async function walkDirectory(
  * Check that a file map looks like a valid SS14 repository.
  */
 export function validateRepository(files: Map<string, File>): ValidationResult {
-  if (files.size === 0) {
-    return { valid: false, error: 'No files found' };
-  }
+  return validateKeys(files.keys());
+}
 
+/**
+ * Key-only validation, for providers (e.g. the Electron native path) that
+ * enumerate resource paths without holding File objects.
+ */
+export function validateKeys(keys: Iterable<string>): ValidationResult {
+  let count = 0;
   let hasPrototypes = false;
-  for (const key of files.keys()) {
-    if (key.startsWith('Prototypes/')) {
-      hasPrototypes = true;
-      break;
-    }
+  for (const key of keys) {
+    count++;
+    if (!hasPrototypes && key.startsWith('Prototypes/')) hasPrototypes = true;
   }
 
-  if (!hasPrototypes) {
-    return { valid: false, error: 'No Prototypes/ directory found' };
-  }
-
+  if (count === 0) return { valid: false, error: 'No files found' };
+  if (!hasPrototypes) return { valid: false, error: 'No Prototypes/ directory found' };
   return { valid: true };
 }
 
@@ -156,13 +157,23 @@ export function validateRepository(files: Map<string, File>): ValidationResult {
  * Produce a quick summary of what's inside a scanned repository.
  */
 export function summarizeRepository(files: Map<string, File>): RepositorySummary {
+  return summarizeKeys(files.keys());
+}
+
+/**
+ * Key-only summary, mirroring summarizeRepository for providers that enumerate
+ * resource paths without holding File objects.
+ */
+export function summarizeKeys(keys: Iterable<string>): RepositorySummary {
   let tileFiles = 0;
   let entityFiles = 0;
   let decalFiles = 0;
   let catalogFiles = 0;
+  let totalFiles = 0;
   const forkDirSet = new Set<string>();
 
-  for (const key of files.keys()) {
+  for (const key of keys) {
+    totalFiles++;
     if (!key.startsWith('Prototypes/') || !key.endsWith('.yml')) continue;
 
     // Path segments after "Prototypes/"
@@ -201,6 +212,6 @@ export function summarizeRepository(files: Map<string, File>): RepositorySummary
     decalFiles,
     catalogFiles,
     forkDirs: [...forkDirSet].sort(),
-    totalFiles: files.size,
+    totalFiles,
   };
 }

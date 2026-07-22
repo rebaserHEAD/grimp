@@ -1,0 +1,18 @@
+appId: com.rebaserhead.ss14mapeditor
+productName: SS14 Map Editor
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**/*
+  - electron/**/*
+  - package.json
+# Use the already-installed Electron dist instead of re-downloading and
+# extracting into a .tmp staging dir. On Windows, Defender real-time scan
+# locks the freshly-extracted electron.exe and the staging-dir rename fails
+# with EPERM; copying from the installed dist sidesteps that entirely.
+electronDist: node_modules/electron/dist
+win:
+  target: portable
+  icon: build/icon.ico
+# No code signing configured; the portable exe is unsigned.
