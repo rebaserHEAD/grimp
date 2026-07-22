@@ -7,11 +7,11 @@ files:
   - dist/**/*
   - electron/**/*
   - package.json
-# Use the already-installed Electron dist instead of re-downloading and
-# extracting into a .tmp staging dir. On Windows, Defender real-time scan
-# locks the freshly-extracted electron.exe and the staging-dir rename fails
-# with EPERM; copying from the installed dist sidesteps that entirely.
-electronDist: node_modules/electron/dist
+# NOTE: no electronDist here. CI runners let electron-builder download
+# Electron normally. The local npm scripts pass --config.electronDist to
+# reuse the installed dist, which sidesteps a Windows Defender EPERM on the
+# staging-dir rename; that path only exists on a machine that ran the
+# electron postinstall, so it must not be baked into the shared config.
 win:
   target: portable
   icon: build/icon.ico
