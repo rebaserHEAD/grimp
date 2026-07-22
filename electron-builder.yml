@@ -16,3 +16,8 @@ win:
   target: portable
   icon: build/icon.ico
 # No code signing configured; the portable exe is unsigned.
+linux:
+  target: AppImage
+  icon: build/icon.png
+  category: Development
+  maintainer: rebaserHEAD

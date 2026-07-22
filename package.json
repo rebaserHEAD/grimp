@@ -2,6 +2,8 @@
   "name": "ss14-map-editor",
   "version": "1.0.0",
   "private": true,
+  "description": "A web app for creating and editing Space Station 14 maps.",
+  "author": "rebaserHEAD",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
