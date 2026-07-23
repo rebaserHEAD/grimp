@@ -19,6 +19,13 @@ sheets, so it always reflects the current state of the content it is pointed at.
 > **no** Space Station 14 game assets (prototypes, textures, sprites). You supply those
 > from your own SS14 fork: see [Where it lives](#where-it-lives) below.
 
+> **Windows: the download is not code-signed yet.** The release `.exe` is unsigned, so
+> SmartScreen will show "Windows protected your PC" the first time you run it. Click
+> **More info → Run anyway**. If it still won't launch, right-click the `.exe` →
+> **Properties** → tick **Unblock** → **Apply**. Code signing is in progress and will
+> remove this step in a future release. Nothing here is a workaround for a real warning:
+> only do this for a build you downloaded from the official releases page.
+
 ## Direction
 
 GRIMP started as a browser-based map viewer/editor and is growing into a **maintained
