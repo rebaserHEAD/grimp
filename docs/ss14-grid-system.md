@@ -162,8 +162,12 @@ grids:
 - 8812
 - 10258
 
-orphans: []                    # Entities without parents in file
+orphans: []                    # grid uids saved without a map (grid documents)
 nullspace: []                  # Entities in null-space
+
+# The above is a Map document (category: Map). A Grid document (category: Grid,
+# the shape of a saved ship/POI) has no map entity: maps is empty and the grid
+# uid appears under both grids and orphans. See docs/import-export.md.
 
 tilemap:
   0: Space                     # Numeric tile ID → tile definition name

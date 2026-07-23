@@ -42,7 +42,7 @@ This document maps every type, constant, and hardcoded value in the map editor t
 
 | | |
 |-|-|
-| **Editor** | `src/import/chunkDecoder.ts`, format 4: 4 bytes, format 6: 6 bytes, format 7: 7 bytes |
+| **Editor** | chunk decode/encode inline in `src/import/mapImporter.ts` and `src/export/mapExporter.ts`, format 4: 4 bytes, format 6: 6 bytes, format 7: 7 bytes |
 | **Engine Source** | `RobustToolbox/Robust.Shared/EntitySerialization/MapChunkSerializer.cs:76-92` |
 | **How Defined** | PROCEDURAL, sequential `BinaryReader.ReadInt32()`, `.ReadByte()`, `.ReadByte()`, `.ReadByte()` calls. No struct definition. |
 | **Extractable?** | NO, byte layout is implicit in read/write call order. Would need to parse C# method body and understand BinaryReader semantics. |

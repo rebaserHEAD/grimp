@@ -16,7 +16,7 @@ interface EditorState {
   undoStack: Command[];             // Up to 200 commands
   redoStack: Command[];
   registry: IPrototypeRegistry | null;  // Game data (loaded once)
-  mapUid: number;                   // Preserved for roundtrip
+  mapUid: number;                   // Preserved for roundtrip; -1 for grid documents (no map entity)
   gridUid: number;
   meta: MapMeta;                    // Full meta (format, category, engineVersion, etc.)
   maps?: number[];                  // Format 7+ maps UIDs
@@ -42,9 +42,23 @@ Defined in `src/state/actions.ts`. Each action type maps to a specific state tra
 | `REDO` | Pop from redo stack, re-apply command |
 | `SET_TOOL` | Switch active editing tool |
 | `SET_PALETTE_ITEM` | Select a tile or entity in the palette |
-| `LOAD_MAP` | Replace all map data from an imported map |
-| `NEW_MAP` | Reset to empty map |
+| `LOAD_MAP` | Replace all map data from an imported map (optional `sourceName` seeds the display name) |
+| `NEW_MAP` | Reset to an empty Map document (format 7, `category: Map`) |
+| `NEW_GRID` | Reset to an empty Grid document (format 7, `category: Grid`, no map entity) |
 | `SET_REGISTRY` | Store the loaded prototype registry |
+
+### Document property actions
+
+These back the Map Properties panel. They are **not** undoable commands: they patch the
+grid root's structural data directly (imported files via surgical raw-YAML patch, see
+[import-export.md](import-export.md#surgical-property-edits); from-scratch documents via
+`GridData` fields the exporter synthesizes). Each sets `dirty: true`.
+
+| Action | Purpose |
+|--------|---------|
+| `SET_GRID_IDENTITY` | Set the grid root's MetaData name / description |
+| `SET_ROOT_COMPONENT` | Add or remove a bare root component (Shuttle, IFF, Roof, …) |
+| `SET_ROOT_COMPONENT_FIELD` | Set a scalar field on a root component (e.g. `BecomesStation.id`) |
 
 ## Command Pattern
 

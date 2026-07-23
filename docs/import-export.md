@@ -60,6 +60,41 @@ entities:
 
 Format 7 adds `maps`, `grids`, `orphans`, `nullspace` top-level sections and additional meta fields (`category`, `engineVersion`, `forkId`, `forkVersion`, `time`, `entityCount`).
 
+### Document kinds: Map vs Grid
+
+A format 7 file is one of two kinds, distinguished by `meta.category`. This mirrors the
+two things the game itself saves (`savemap` and `savegrid`), and GRIMP produces
+byte-compatible output for both.
+
+- **Map** (`category: Map`): a map entity with grids parented to it. `maps` lists the map
+  entity uid; grids appear under `grids`; `orphans` is empty.
+- **Grid** (`category: Grid`): a standalone grid with **no map entity**. `maps` is empty
+  (`maps: []`) and the grid registers under both `grids` and `orphans`, exactly as
+  `savegrid` writes it. This is the shape of every saved ship and POI, because the game's
+  loader reattaches an orphaned grid to whatever map it is loaded onto.
+
+```yaml
+meta:
+  format: 7
+  category: Grid
+maps: []
+grids:
+- 1
+orphans:
+- 1
+nullspace: []
+```
+
+The grid root entity in a grid document has a bare `MetaData`, a `Transform` with
+`parent: invalid` (parentless, not omitted), and its `MapGrid`. Modern game saves omit
+`postmapinit` from meta entirely, so new documents do too.
+
+Documents created in the editor (**File > New Map** / **New Grid**) are born at format 7
+with the correct `category` stamp. When there is no imported structural data to preserve,
+the exporter **synthesizes** the structural entities per kind (a map entity + grid for Map
+documents; a parentless grid root for Grid documents), matching the game serializer's
+output shape.
+
 ### Tile Chunks
 
 Tiles are stored in 16x16 chunks within the grid entity's `MapGrid` component. Each chunk is keyed by chunk coordinate (e.g., `"-1,0"`). Tile data is base64-encoded:
@@ -107,8 +142,8 @@ ImportedMap
 ```typescript
 interface MapMeta {
   format: number;
-  postmapinit: boolean;
-  category?: string;        // "Map" | "Grid" etc
+  postmapinit?: boolean;    // omitted by modern saves; absence = not yet initialized
+  category?: string;        // "Map" | "Grid"
   engineVersion?: string;   // e.g., "272.0.0"
   forkId?: string;
   forkVersion?: string;
@@ -116,16 +151,23 @@ interface MapMeta {
   entityCount?: number;
 }
 
+// Abbreviated; see src/import/mapImporter.ts for the full type. Fields exist to
+// carry a file back out byte-for-byte, so most are optional roundtrip state.
 interface ImportedMap {
   meta: MapMeta;
   tilemap: Record<number, string>;
   grid: { width, height, offsetX, offsetY, cells: TileCell[] };
   entities: ImportedEntity[];
   gridUid: number;
-  mapUid: number;
-  maps?: number[];           // Format 7+ top-level maps array
-  grids?: number[];          // Format 7+ top-level grids array
+  mapUid: number;                // -1 for grid documents (no map entity)
+  maps?: number[];               // Format 7+ top-level lists
+  grids?: number[];
+  orphans?: number[];            // grid documents register their grid here
+  nullspace?: number[];
+  gridDataList?: GridData[];     // one per grid, the multi-grid source of truth
   structuralEntityData?: Record<number, Record<string, unknown>[]>;
+  entityRawComponents?: Record<number, string[]>;  // verbatim YAML lines per entity
+  entityRawPreamble?: Record<number, string[]>;
 }
 
 interface TileCell {
@@ -150,7 +192,17 @@ The pipeline preserves all entity component data verbatim. Components the editor
 
 ### Structural Entity Preservation
 
-Structural entities (map entity, grid entity) have their components preserved in `structuralEntityData`. On export, these are written back verbatim (with the MapGrid chunks rebuilt from the grid). This ensures components like `GridTree`, `Broadphase`, `OccluderTree`, and custom MetaData names survive roundtrip.
+Structural entities (map entity, grid entity) have their components preserved in `structuralEntityData`, and their exact YAML lines in `entityRawComponents`. On export, the raw lines are written back verbatim (with the MapGrid chunks rebuilt from the grid). This ensures components like `GridTree`, `Broadphase`, `OccluderTree`, and custom MetaData names survive roundtrip.
+
+### Surgical property edits
+
+The Map Properties panel edits a grid root's identity and ship-switch components (see the
+[user guide](user-guide.md#map-properties)). Because imported files keep their verbatim
+YAML lines, these edits are applied as **surgical patches** to the raw component block via
+`src/state/rawComponentPatch.ts`: setting a field, adding, or removing a component touches
+only the targeted lines. Every other line in the file stays byte-for-byte identical on
+export, so a rename or a single toggle yields a minimal diff. Toggling a component off and
+back on restores the original bytes exactly.
 
 ### SS14 YAML Tags
 
@@ -186,15 +238,23 @@ Decals are stored in the grid entity's `DecalGrid` component. When decals on a g
 
 | File | Purpose |
 |------|---------|
-| `src/import/mapImporter.ts` | YAML → ImportedMap |
+| `src/import/mapImporter.ts` | YAML → ImportedMap (chunk decode inline) |
 | `src/import/ss14Schema.ts` | Custom js-yaml schema for `!type:` tags |
-| `src/import/chunkDecoder.ts` | Base64 chunk decode/encode utilities |
-| `src/export/mapExporter.ts` | ImportedMap → YAML |
+| `src/export/mapExporter.ts` | ImportedMap → YAML (chunk encode inline) |
+| `src/export/decalExporter.ts` | DecalGrid re-serialization |
+| `src/state/rawComponentPatch.ts` | Surgical edits to preserved structural YAML |
 
 ## Testing
 
-- **Unit tests**, Chunk decoding/encoding roundtrip
-- **Importer tests**, 10 tests covering meta, tilemap, grid, entities, positions, rotations, component preservation
-- **Exporter tests**, 6 tests covering YAML generation, tilemap, grid tiles, entity preservation
-- **Roundtrip tests**, 13 tests verifying import → export → reimport produces identical data, including double roundtrip stability
-- **Real map roundtrip**, 8 tests loading Reach.yml (3,112 entities) and verifying lossless roundtrip
+The import/export path is the most heavily tested part of the editor, because parity is
+the whole point. Coverage includes chunk decode/encode roundtrips, importer and exporter
+unit tests, grid-document shape tests (`gridDocumentExport.test.ts`), import → export →
+reimport stability, and real-map roundtrips against production files.
+
+An **untracked, env-gated full-corpus parity sweep** (`src/__tests__/parity-sweep.test.ts`)
+runs the importer/exporter over every `.yml` in a real fork's `Resources/Maps` and asserts
+idempotence, rerun after any importer/exporter change:
+
+```bash
+SS14_MAPS_DIR=<fork>/Resources/Maps npx vitest run src/__tests__/parity-sweep.test.ts
+```

@@ -387,7 +387,14 @@ Based on the above research, the editor should expose these logical layers for v
 | **Structures** | -2 to -1 | Walls, windows, grilles | "Show Structures" |
 | **Objects** | 0 to +3 | Furniture, machines, wall mounts | "Show Objects" |
 | **Doors** | +8 to +9 | Airlocks, firelocks, blast doors | "Show Doors" |
-| **Markers** | N/A | Spawn points, mapping helpers | "Show Markers" |
+| **Markers** | N/A | Spawn points, mapping helpers (detected by the `Marker` component, not just the name) | "Show Markers" |
+| **Atmos Markers** | N/A | `AtmosFix` (VAC. / gas-fill) markers, a sub-layer of Markers | "Atmos Markers" (View menu) |
+
+Markers are classified by their composed `Marker` component when the registry is
+available, falling back to a name heuristic. This catches markers like `WarpPoint` whose
+names carry no marker vocabulary. The **Atmos Markers** toggle hides just the `AtmosFix`
+family (which hulls carpet across every space-adjacent tile) while leaving spawn points
+and other markers visible; the Markers master toggle still hides everything.
 
 ### SubFloor Filtering
 
@@ -478,7 +485,7 @@ The map exporter only needs to emit components that **differ from prototype defa
 - **Pipe color tinting**: AtmosPipeColor from entity components applied as multiply blend (offscreen canvas compositing)
 - **Cable connection visualization**: Dynamic sprite state selection based on neighbor bitmask, cables show connected lines matching in-game appearance
 - **Multi-layer sprite compositing**: Entities with multiple sprite layers render all layers (e.g., spawners show green X marker + spawned entity preview). Per-layer RSI path overrides supported.
-- **Layer visibility panel**: Toggle groups (SubFloor, Floor Objects, Structures, Objects, Doors, Markers)
+- **Layer visibility panel**: Toggle groups (SubFloor, Floor Objects, Structures, Objects, Doors, Markers, Atmos Markers)
 - **Connection visualization**: Lines between DeviceList/DeviceLinkSource linked entities
 
 ### What's Missing for Phase 3b (Entity Placement)
