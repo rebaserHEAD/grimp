@@ -158,8 +158,13 @@ export const App: React.FC = () => {
     setLoadFailed(false);
   }, [forkProvider]);
 
-  // Warn on unsaved changes before closing/navigating away
+  // Warn on unsaved changes before closing/navigating away.
+  // Browser only: in Electron, beforeunload preventDefault silently vetoes the
+  // window close (no dialog like a browser), which traps the app whenever there
+  // are unsaved changes. The desktop close-confirm belongs in the main process
+  // (see the unsaved-close guard issue); do not attach this guard under Electron.
   useEffect(() => {
+    if (window.electronDialogs?.available) return;
     const handler = (e: BeforeUnloadEvent) => {
       if (state.dirty) {
         e.preventDefault();
