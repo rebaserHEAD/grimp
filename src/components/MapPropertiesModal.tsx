@@ -35,7 +35,18 @@ const SHIP_SWITCHES: { type: string; label: string; hint: string }[] = [
     label: 'IFF',
     hint: 'Radar identity (label, color, visibility flags). Optional.',
   },
+  {
+    type: 'Roof',
+    label: 'Roof',
+    hint: 'Monolith ships require this. Roofed areas themselves come from roof markers / in-game tools.',
+  },
 ];
+
+/** Components that mean a grid file was saved as a map at some point.
+ * NF maintainers require deleting the stray map root (PR 2599); these are its
+ * signature when it lands on the grid root. Broadphase/OccluderTree are NOT
+ * in this list: they are legitimate on grid roots. */
+const MAP_CONTAMINATION = ['Map', 'PhysicsMap', 'GridTree', 'MovedGrids'];
 
 export const MapPropertiesModal: React.FC<Props> = ({
   documentKind, meta, gridUid, gridProperties, tileCount,
@@ -63,6 +74,9 @@ export const MapPropertiesModal: React.FC<Props> = ({
 
   const editableTypes = new Set([...SHIP_SWITCHES.map(s => s.type), 'BecomesStation']);
   const otherComponents = gridProperties.components.filter(t => !editableTypes.has(t));
+  const contamination = documentKind === 'Grid'
+    ? MAP_CONTAMINATION.filter(t => gridProperties.components.includes(t))
+    : [];
 
   const metaRows: [string, string][] = [
     ['Kind', documentKind],
@@ -194,6 +208,22 @@ export const MapPropertiesModal: React.FC<Props> = ({
             </label>
           )}
         </div>
+
+        {contamination.length > 0 && (
+          <div className="mb-4 border border-subtle rounded p-2">
+            <div className="text-[12px] text-warning mb-1.5">
+              This grid file carries map-entity components ({contamination.join(', ')}):
+              it was saved as a map at some point. Upstream maintainers require
+              removing these from ship grids.
+            </div>
+            <button
+              onClick={() => contamination.forEach(t => onToggleComponent(t, false))}
+              className="text-[12px] border border-subtle rounded-sm px-2 py-1 text-primary hover:bg-hover cursor-pointer bg-transparent"
+            >
+              Remove map-entity components
+            </button>
+          </div>
+        )}
 
         <div className="mb-2">
           <h3 className="text-[11px] uppercase tracking-wider text-muted mb-1.5 font-semibold">

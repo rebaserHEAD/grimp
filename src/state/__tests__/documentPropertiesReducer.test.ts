@@ -214,6 +214,35 @@ describe('SET_ROOT_COMPONENT_FIELD (BecomesStation) on an imported grid file', (
   });
 });
 
+describe('map-entity contamination cleanup', () => {
+  it('removing the quartet strips only those blocks', () => {
+    // Grid file whose root picked up map components (saved-as-map at some point)
+    const contaminated = gridFileYaml().replace(
+      '    - type: MapGrid',
+      `    - type: Map
+      mapPaused: True
+    - type: PhysicsMap
+    - type: GridTree
+    - type: MovedGrids
+    - type: MapGrid`,
+    );
+    let state = loadIntoState(contaminated);
+    for (const t of ['Map', 'PhysicsMap', 'GridTree', 'MovedGrids']) {
+      state = editorReducer(state, {
+        type: 'SET_ROOT_COMPONENT', gridUid: 42, componentType: t, enabled: false,
+      });
+    }
+    const out = exportMap(stateToExportInput(state));
+    expect(out).not.toContain('type: Map\n');
+    expect(out).not.toContain('PhysicsMap');
+    expect(out).not.toContain('GridTree');
+    expect(out).not.toContain('MovedGrids');
+    expect(out).not.toContain('mapPaused');
+    // The clean file is what a clean import would have produced
+    expect(out).toBe(exportMap(importMap(gridFileYaml())));
+  });
+});
+
 describe('Map Properties on a from-scratch grid document', () => {
   it('identity and ship switches reach the synthesized export', () => {
     let state = editorReducer(createInitialState(), { type: 'NEW_GRID' });
