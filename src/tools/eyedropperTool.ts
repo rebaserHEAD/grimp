@@ -35,7 +35,7 @@ export class EyedropperTool implements ITool {
       for (const entity of entities) {
         if (ctx.layerVisibility) {
           const depth = getCachedDrawDepth(entity.prototype, state.registry);
-          if (!isLayerVisible(depth, entity.prototype, ctx.layerVisibility)) continue;
+          if (!isLayerVisible(depth, entity.prototype, ctx.layerVisibility, state.registry)) continue;
         }
         items.push({ type: 'entity', id: entity.prototype, label: entity.prototype });
       }

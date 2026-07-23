@@ -725,7 +725,7 @@ export const EditorCanvas: React.FC<Props> = ({
       }
       const hovered = cachedHovered.current.filter(e => {
         const depth = getCachedDrawDepth(e.prototype, s.registry!);
-        return isLayerVisible(depth, e.prototype, layers);
+        return isLayerVisible(depth, e.prototype, layers, s.registry ?? undefined);
       });
 
       // Count decals at this tile
