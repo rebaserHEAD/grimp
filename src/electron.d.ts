@@ -13,6 +13,7 @@ declare global {
         canUndo: boolean;
         canRedo: boolean;
         hasFork: boolean;
+        dirty: boolean;
         toggles: Record<string, boolean>;
       }) => void;
     };

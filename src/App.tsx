@@ -376,6 +376,7 @@ export const App: React.FC = () => {
       canUndo: state.undoStack.length > 0,
       canRedo: state.redoStack.length > 0,
       hasFork: !!forkName,
+      dirty: state.dirty,
       toggles: {
         showGrid,
         showEntities,
@@ -386,7 +387,7 @@ export const App: React.FC = () => {
         showBenchmark,
       },
     });
-  }, [state.undoStack.length, state.redoStack.length, forkName, showGrid, showEntities, showSpaceBackground, state.lightingEnabled, layerVisibility.atmosMarkers, showPerfHUD, showBenchmark]);
+  }, [state.undoStack.length, state.redoStack.length, forkName, state.dirty, showGrid, showEntities, showSpaceBackground, state.lightingEnabled, layerVisibility.atmosMarkers, showPerfHUD, showBenchmark]);
 
   // Grid management
   const handleSelectGrid = useCallback((index: number) => {

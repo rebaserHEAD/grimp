@@ -22,6 +22,11 @@ const distDir = path.join(__dirname, '..', 'dist');
 // reads from here; set when the renderer picks a fork via fork:pick.
 let currentForkRoot = null;
 
+// Latest unsaved-changes flag pushed from the renderer (via menu:state), and a
+// latch that lets a confirmed close through the close handler.
+let rendererDirty = false;
+let allowClose = false;
+
 const MIME = {
   '.html': 'text/html',
   '.js': 'text/javascript',
@@ -173,6 +178,27 @@ function createWindow() {
     return { action: 'deny' };
   });
 
+  // Confirm before closing (X, Alt+F4, menu quit) when there are unsaved
+  // changes. The renderer's browser beforeunload guard is disabled under
+  // Electron, so this main-process handler is the desktop guard.
+  win.on('close', (e) => {
+    if (allowClose || !rendererDirty) return;
+    e.preventDefault();
+    const choice = dialog.showMessageBoxSync(win, {
+      type: 'warning',
+      buttons: ['Cancel', 'Close Without Saving'],
+      defaultId: 0,
+      cancelId: 0,
+      title: 'Unsaved changes',
+      message: 'You have unsaved changes.',
+      detail: 'Close GRIMP without exporting? Your changes will be lost.',
+    });
+    if (choice === 1) {
+      allowClose = true;
+      win.close();
+    }
+  });
+
   installMenu(win);
 }
 
@@ -199,7 +225,11 @@ app.whenReady().then(() => {
   ipcMain.handle('fork:pick', handlePickFork);
 
   // Native menu keeps its enabled/checked flags in sync with renderer state.
-  ipcMain.on('menu:state', (_event, state) => updateMenuState(state));
+  // The same push carries the unsaved-changes flag for the close guard.
+  ipcMain.on('menu:state', (_event, state) => {
+    rendererDirty = !!(state && state.dirty);
+    updateMenuState(state);
+  });
 
   // Native import/export dialogs.
   ipcMain.handle('dialog:open-yaml', async () => {
