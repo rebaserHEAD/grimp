@@ -1,4 +1,4 @@
-# SS14 Map Editor, User Guide
+# GRIMP, User Guide
 
 ## Getting Started
 

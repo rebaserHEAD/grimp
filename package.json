@@ -1,8 +1,8 @@
 {
-  "name": "ss14-map-editor",
+  "name": "grimp",
   "version": "1.1.0",
   "private": true,
-  "description": "A web app for creating and editing Space Station 14 maps.",
+  "description": "GRIMP (Generally Reliable Interactive Mapping Program): a map editor for Space Station 14.",
   "author": "rebaserHEAD",
   "type": "module",
   "main": "electron/main.cjs",

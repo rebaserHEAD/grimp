@@ -374,8 +374,11 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({
       <div className="relative z-10 w-full max-w-[500px] mx-4 bg-surface/95 backdrop-blur-sm border border-subtle rounded-xl p-8 shadow-2xl">
         {/* Title.always visible */}
         <h1 className="text-2xl font-bold text-accent text-center mb-1">
-          SS14 Map Editor
+          GRIMP
         </h1>
+        <p className="text-xs text-muted text-center mb-1">
+          Generally Reliable Interactive Mapping Program
+        </p>
         <p className="text-sm text-muted text-center mb-8">
           Select a fork to get started
         </p>

@@ -1,7 +1,15 @@
-# SS14 Map Editor
+# GRIMP
 
-A browser-based map editor for [Space Station 14](https://github.com/space-wizards/space-station-14).
-Build and edit station maps with a fast, GUI-driven workflow inspired by tools like Photoshop: without launching the game.
+**GRIMP** (Generally Reliable Interactive Mapping Program) is a map editor for
+[Space Station 14](https://github.com/space-wizards/space-station-14).
+Build and edit maps and ship grids with a fast, GUI-driven workflow inspired by tools like Photoshop: without launching the game.
+
+GRIMP is a fork of [space-station-14-map-editor](https://github.com/SuspensionPoint/space-station-14-map-editor)
+by **SuspensionPoint**. The rendering pipeline, tools, and the large majority of the
+editor core are their work, and this project would not exist without it. GRIMP builds
+on that foundation in a different direction: a natively maintained desktop app
+(Electron), byte-exact export parity with the game serializer, grid documents, and
+mapper-workflow features driven by fork maintainer feedback.
 
 The editor does not hardcode any game content. It discovers tiles, entity prototypes,
 sprites, and decals at runtime by parsing your fork's prototype YAML and RSI sprite
@@ -42,12 +50,12 @@ The editor is designed to sit in the `Tools/` directory of a Space Station 14 fo
 <your-ss14-fork>/
   Resources/            # the fork's game content (prototypes + textures)
   Tools/
-    space-station-14-map-editor/        # <- this repository
+    grimp/                              # <- this repository
 ```
 
 Both the dev server and the resource pre-baker resolve the game content at
 `../../Resources` relative to the project root, which is exactly your fork's
-`Resources/` folder when the editor lives at `<fork>/Tools/space-station-14-map-editor/`. You can clone
+`Resources/` folder when the editor lives at `<fork>/Tools/grimp/`. You can clone
 it anywhere, but this layout makes the dev server "just work" against live content.
 
 ## Getting started (development)
@@ -56,8 +64,8 @@ Requirements: [Node.js](https://nodejs.org/) 18+ and npm.
 
 ```bash
 # from <your-ss14-fork>/Tools/
-git clone <this-repo-url> space-station-14-map-editor
-cd space-station-14-map-editor
+git clone <this-repo-url> grimp
+cd grimp
 npm install
 npm run dev
 ```
@@ -113,7 +121,7 @@ Cloudflare Pages, plain nginx): Vercel is just one option.
 ## Project structure
 
 ```
-space-station-14-map-editor/
+grimp/
   docs/                 # system & architecture documentation
   public/
     images/             # editor UI images (favicon, backgrounds)
@@ -152,5 +160,8 @@ content's licenses and attribution requirements.
 
 ## Acknowledgements
 
-Built for the [Space Station 14](https://spacestation14.com/) community and the many
-community forks that extend it.
+- **[SuspensionPoint](https://github.com/SuspensionPoint)**: original author of
+  [space-station-14-map-editor](https://github.com/SuspensionPoint/space-station-14-map-editor),
+  the codebase this fork is built on. The MIT license and copyright notice are theirs.
+- Built for the [Space Station 14](https://spacestation14.com/) community and the many
+  community forks that extend it.

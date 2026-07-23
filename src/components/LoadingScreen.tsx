@@ -8,7 +8,7 @@ export const LoadingScreen: React.FC<Props> = ({ message }) => {
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center bg-panel text-primary font-['Segoe_UI',sans-serif] gap-5 z-[1000]">
       <div className="text-2xl font-semibold text-accent">
-        SS14 Map Editor
+        GRIMP
       </div>
 
       <div className="w-[300px] h-1 bg-hover rounded overflow-hidden">
