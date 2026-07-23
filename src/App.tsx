@@ -343,6 +343,10 @@ export const App: React.FC = () => {
         dispatch({ type: 'SET_LIGHTING_ENABLED', enabled: !state.lightingEnabled });
         markSceneDirty();
         break;
+      case 'view:atmosMarkers':
+        setLayerVisibility(prev => ({ ...prev, atmosMarkers: !prev.atmosMarkers }));
+        markSceneDirty();
+        break;
       case 'view:showPerfHUD': setShowPerfHUD(p => !p); break;
       case 'view:showBenchmark': setShowBenchmark(b => !b); break;
       case 'help:controls': setShowShortcuts(true); break;
@@ -369,11 +373,12 @@ export const App: React.FC = () => {
         showEntities,
         showSpaceBackground,
         showLighting: state.lightingEnabled,
+        atmosMarkers: layerVisibility.atmosMarkers,
         showPerfHUD,
         showBenchmark,
       },
     });
-  }, [state.undoStack.length, state.redoStack.length, forkName, showGrid, showEntities, showSpaceBackground, state.lightingEnabled, showPerfHUD, showBenchmark]);
+  }, [state.undoStack.length, state.redoStack.length, forkName, showGrid, showEntities, showSpaceBackground, state.lightingEnabled, layerVisibility.atmosMarkers, showPerfHUD, showBenchmark]);
 
   // Grid management
   const handleSelectGrid = useCallback((index: number) => {
@@ -715,6 +720,8 @@ export const App: React.FC = () => {
         onToggleSpaceBackground={() => { setShowSpaceBackground(b => !b); markSceneDirty(); }}
         showLighting={state.lightingEnabled}
         onToggleLighting={() => { dispatch({ type: 'SET_LIGHTING_ENABLED', enabled: !state.lightingEnabled }); markSceneDirty(); }}
+        showAtmosMarkers={layerVisibility.atmosMarkers}
+        onToggleAtmosMarkers={() => handleToggleLayer('atmosMarkers')}
         showPerfHUD={showPerfHUD}
         onTogglePerfHUD={() => setShowPerfHUD(p => !p)}
         showBenchmark={showBenchmark}

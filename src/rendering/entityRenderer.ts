@@ -63,6 +63,7 @@ export interface LayerVisibility {
   objects: boolean;       // DrawDepth 0 to +7 (furniture, machines, wall mounts)
   doors: boolean;        // DrawDepth +8 to +10
   markers: boolean;      // Spawn points and mapping helpers
+  atmosMarkers: boolean; // AtmosFix (vacuum/gas-fill) markers; hulls carpet these
   decals: boolean;       // Decal overlays (floor markings, arrows, etc.)
 }
 
@@ -73,6 +74,7 @@ export const DEFAULT_LAYER_VISIBILITY: LayerVisibility = {
   objects: true,
   doors: true,
   markers: true,
+  atmosMarkers: true,
   decals: true,
 };
 
@@ -106,6 +108,41 @@ export function getPrototypeFlags(prototype: string): PrototypeFlags {
 
 export function clearPrototypeFlags(): void {
   prototypeFlagCache.clear();
+  markerComponentCache.clear();
+  atmosFixCache.clear();
+}
+
+// AtmosFix markers (vacuum / gas-fill helpers) get their own sub-layer:
+// shuttle hulls carpet every space-adjacent tile with them, which buries the
+// actual ship. Component check first (AtmosFixMarker), name prefix fallback.
+const atmosFixCache = new Map<string, boolean>();
+
+export function isAtmosFixPrototype(prototype: string, registry?: IPrototypeRegistry): boolean {
+  if (prototype.startsWith('AtmosFix')) return true;
+  if (!registry) return false;
+  const cached = atmosFixCache.get(prototype);
+  if (cached !== undefined) return cached;
+  const entity = registry.getEntity(prototype);
+  const result = entity ? entity.components.some(c => c.type === 'AtmosFixMarker') : false;
+  atmosFixCache.set(prototype, result);
+  return result;
+}
+
+// The game hides Marker-component entities unless `showmarkers` is on; the
+// Markers layer toggle is this editor's equivalent. The name heuristic alone
+// misses prototypes like WarpPoint whose names carry no marker vocabulary,
+// so prefer the composed prototype's actual component list when available.
+const markerComponentCache = new Map<string, boolean>();
+
+export function isMarkerPrototype(prototype: string, registry?: IPrototypeRegistry): boolean {
+  if (getPrototypeFlags(prototype).isMarker) return true;
+  if (!registry) return false;
+  const cached = markerComponentCache.get(prototype);
+  if (cached !== undefined) return cached;
+  const entity = registry.getEntity(prototype);
+  const result = entity ? entity.components.some(c => c.type === 'Marker') : false;
+  markerComponentCache.set(prototype, result);
+  return result;
 }
 
 const PLACEHOLDER_COLORS: Record<PrototypeFlags['placeholderCategory'], string> = {
@@ -116,12 +153,20 @@ const PLACEHOLDER_COLORS: Record<PrototypeFlags['placeholderCategory'], string> 
 };
 
 /** Check if an entity's DrawDepth falls in a visible layer group. */
-export function isLayerVisible(drawDepthValue: number, prototype: string, layers: LayerVisibility): boolean {
+export function isLayerVisible(
+  drawDepthValue: number,
+  prototype: string,
+  layers: LayerVisibility,
+  registry?: IPrototypeRegistry,
+): boolean {
   if (drawDepthValue <= -13) return layers.subfloor;
   if (drawDepthValue <= -5) return layers.floorObjects;
   if (drawDepthValue <= -1) return layers.structures;
   if (drawDepthValue <= 7) {
-    if (getPrototypeFlags(prototype).isMarker) return layers.markers;
+    // AtmosFix markers hide with either switch: they are markers, and they
+    // also have their own toggle so spawn points can stay visible alone.
+    if (isAtmosFixPrototype(prototype, registry)) return layers.markers && layers.atmosMarkers;
+    if (isMarkerPrototype(prototype, registry)) return layers.markers;
     return layers.objects;
   }
   if (drawDepthValue <= 10) return layers.doors;
@@ -772,7 +817,7 @@ export function renderEntities(
       const depth = getCachedDrawDepth(prototype, registry);
 
       // Layer visibility filtering
-      if (!isLayerVisible(depth, prototype, layers)) continue;
+      if (!isLayerVisible(depth, prototype, layers, registry)) continue;
 
       // SubFloor filtering: dim infrastructure under non-subfloor tiles when T-Ray is off
       let dimmed = false;

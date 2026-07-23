@@ -25,7 +25,7 @@ function filterVisibleEntities(
   if (!layers) return entities;
   return entities.filter(e => {
     const depth = getCachedDrawDepth(e.prototype, registry);
-    return isLayerVisible(depth, e.prototype, layers);
+    return isLayerVisible(depth, e.prototype, layers, registry);
   });
 }
 

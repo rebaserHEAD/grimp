@@ -20,6 +20,8 @@ interface Props {
   onToggleSpaceBackground: () => void;
   showLighting: boolean;
   onToggleLighting: () => void;
+  showAtmosMarkers: boolean;
+  onToggleAtmosMarkers: () => void;
   showPerfHUD: boolean;
   onTogglePerfHUD: () => void;
   showBenchmark: boolean;
@@ -106,6 +108,7 @@ export const MenuBar: React.FC<Props> = ({
   showGrid, onToggleGrid, showEntities, onToggleEntities,
   showSpaceBackground, onToggleSpaceBackground,
   showLighting, onToggleLighting,
+  showAtmosMarkers, onToggleAtmosMarkers,
   showPerfHUD, onTogglePerfHUD,
   showBenchmark, onToggleBenchmark,
   showShortcuts, onShowShortcuts, onCloseShortcuts,
@@ -181,6 +184,7 @@ export const MenuBar: React.FC<Props> = ({
     { label: 'Show Entities', action: onToggleEntities, checked: showEntities },
     { label: 'Space Background', action: onToggleSpaceBackground, checked: showSpaceBackground },
     { label: 'Lighting Preview', action: onToggleLighting, checked: showLighting },
+    { label: 'Atmos Markers', action: onToggleAtmosMarkers, checked: showAtmosMarkers },
     { label: 'separator', separator: true },
     { label: 'Performance HUD', action: onTogglePerfHUD, checked: showPerfHUD },
     { label: 'Benchmark Tool', action: onToggleBenchmark, checked: showBenchmark },
