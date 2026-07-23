@@ -1,6 +1,6 @@
 {
   "name": "grimp",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "description": "GRIMP (Generally Reliable Interactive Mapping Program): a map editor for Space Station 14.",
   "author": "rebaserHEAD",
