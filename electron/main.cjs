@@ -153,7 +153,7 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1600,
     height: 1000,
-    title: 'SS14 Map Editor',
+    title: 'GRIMP',
     backgroundColor: '#1a1a1a',
     webPreferences: {
       contextIsolation: true,

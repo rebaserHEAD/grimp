@@ -203,8 +203,8 @@ export const MenuBar: React.FC<Props> = ({
 
   return (
     <div ref={barRef} className="flex items-center h-9 bg-surface border-b border-subtle px-2 gap-1">
-      <span className="text-[13px] font-bold text-accent mr-3">
-        SS14 Map Editor
+      <span className="text-[13px] font-bold text-accent mr-3" title="Generally Reliable Interactive Mapping Program">
+        GRIMP
       </span>
 
       {!nativeMenus && menus.map(menu => (

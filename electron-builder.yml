@@ -1,5 +1,5 @@
-appId: com.rebaserhead.ss14mapeditor
-productName: SS14 Map Editor
+appId: com.rebaserhead.grimp
+productName: GRIMP
 directories:
   output: release
   buildResources: build

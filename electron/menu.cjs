@@ -43,9 +43,9 @@ function appItem(label, accelerator, command, extra) {
 function showAbout() {
   dialog.showMessageBox(currentWin ?? undefined, {
     type: 'info',
-    title: 'About SS14 Map Editor',
-    message: 'SS14 Map Editor',
-    detail: `Version ${app.getVersion()}\nA desktop build of the Space Station 14 map editor.`,
+    title: 'About GRIMP',
+    message: 'GRIMP',
+    detail: `Version ${app.getVersion()}\nGenerally Reliable Interactive Mapping Program.\nA desktop map editor for Space Station 14.\n\nA fork of space-station-14-map-editor by SuspensionPoint,\nwhose work the editor core is built on.`,
     buttons: ['OK'],
   });
 }
@@ -129,7 +129,7 @@ function buildTemplate() {
           { label: 'Open Logs Folder', click: () => shell.openPath(app.getPath('logs')) },
         ],
       },
-      ...(isMac ? [] : [{ type: 'separator' }, { label: 'About SS14 Map Editor', click: showAbout }]),
+      ...(isMac ? [] : [{ type: 'separator' }, { label: 'About GRIMP', click: showAbout }]),
     ],
   });
 
