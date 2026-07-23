@@ -6,7 +6,7 @@ interface Props {
   /** Document kind per the engine's meta.category (savemap → Map, savegrid → Grid). */
   documentKind: 'Map' | 'Grid';
   onShowMapProperties: () => void;
-  onImport: (content: string) => void;
+  onImport: (content: string, fileName?: string) => void;
   onExport: () => void;
   onUndo: () => void;
   onRedo: () => void;
@@ -147,7 +147,7 @@ export const MenuBar: React.FC<Props> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    file.text().then(onImport);
+    file.text().then(content => onImport(content, file.name));
     e.target.value = '';
   };
 

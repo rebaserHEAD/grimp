@@ -210,7 +210,11 @@ app.whenReady().then(() => {
     });
     if (result.canceled || result.filePaths.length === 0) return null;
     try {
-      return fs.readFileSync(result.filePaths[0], 'utf8');
+      // fileName rides along so the renderer can label unnamed grids after it.
+      return {
+        content: fs.readFileSync(result.filePaths[0], 'utf8'),
+        fileName: path.basename(result.filePaths[0]),
+      };
     } catch {
       return null;
     }

@@ -18,8 +18,8 @@ declare global {
     };
     electronDialogs?: {
       available: boolean;
-      /** Native open dialog; resolves file content, or null if cancelled. */
-      openYaml: () => Promise<string | null>;
+      /** Native open dialog; resolves file content + name, or null if cancelled. */
+      openYaml: () => Promise<{ content: string; fileName: string } | null>;
       /** Native save dialog; resolves the saved path, or null if cancelled. */
       saveYaml: (content: string, defaultName: string) => Promise<string | null>;
     };

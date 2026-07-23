@@ -229,10 +229,10 @@ export const App: React.FC = () => {
     setStatusMessage('New grid');
   }, []);
 
-  const handleImport = useCallback((content: string) => {
+  const handleImport = useCallback((content: string, fileName?: string) => {
     try {
       const map = importMap(content);
-      dispatch({ type: 'LOAD_MAP', map });
+      dispatch({ type: 'LOAD_MAP', map, sourceName: fileName });
       const { grid } = map;
       cameraRef.current.fitBounds(
         { minX: grid.offsetX, maxX: grid.offsetX + grid.width, minY: grid.offsetY, maxY: grid.offsetY + grid.height },
@@ -315,8 +315,8 @@ export const App: React.FC = () => {
   // hidden file input instead.
   const handleImportNative = useCallback(async () => {
     if (!window.electronDialogs?.available) return;
-    const content = await window.electronDialogs.openYaml();
-    if (content != null) handleImport(content);
+    const opened = await window.electronDialogs.openYaml();
+    if (opened != null) handleImport(opened.content, opened.fileName);
   }, [handleImport]);
 
   const handleUndo = useCallback(() => dispatch({ type: 'UNDO' }), []);

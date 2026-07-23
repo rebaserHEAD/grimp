@@ -8,7 +8,7 @@ export type EditorAction =
   | { type: 'REDO' }
   | { type: 'SET_TOOL'; tool: ToolType }
   | { type: 'SET_PALETTE_ITEM'; item: PaletteItem }
-  | { type: 'LOAD_MAP'; map: ImportedMap }
+  | { type: 'LOAD_MAP'; map: ImportedMap; sourceName?: string }
   | { type: 'NEW_MAP' }
   | { type: 'NEW_GRID' }
   | { type: 'SET_GRID_IDENTITY'; gridUid: number; name: string; desc: string }

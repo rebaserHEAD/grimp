@@ -25,7 +25,8 @@ function chunkBase64F7(tileIndex: number): string {
   return btoa(binary);
 }
 
-function gridFileYaml(): string {
+function gridFileYaml(metaDataName = 'oldname'): string {
+  const nameLine = metaDataName === '' ? '' : `      name: ${metaDataName}\n`;
   return `meta:
   format: 7
   category: Grid
@@ -44,8 +45,7 @@ entities:
   - uid: 42
     components:
     - type: MetaData
-      name: oldname
-    - type: Transform
+${nameLine}    - type: Transform
       parent: invalid
     - type: MapGrid
       chunks:
@@ -83,6 +83,39 @@ function stateToExportInput(state: EditorState): ImportedMap {
     entityOrder: state.entityOrder,
   };
 }
+
+describe('LOAD_MAP grid display naming', () => {
+  it('keeps the file MetaData name when present', () => {
+    const map = importMap(gridFileYaml('Adjutant'));
+    const state = editorReducer(createInitialState(), { type: 'LOAD_MAP', map, sourceName: 'adjutant.yml' });
+    expect(state.grids[0].name).toBe('Adjutant');
+  });
+
+  it('falls back to the filename for unnamed grids', () => {
+    const map = importMap(gridFileYaml(''));
+    const state = editorReducer(createInitialState(), { type: 'LOAD_MAP', map, sourceName: 'warspite.yml' });
+    expect(state.grids[0].name).toBe('warspite');
+  });
+
+  it('treats the engine default "grid" as unnamed', () => {
+    const map = importMap(gridFileYaml('grid'));
+    const state = editorReducer(createInitialState(), { type: 'LOAD_MAP', map, sourceName: 'warspite.yml' });
+    expect(state.grids[0].name).toBe('warspite');
+  });
+
+  it('falls back to the grid uid when no filename is known', () => {
+    const map = importMap(gridFileYaml(''));
+    const state = editorReducer(createInitialState(), { type: 'LOAD_MAP', map });
+    expect(state.grids[0].name).toBe('Grid 42');
+  });
+
+  it('display naming never rewrites the file MetaData', () => {
+    const map = importMap(gridFileYaml(''));
+    const state = editorReducer(createInitialState(), { type: 'LOAD_MAP', map, sourceName: 'warspite.yml' });
+    const out = exportMap(stateToExportInput(state));
+    expect(out).not.toContain('warspite');
+  });
+});
 
 describe('SET_GRID_IDENTITY on an imported grid file', () => {
   it('renames surgically: only the MetaData block changes', () => {

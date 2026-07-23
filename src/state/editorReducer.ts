@@ -534,7 +534,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       const { map } = action;
 
       // Build grids array from gridDataList if available, else fallback to legacy single-grid
-      const grids: GridData[] = map.gridDataList && map.gridDataList.length > 0
+      const parsedGrids: GridData[] = map.gridDataList && map.gridDataList.length > 0
         ? map.gridDataList
         : [{
           gridUid: map.gridUid,
@@ -547,6 +547,22 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
           chunkKeyOrder: map.chunkKeyOrder ?? [],
           decals: { decals: [], nextDecalId: 0 },
         }];
+
+      // Display-name fallback: the file's MetaData name is authoritative, but
+      // many saved grids carry no name or only the engine default "grid".
+      // Fall back to the imported filename, then to the grid uid. Display
+      // label only; the file's MetaData is never rewritten here.
+      const sourceBase = action.sourceName?.replace(/\.ya?ml$/i, '').trim();
+      const isUnnamed = (n: string) => n.trim() === '' || n.trim().toLowerCase() === 'grid';
+      let unnamedSeen = 0;
+      const grids = parsedGrids.map(g => {
+        if (!isUnnamed(g.name)) return g;
+        unnamedSeen++;
+        const label = sourceBase
+          ? (unnamedSeen === 1 ? sourceBase : `${sourceBase} (${unnamedSeen})`)
+          : `Grid ${g.gridUid}`;
+        return { ...g, name: label };
+      });
 
       // Rebuild spatial index from first grid
       rebuildSpatialIndex(grids[0]?.entities ?? []);
