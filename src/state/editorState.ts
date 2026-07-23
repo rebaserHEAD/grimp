@@ -145,6 +145,46 @@ export function getDocumentKind(state: Pick<EditorState, 'meta' | 'maps'>): 'Map
   return state.maps !== undefined && state.maps.length === 0 ? 'Grid' : 'Map';
 }
 
+export interface GridProperties {
+  name: string;
+  desc: string;
+  /** Root component types in file order (synthesized view for from-scratch docs). */
+  components: string[];
+  /** BecomesStation.id when present: keys into gameMap.stations for station config. */
+  becomesStationId?: string;
+}
+
+/**
+ * Grid root properties for the Map Properties panel. Imported documents read
+ * the parsed structural data (kept in sync with raw-line patches by the
+ * property-edit actions); from-scratch documents read the GridData fields the
+ * export synthesis fallback emits.
+ */
+export function getGridProperties(
+  state: Pick<EditorState, 'structuralEntityData' | 'grids'>,
+  gridUid: number,
+): GridProperties {
+  const struct = state.structuralEntityData?.[gridUid];
+  if (struct) {
+    const meta = struct.find(c => c.type === 'MetaData') as { name?: unknown; desc?: unknown } | undefined;
+    const becomes = struct.find(c => c.type === 'BecomesStation') as { id?: unknown } | undefined;
+    return {
+      name: typeof meta?.name === 'string' ? meta.name : '',
+      desc: typeof meta?.desc === 'string' ? meta.desc : '',
+      components: struct.map(c => String(c.type)),
+      becomesStationId: typeof becomes?.id === 'string' ? becomes.id : undefined,
+    };
+  }
+  const gridData = state.grids.find(g => g.gridUid === gridUid);
+  const extras = gridData?.extraRootComponents ?? [];
+  return {
+    name: gridData?.identity?.name ?? '',
+    desc: gridData?.identity?.desc ?? '',
+    components: ['MetaData', 'Transform', 'MapGrid', ...extras.map(c => c.type)],
+    becomesStationId: extras.find(c => c.type === 'BecomesStation')?.fields?.id,
+  };
+}
+
 export function createInitialState(): EditorState {
   const emptyGrid = createEmptyGridData(1, 'Grid 1');
   return {

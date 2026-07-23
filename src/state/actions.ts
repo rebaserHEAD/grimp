@@ -8,9 +8,12 @@ export type EditorAction =
   | { type: 'REDO' }
   | { type: 'SET_TOOL'; tool: ToolType }
   | { type: 'SET_PALETTE_ITEM'; item: PaletteItem }
-  | { type: 'LOAD_MAP'; map: ImportedMap }
+  | { type: 'LOAD_MAP'; map: ImportedMap; sourceName?: string }
   | { type: 'NEW_MAP' }
   | { type: 'NEW_GRID' }
+  | { type: 'SET_GRID_IDENTITY'; gridUid: number; name: string; desc: string }
+  | { type: 'SET_ROOT_COMPONENT'; gridUid: number; componentType: string; enabled: boolean }
+  | { type: 'SET_ROOT_COMPONENT_FIELD'; gridUid: number; componentType: string; field: string; value: string | null }
   | { type: 'SET_REGISTRY'; registry: IPrototypeRegistry | null }
   | { type: 'SELECT_ENTITY'; uids: number[] }
   | { type: 'TOGGLE_SELECT_ENTITY'; uid: number }

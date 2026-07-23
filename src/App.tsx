@@ -1,7 +1,7 @@
 import React, { useReducer, useCallback, useRef, useEffect, useState, useMemo } from 'react';
 import type { ToolType, PaletteItem } from './types';
 import { editorReducer } from './state/editorReducer';
-import { createInitialState, ensureGridContainsBounds, getDocumentKind } from './state/editorState';
+import { createInitialState, ensureGridContainsBounds, getDocumentKind, getGridProperties } from './state/editorState';
 import type { ITool } from './tools/toolTypes';
 import { PaintTool } from './tools/paintTool';
 import { EraseTool } from './tools/eraseTool';
@@ -28,6 +28,7 @@ import type { DecalPlacementSettings } from './components/DecalPalette';
 import { EntityInfoPanel } from './components/EntityInfoPanel';
 import { DecalInfoPanel } from './components/DecalInfoPanel';
 import { MenuBar } from './components/MenuBar';
+import { MapPropertiesModal } from './components/MapPropertiesModal';
 import { StatusBar } from './components/StatusBar';
 import { LoadingScreen } from './components/LoadingScreen';
 import { LayerPanel } from './components/LayerPanel';
@@ -105,6 +106,7 @@ export const App: React.FC = () => {
   const [layerVisibility, setLayerVisibility] = useState<LayerVisibility>({ ...DEFAULT_LAYER_VISIBILITY });
   const [pendingDeleteGridUid, setPendingDeleteGridUid] = useState<number | null>(null);
   const [validatorIssues, setValidatorIssues] = useState<ValidationIssue[] | null>(null);
+  const [showMapProperties, setShowMapProperties] = useState(false);
   const [highlightTile, setHighlightTile] = useState<{ x: number; y: number; startTime: number } | null>(null);
   const [infraSelection, setInfraSelection] = useState<InfrastructureSelection>({
     mode: 'cable', cableType: 'CableHV', pipeType: 'supply',
@@ -227,10 +229,10 @@ export const App: React.FC = () => {
     setStatusMessage('New grid');
   }, []);
 
-  const handleImport = useCallback((content: string) => {
+  const handleImport = useCallback((content: string, fileName?: string) => {
     try {
       const map = importMap(content);
-      dispatch({ type: 'LOAD_MAP', map });
+      dispatch({ type: 'LOAD_MAP', map, sourceName: fileName });
       const { grid } = map;
       cameraRef.current.fitBounds(
         { minX: grid.offsetX, maxX: grid.offsetX + grid.width, minY: grid.offsetY, maxY: grid.offsetY + grid.height },
@@ -313,8 +315,8 @@ export const App: React.FC = () => {
   // hidden file input instead.
   const handleImportNative = useCallback(async () => {
     if (!window.electronDialogs?.available) return;
-    const content = await window.electronDialogs.openYaml();
-    if (content != null) handleImport(content);
+    const opened = await window.electronDialogs.openYaml();
+    if (opened != null) handleImport(opened.content, opened.fileName);
   }, [handleImport]);
 
   const handleUndo = useCallback(() => dispatch({ type: 'UNDO' }), []);
@@ -332,6 +334,7 @@ export const App: React.FC = () => {
       case 'file:newGrid':
         if (!state.dirty || window.confirm('Unsaved changes will be lost. Continue?')) handleNewGrid();
         break;
+      case 'file:properties': setShowMapProperties(true); break;
       case 'file:import': handleImportNative(); break;
       case 'file:export': handleExport(); break;
       case 'edit:undo': handleUndo(); break;
@@ -694,6 +697,32 @@ export const App: React.FC = () => {
           />
         );
       })()}
+      {showMapProperties && (() => {
+        const propsGrid = state.grids[state.activeGridIndex];
+        const propsGridUid = propsGrid?.gridUid ?? state.gridUid;
+        const tileCount = (propsGrid?.grid.cells ?? []).filter(c => c.tileId !== 'Space').length;
+        return (
+          <MapPropertiesModal
+            documentKind={getDocumentKind(state)}
+            meta={state.meta}
+            gridUid={propsGridUid}
+            gridProperties={getGridProperties(state, propsGridUid)}
+            tileCount={tileCount}
+            onSetIdentity={(name, desc) =>
+              dispatch({ type: 'SET_GRID_IDENTITY', gridUid: propsGridUid, name, desc })}
+            onToggleComponent={(componentType, enabled) =>
+              dispatch({ type: 'SET_ROOT_COMPONENT', gridUid: propsGridUid, componentType, enabled })}
+            onSetBecomesStation={(id) => {
+              if (id === null) {
+                dispatch({ type: 'SET_ROOT_COMPONENT', gridUid: propsGridUid, componentType: 'BecomesStation', enabled: false });
+              } else {
+                dispatch({ type: 'SET_ROOT_COMPONENT_FIELD', gridUid: propsGridUid, componentType: 'BecomesStation', field: 'id', value: id });
+              }
+            }}
+            onClose={() => setShowMapProperties(false)}
+          />
+        );
+      })()}
       {validatorIssues !== null && (
         <ValidatorModal
           issues={validatorIssues}
@@ -705,6 +734,7 @@ export const App: React.FC = () => {
         onNewMap={handleNewMap}
         onNewGrid={handleNewGrid}
         documentKind={getDocumentKind(state)}
+        onShowMapProperties={() => setShowMapProperties(true)}
         onImport={handleImport}
         onExport={handleExport}
         onUndo={handleUndo}

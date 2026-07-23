@@ -5,7 +5,8 @@ interface Props {
   onNewGrid: () => void;
   /** Document kind per the engine's meta.category (savemap → Map, savegrid → Grid). */
   documentKind: 'Map' | 'Grid';
-  onImport: (content: string) => void;
+  onShowMapProperties: () => void;
+  onImport: (content: string, fileName?: string) => void;
   onExport: () => void;
   onUndo: () => void;
   onRedo: () => void;
@@ -104,7 +105,7 @@ const MenuDropdown: React.FC<{
 };
 
 export const MenuBar: React.FC<Props> = ({
-  onNewMap, onNewGrid, documentKind, onImport, onExport, onUndo, onRedo, canUndo, canRedo, dirty,
+  onNewMap, onNewGrid, documentKind, onShowMapProperties, onImport, onExport, onUndo, onRedo, canUndo, canRedo, dirty,
   showGrid, onToggleGrid, showEntities, onToggleEntities,
   showSpaceBackground, onToggleSpaceBackground,
   showLighting, onToggleLighting,
@@ -149,7 +150,7 @@ export const MenuBar: React.FC<Props> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    file.text().then(onImport);
+    file.text().then(content => onImport(content, file.name));
     e.target.value = '';
   };
 
@@ -172,6 +173,8 @@ export const MenuBar: React.FC<Props> = ({
     { label: 'separator', separator: true },
     { label: 'Import .yml...', shortcut: 'Ctrl+O', action: handleImportClick },
     { label: 'Export .yml', shortcut: 'Ctrl+S', action: onExport },
+    { label: 'separator2', separator: true },
+    { label: 'Map Properties...', action: onShowMapProperties },
   ];
 
   const editItems: MenuItem[] = [

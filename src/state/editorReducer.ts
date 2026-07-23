@@ -7,11 +7,70 @@ import type { GridData } from './gridData';
 import { createEmptyGridData, getActiveGrid } from './gridData';
 import { markSceneDirty, markAllDirty, markOverlayDirty, markConnectionsDirty } from '../rendering/dirtyFlags';
 import { rebuildSpatialIndex } from '../rendering/spatialIndex';
+import { setComponentField, addComponent, removeComponent } from './rawComponentPatch';
 
 const MAX_UNDO = 200;
 
 function isGridCommand(cmd: UndoableCommand): cmd is GridCommand {
   return 'type' in cmd && ['ADD_GRID', 'REMOVE_GRID', 'RENAME_GRID'].includes((cmd as GridCommand).type);
+}
+
+/** Mirror a MetaData name/desc edit into the parsed structural data.
+ * Empty strings remove the field, matching the raw-line patch. */
+function syncStructMetaData(
+  struct: Record<number, Record<string, unknown>[]> | undefined,
+  gridUid: number,
+  name: string,
+  desc: string,
+): Record<number, Record<string, unknown>[]> | undefined {
+  if (!struct?.[gridUid]) return struct;
+  const components = struct[gridUid].map(c => ({ ...c }));
+  let meta = components.find(c => c.type === 'MetaData');
+  if (!meta) {
+    meta = { type: 'MetaData' };
+    components.push(meta);
+  }
+  if (name.length > 0) meta.name = name; else delete meta.name;
+  if (desc.length > 0) meta.desc = desc; else delete meta.desc;
+  return { ...struct, [gridUid]: components };
+}
+
+/** Mirror a bare component add/remove into the parsed structural data. */
+function syncStructComponent(
+  struct: Record<number, Record<string, unknown>[]> | undefined,
+  gridUid: number,
+  componentType: string,
+  enabled: boolean,
+): Record<number, Record<string, unknown>[]> | undefined {
+  if (!struct?.[gridUid]) return struct;
+  const components = struct[gridUid];
+  const has = components.some(c => c.type === componentType);
+  if (enabled === has) return struct;
+  const next = enabled
+    ? [...components, { type: componentType }]
+    : components.filter(c => c.type !== componentType);
+  return { ...struct, [gridUid]: next };
+}
+
+/** Mirror a scalar component-field edit into the parsed structural data,
+ * creating the component when needed. null removes the field. */
+function syncStructComponentField(
+  struct: Record<number, Record<string, unknown>[]> | undefined,
+  gridUid: number,
+  componentType: string,
+  field: string,
+  value: string | null,
+): Record<number, Record<string, unknown>[]> | undefined {
+  if (!struct?.[gridUid]) return struct;
+  const components = struct[gridUid].map(c => ({ ...c }));
+  let comp = components.find(c => c.type === componentType);
+  if (!comp) {
+    if (value === null) return struct;
+    comp = { type: componentType };
+    components.push(comp);
+  }
+  if (value === null) delete comp[field]; else comp[field] = value;
+  return { ...struct, [gridUid]: components };
 }
 
 /** Remove raw YAML lines for any entity touched by entity changes. */
@@ -496,7 +555,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       const { map } = action;
 
       // Build grids array from gridDataList if available, else fallback to legacy single-grid
-      const grids: GridData[] = map.gridDataList && map.gridDataList.length > 0
+      const parsedGrids: GridData[] = map.gridDataList && map.gridDataList.length > 0
         ? map.gridDataList
         : [{
           gridUid: map.gridUid,
@@ -509,6 +568,22 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
           chunkKeyOrder: map.chunkKeyOrder ?? [],
           decals: { decals: [], nextDecalId: 0 },
         }];
+
+      // Display-name fallback: the file's MetaData name is authoritative, but
+      // many saved grids carry no name or only the engine default "grid".
+      // Fall back to the imported filename, then to the grid uid. Display
+      // label only; the file's MetaData is never rewritten here.
+      const sourceBase = action.sourceName?.replace(/\.ya?ml$/i, '').trim();
+      const isUnnamed = (n: string) => n.trim() === '' || n.trim().toLowerCase() === 'grid';
+      let unnamedSeen = 0;
+      const grids = parsedGrids.map(g => {
+        if (!isUnnamed(g.name)) return g;
+        unnamedSeen++;
+        const label = sourceBase
+          ? (unnamedSeen === 1 ? sourceBase : `${sourceBase} (${unnamedSeen})`)
+          : `Grid ${g.gridUid}`;
+        return { ...g, name: label };
+      });
 
       // Rebuild spatial index from first grid
       rebuildSpatialIndex(grids[0]?.entities ?? []);
@@ -628,6 +703,111 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         selectedDecalIds: [],
         decalsDirty: new Set(),
         dirty: false,
+      };
+    }
+
+    case 'SET_GRID_IDENTITY': {
+      const { gridUid } = action;
+      const name = action.name.trim();
+      const desc = action.desc.trim();
+      const raw = state.entityRawComponents?.[gridUid];
+      if (raw) {
+        // Imported document: patch the verbatim YAML so untouched lines keep
+        // byte parity, and mirror into the parsed structural data.
+        let patched = setComponentField(raw, 'MetaData', 'desc', desc.length > 0 ? desc : null);
+        patched = setComponentField(patched, 'MetaData', 'name', name.length > 0 ? name : null);
+        return {
+          ...state,
+          entityRawComponents: { ...state.entityRawComponents, [gridUid]: patched },
+          structuralEntityData: syncStructMetaData(state.structuralEntityData, gridUid, name, desc),
+          dirty: true,
+        };
+      }
+      if (state.structuralEntityData?.[gridUid]) {
+        return {
+          ...state,
+          structuralEntityData: syncStructMetaData(state.structuralEntityData, gridUid, name, desc),
+          dirty: true,
+        };
+      }
+      // From-scratch document: stash on the GridData; export synthesis emits it.
+      return {
+        ...state,
+        grids: state.grids.map(g => g.gridUid === gridUid
+          ? { ...g, identity: { name: name || undefined, desc: desc || undefined } }
+          : g),
+        dirty: true,
+      };
+    }
+
+    case 'SET_ROOT_COMPONENT': {
+      const { gridUid, componentType, enabled } = action;
+      const raw = state.entityRawComponents?.[gridUid];
+      if (raw) {
+        const patched = enabled ? addComponent(raw, componentType) : removeComponent(raw, componentType);
+        return {
+          ...state,
+          entityRawComponents: { ...state.entityRawComponents, [gridUid]: patched },
+          structuralEntityData: syncStructComponent(state.structuralEntityData, gridUid, componentType, enabled),
+          dirty: true,
+        };
+      }
+      if (state.structuralEntityData?.[gridUid]) {
+        return {
+          ...state,
+          structuralEntityData: syncStructComponent(state.structuralEntityData, gridUid, componentType, enabled),
+          dirty: true,
+        };
+      }
+      return {
+        ...state,
+        grids: state.grids.map(g => {
+          if (g.gridUid !== gridUid) return g;
+          const current = g.extraRootComponents ?? [];
+          const has = current.some(c => c.type === componentType);
+          const next = enabled
+            ? (has ? current : [...current, { type: componentType }])
+            : current.filter(c => c.type !== componentType);
+          return { ...g, extraRootComponents: next };
+        }),
+        dirty: true,
+      };
+    }
+
+    case 'SET_ROOT_COMPONENT_FIELD': {
+      const { gridUid, componentType, field, value } = action;
+      const raw = state.entityRawComponents?.[gridUid];
+      if (raw) {
+        return {
+          ...state,
+          entityRawComponents: { ...state.entityRawComponents, [gridUid]: setComponentField(raw, componentType, field, value) },
+          structuralEntityData: syncStructComponentField(state.structuralEntityData, gridUid, componentType, field, value),
+          dirty: true,
+        };
+      }
+      if (state.structuralEntityData?.[gridUid]) {
+        return {
+          ...state,
+          structuralEntityData: syncStructComponentField(state.structuralEntityData, gridUid, componentType, field, value),
+          dirty: true,
+        };
+      }
+      return {
+        ...state,
+        grids: state.grids.map(g => {
+          if (g.gridUid !== gridUid) return g;
+          const current = g.extraRootComponents ?? [];
+          const existing = current.find(c => c.type === componentType);
+          if (!existing && value === null) return g;
+          const fields = { ...(existing?.fields ?? {}) };
+          if (value === null) delete fields[field]; else fields[field] = value;
+          const entry = { type: componentType, fields };
+          const next = existing
+            ? current.map(c => (c.type === componentType ? entry : c))
+            : [...current, entry];
+          return { ...g, extraRootComponents: next };
+        }),
+        dirty: true,
       };
     }
 
