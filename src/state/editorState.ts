@@ -150,6 +150,8 @@ export interface GridProperties {
   desc: string;
   /** Root component types in file order (synthesized view for from-scratch docs). */
   components: string[];
+  /** BecomesStation.id when present: keys into gameMap.stations for station config. */
+  becomesStationId?: string;
 }
 
 /**
@@ -165,17 +167,21 @@ export function getGridProperties(
   const struct = state.structuralEntityData?.[gridUid];
   if (struct) {
     const meta = struct.find(c => c.type === 'MetaData') as { name?: unknown; desc?: unknown } | undefined;
+    const becomes = struct.find(c => c.type === 'BecomesStation') as { id?: unknown } | undefined;
     return {
       name: typeof meta?.name === 'string' ? meta.name : '',
       desc: typeof meta?.desc === 'string' ? meta.desc : '',
       components: struct.map(c => String(c.type)),
+      becomesStationId: typeof becomes?.id === 'string' ? becomes.id : undefined,
     };
   }
   const gridData = state.grids.find(g => g.gridUid === gridUid);
+  const extras = gridData?.extraRootComponents ?? [];
   return {
     name: gridData?.identity?.name ?? '',
     desc: gridData?.identity?.desc ?? '',
-    components: ['MetaData', 'Transform', 'MapGrid', ...(gridData?.extraRootComponents ?? [])],
+    components: ['MetaData', 'Transform', 'MapGrid', ...extras.map(c => c.type)],
+    becomesStationId: extras.find(c => c.type === 'BecomesStation')?.fields?.id,
   };
 }
 

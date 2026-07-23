@@ -693,17 +693,27 @@ export const App: React.FC = () => {
         );
       })()}
       {showMapProperties && (() => {
-        const propsGridUid = state.grids[state.activeGridIndex]?.gridUid ?? state.gridUid;
+        const propsGrid = state.grids[state.activeGridIndex];
+        const propsGridUid = propsGrid?.gridUid ?? state.gridUid;
+        const tileCount = (propsGrid?.grid.cells ?? []).filter(c => c.tileId !== 'Space').length;
         return (
           <MapPropertiesModal
             documentKind={getDocumentKind(state)}
             meta={state.meta}
             gridUid={propsGridUid}
             gridProperties={getGridProperties(state, propsGridUid)}
+            tileCount={tileCount}
             onSetIdentity={(name, desc) =>
               dispatch({ type: 'SET_GRID_IDENTITY', gridUid: propsGridUid, name, desc })}
             onToggleComponent={(componentType, enabled) =>
               dispatch({ type: 'SET_ROOT_COMPONENT', gridUid: propsGridUid, componentType, enabled })}
+            onSetBecomesStation={(id) => {
+              if (id === null) {
+                dispatch({ type: 'SET_ROOT_COMPONENT', gridUid: propsGridUid, componentType: 'BecomesStation', enabled: false });
+              } else {
+                dispatch({ type: 'SET_ROOT_COMPONENT_FIELD', gridUid: propsGridUid, componentType: 'BecomesStation', field: 'id', value: id });
+              }
+            }}
             onClose={() => setShowMapProperties(false)}
           />
         );

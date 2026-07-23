@@ -14,8 +14,12 @@ interface Props {
   meta: MapMeta;
   gridUid: number;
   gridProperties: GridProperties;
+  /** Non-space tile count of the active grid (the gridtc number). */
+  tileCount: number;
   onSetIdentity: (name: string, desc: string) => void;
   onToggleComponent: (componentType: string, enabled: boolean) => void;
+  /** Set BecomesStation.id (creating the component), or null to remove it. */
+  onSetBecomesStation: (id: string | null) => void;
   onClose: () => void;
 }
 
@@ -34,10 +38,13 @@ const SHIP_SWITCHES: { type: string; label: string; hint: string }[] = [
 ];
 
 export const MapPropertiesModal: React.FC<Props> = ({
-  documentKind, meta, gridUid, gridProperties, onSetIdentity, onToggleComponent, onClose,
+  documentKind, meta, gridUid, gridProperties, tileCount,
+  onSetIdentity, onToggleComponent, onSetBecomesStation, onClose,
 }) => {
   const [name, setName] = useState(gridProperties.name);
   const [desc, setDesc] = useState(gridProperties.desc);
+  const [stationId, setStationId] = useState(gridProperties.becomesStationId ?? '');
+  const hasBecomesStation = gridProperties.components.includes('BecomesStation');
 
   // Close on Escape
   useEffect(() => {
@@ -54,7 +61,7 @@ export const MapPropertiesModal: React.FC<Props> = ({
     }
   };
 
-  const editableTypes = new Set(SHIP_SWITCHES.map(s => s.type));
+  const editableTypes = new Set([...SHIP_SWITCHES.map(s => s.type), 'BecomesStation']);
   const otherComponents = gridProperties.components.filter(t => !editableTypes.has(t));
 
   const metaRows: [string, string][] = [
@@ -63,6 +70,7 @@ export const MapPropertiesModal: React.FC<Props> = ({
     ...(meta.engineVersion ? [['Engine', meta.engineVersion] as [string, string]] : []),
     ...(meta.time ? [['Saved', meta.time] as [string, string]] : []),
     ...(meta.entityCount !== undefined ? [['Entities', String(meta.entityCount)] as [string, string]] : []),
+    ['Tiles', String(tileCount)],
     ['Grid root uid', String(gridUid)],
   ];
 
@@ -93,6 +101,12 @@ export const MapPropertiesModal: React.FC<Props> = ({
               </React.Fragment>
             ))}
           </div>
+          {meta.postmapinit === true && (
+            <div className="mt-2 text-[12px] text-warning">
+              This file was saved post-mapinit. Grids should be saved before map
+              initialization; the game may misbehave loading this one.
+            </div>
+          )}
         </div>
 
         <div className="mb-4">
@@ -140,6 +154,45 @@ export const MapPropertiesModal: React.FC<Props> = ({
               </label>
             );
           })}
+
+          <label className="flex items-start gap-2 mb-1 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={hasBecomesStation}
+              onChange={e => {
+                if (e.target.checked) {
+                  const id = stationId.trim() || name.trim() || gridProperties.name;
+                  setStationId(id);
+                  onSetBecomesStation(id);
+                } else {
+                  onSetBecomesStation(null);
+                }
+              }}
+              className="mt-0.5"
+            />
+            <span>
+              <span className="text-primary font-semibold">BecomesStation</span>
+              <span className="text-muted block text-[12px]">
+                Applies station config (name, jobs) on gameMap load. The id must
+                match a key under the gameMap prototype's stations block.
+              </span>
+            </span>
+          </label>
+          {hasBecomesStation && (
+            <label className="block ml-6 mb-2">
+              <span className="text-muted block mb-0.5">Station id</span>
+              <input
+                type="text"
+                value={stationId}
+                onChange={e => setStationId(e.target.value)}
+                onBlur={() => {
+                  const id = stationId.trim();
+                  if (id && id !== gridProperties.becomesStationId) onSetBecomesStation(id);
+                }}
+                className="w-full bg-transparent border border-subtle rounded-sm px-2 py-1 text-primary text-[13px] font-mono"
+              />
+            </label>
+          )}
         </div>
 
         <div className="mb-2">

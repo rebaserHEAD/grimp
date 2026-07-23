@@ -16,9 +16,10 @@ export interface GridData {
    * Imported documents carry identity in their raw component lines instead;
    * the exporter only reads this when there is no raw data to preserve. */
   identity?: { name?: string; desc?: string };
-  /** Bare marker components (e.g. Shuttle, IFF) for from-scratch documents,
-   * emitted onto the grid root by the export synthesis fallback. */
-  extraRootComponents?: string[];
+  /** Ship-switch components (e.g. Shuttle, IFF, BecomesStation) for
+   * from-scratch documents, emitted onto the grid root by the export
+   * synthesis fallback. Fields are scalar YAML values. */
+  extraRootComponents?: { type: string; fields?: Record<string, string> }[];
 }
 
 export function createEmptyGridData(uid: number, name: string): GridData {

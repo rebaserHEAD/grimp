@@ -52,6 +52,27 @@ function syncStructComponent(
   return { ...struct, [gridUid]: next };
 }
 
+/** Mirror a scalar component-field edit into the parsed structural data,
+ * creating the component when needed. null removes the field. */
+function syncStructComponentField(
+  struct: Record<number, Record<string, unknown>[]> | undefined,
+  gridUid: number,
+  componentType: string,
+  field: string,
+  value: string | null,
+): Record<number, Record<string, unknown>[]> | undefined {
+  if (!struct?.[gridUid]) return struct;
+  const components = struct[gridUid].map(c => ({ ...c }));
+  let comp = components.find(c => c.type === componentType);
+  if (!comp) {
+    if (value === null) return struct;
+    comp = { type: componentType };
+    components.push(comp);
+  }
+  if (value === null) delete comp[field]; else comp[field] = value;
+  return { ...struct, [gridUid]: components };
+}
+
 /** Remove raw YAML lines for any entity touched by entity changes. */
 function invalidateRawComponents(
   raw: Record<number, string[]> | undefined,
@@ -743,9 +764,47 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         grids: state.grids.map(g => {
           if (g.gridUid !== gridUid) return g;
           const current = g.extraRootComponents ?? [];
+          const has = current.some(c => c.type === componentType);
           const next = enabled
-            ? (current.includes(componentType) ? current : [...current, componentType])
-            : current.filter(t => t !== componentType);
+            ? (has ? current : [...current, { type: componentType }])
+            : current.filter(c => c.type !== componentType);
+          return { ...g, extraRootComponents: next };
+        }),
+        dirty: true,
+      };
+    }
+
+    case 'SET_ROOT_COMPONENT_FIELD': {
+      const { gridUid, componentType, field, value } = action;
+      const raw = state.entityRawComponents?.[gridUid];
+      if (raw) {
+        return {
+          ...state,
+          entityRawComponents: { ...state.entityRawComponents, [gridUid]: setComponentField(raw, componentType, field, value) },
+          structuralEntityData: syncStructComponentField(state.structuralEntityData, gridUid, componentType, field, value),
+          dirty: true,
+        };
+      }
+      if (state.structuralEntityData?.[gridUid]) {
+        return {
+          ...state,
+          structuralEntityData: syncStructComponentField(state.structuralEntityData, gridUid, componentType, field, value),
+          dirty: true,
+        };
+      }
+      return {
+        ...state,
+        grids: state.grids.map(g => {
+          if (g.gridUid !== gridUid) return g;
+          const current = g.extraRootComponents ?? [];
+          const existing = current.find(c => c.type === componentType);
+          if (!existing && value === null) return g;
+          const fields = { ...(existing?.fields ?? {}) };
+          if (value === null) delete fields[field]; else fields[field] = value;
+          const entry = { type: componentType, fields };
+          const next = existing
+            ? current.map(c => (c.type === componentType ? entry : c))
+            : [...current, entry];
           return { ...g, extraRootComponents: next };
         }),
         dirty: true,

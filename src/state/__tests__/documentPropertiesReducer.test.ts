@@ -177,6 +177,43 @@ describe('SET_ROOT_COMPONENT on an imported grid file', () => {
   });
 });
 
+describe('SET_ROOT_COMPONENT_FIELD (BecomesStation) on an imported grid file', () => {
+  it('creates the component with its id field, surgically', () => {
+    const state = loadIntoState(gridFileYaml());
+    const before = exportMap(stateToExportInput(state));
+
+    const withStation = editorReducer(state, {
+      type: 'SET_ROOT_COMPONENT_FIELD', gridUid: 42, componentType: 'BecomesStation', field: 'id', value: 'Warspite',
+    });
+    const after = exportMap(stateToExportInput(withStation));
+    // Matches the game-saved shape (e.g. archer.yml): block + scalar id
+    expect(after).toContain('    - type: BecomesStation');
+    expect(after).toContain('      id: Warspite');
+    expect(after.split('\n').length).toBe(before.split('\n').length + 2);
+
+    // Removing the component restores the original bytes
+    const removed = editorReducer(withStation, {
+      type: 'SET_ROOT_COMPONENT', gridUid: 42, componentType: 'BecomesStation', enabled: false,
+    });
+    expect(exportMap(stateToExportInput(removed))).toBe(before);
+  });
+
+  it('updates an existing id in place and mirrors into structural data', () => {
+    let state = loadIntoState(gridFileYaml());
+    state = editorReducer(state, {
+      type: 'SET_ROOT_COMPONENT_FIELD', gridUid: 42, componentType: 'BecomesStation', field: 'id', value: 'Warspite',
+    });
+    state = editorReducer(state, {
+      type: 'SET_ROOT_COMPONENT_FIELD', gridUid: 42, componentType: 'BecomesStation', field: 'id', value: 'Renown',
+    });
+    const out = exportMap(stateToExportInput(state));
+    expect(out).toContain('      id: Renown');
+    expect(out).not.toContain('Warspite');
+    const becomes = state.structuralEntityData![42].find(c => c.type === 'BecomesStation') as any;
+    expect(becomes.id).toBe('Renown');
+  });
+});
+
 describe('Map Properties on a from-scratch grid document', () => {
   it('identity and ship switches reach the synthesized export', () => {
     let state = editorReducer(createInitialState(), { type: 'NEW_GRID' });
@@ -208,5 +245,15 @@ describe('Map Properties on a from-scratch grid document', () => {
       type: 'SET_ROOT_COMPONENT', gridUid: 1, componentType: 'Shuttle', enabled: false,
     });
     expect(exportMap(stateToExportInput(state))).not.toContain('Shuttle');
+  });
+
+  it('BecomesStation with id reaches the synthesized export', () => {
+    let state = editorReducer(createInitialState(), { type: 'NEW_GRID' });
+    state = editorReducer(state, {
+      type: 'SET_ROOT_COMPONENT_FIELD', gridUid: 1, componentType: 'BecomesStation', field: 'id', value: 'Warspite',
+    });
+    const out = exportMap(stateToExportInput(state));
+    expect(out).toContain('    - type: BecomesStation');
+    expect(out).toContain('      id: Warspite');
   });
 });

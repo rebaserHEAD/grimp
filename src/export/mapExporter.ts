@@ -191,7 +191,12 @@ export function exportMap(map: ImportedMap, decalsDirty?: Set<number>): string {
           identity: g.identity,
           extraComponents: g.extraRootComponents ?? [],
         }))
-      : [{ uid: map.gridUid, pos: { x: 0, y: 0 }, identity: undefined, extraComponents: [] as string[] }];
+      : [{
+          uid: map.gridUid,
+          pos: { x: 0, y: 0 },
+          identity: undefined,
+          extraComponents: [] as { type: string; fields?: Record<string, string> }[],
+        }];
 
     for (const g of fallbackGrids) {
       lines.push(`  - uid: ${g.uid}`);
@@ -216,9 +221,13 @@ export function exportMap(map: ImportedMap, decalsDirty?: Set<number>): string {
       if (fallbackDecalLines) {
         for (const dl of fallbackDecalLines) lines.push(dl);
       }
-      // Ship switches (Shuttle, IFF, ...) toggled via Map Properties.
+      // Ship switches (Shuttle, IFF, BecomesStation, ...) set via Map
+      // Properties; scalar fields alphabetical like the engine serializer.
       for (const extra of g.extraComponents) {
-        lines.push(`    - type: ${extra}`);
+        lines.push(`    - type: ${extra.type}`);
+        for (const [k, v] of Object.entries(extra.fields ?? {}).sort(([a], [b]) => a < b ? -1 : 1)) {
+          lines.push(`      ${k}: ${formatPrimitive(v)}`);
+        }
       }
     }
   }
