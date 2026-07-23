@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   isMarkerPrototype,
+  isAtmosFixPrototype,
   isLayerVisible,
   clearPrototypeFlags,
   DEFAULT_LAYER_VISIBILITY,
@@ -43,6 +44,26 @@ describe('isMarkerPrototype', () => {
 
   it('unknown prototypes without registry fall back to the name heuristic only', () => {
     expect(isMarkerPrototype('WarpPoint')).toBe(false);
+  });
+});
+
+describe('atmos markers sub-layer', () => {
+  it('detects the AtmosFix family by name prefix and by component', () => {
+    expect(isAtmosFixPrototype('AtmosFixVacuumMarker')).toBe(true);
+    const registry = fakeRegistry({ WeirdForkVacuum: ['AtmosFixMarker'] });
+    expect(isAtmosFixPrototype('WeirdForkVacuum', registry)).toBe(true);
+    expect(isAtmosFixPrototype('WallSolid', registry)).toBe(false);
+  });
+
+  it('atmosMarkers off hides VAC. markers but keeps spawn points', () => {
+    const layers = { ...DEFAULT_LAYER_VISIBILITY, atmosMarkers: false };
+    expect(isLayerVisible(0, 'AtmosFixBlockerMarker', layers)).toBe(false);
+    expect(isLayerVisible(0, 'SpawnPointLatejoin', layers)).toBe(true);
+  });
+
+  it('markers off hides the AtmosFix family too', () => {
+    const layers = { ...DEFAULT_LAYER_VISIBILITY, markers: false };
+    expect(isLayerVisible(0, 'AtmosFixBlockerMarker', layers)).toBe(false);
   });
 });
 

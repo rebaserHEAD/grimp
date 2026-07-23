@@ -17,6 +17,7 @@ const LAYER_DEFS: { key: keyof LayerVisibility; label: string; desc: string }[] 
   { key: 'objects', label: 'Objects', desc: 'Furniture, machines, wall mounts (0 to +7)' },
   { key: 'doors', label: 'Doors', desc: 'Airlocks, firelocks, blast doors (+8 to +10)' },
   { key: 'markers', label: 'Markers', desc: 'Spawn points, mapping helpers' },
+  { key: 'atmosMarkers', label: 'Atmos Markers', desc: 'Vacuum / gas-fill markers (VAC.)' },
   { key: 'decals', label: 'Decals', desc: 'Floor markings, arrows, overlays' },
 ];
 

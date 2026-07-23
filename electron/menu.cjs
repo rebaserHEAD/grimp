@@ -95,6 +95,7 @@ function buildTemplate() {
       toggle('Show Entities', 'showEntities'),
       toggle('Space Background', 'showSpaceBackground'),
       toggle('Lighting Preview', 'showLighting'),
+      toggle('Atmos Markers', 'atmosMarkers'),
       { type: 'separator' },
       { role: 'togglefullscreen' },
     ],
