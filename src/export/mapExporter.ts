@@ -63,7 +63,13 @@ export function exportMap(map: ImportedMap, decalsDirty?: Set<number>): string {
     const allEntities = getAllEntities(map);
     const allContained = getAllContainedEntities(map);
     const containedCount = Object.values(allContained).reduce((sum, arr) => sum + arr.length, 0);
-    lines.push(`  entityCount: ${allEntities.length + containedCount + Object.keys(map.structuralEntityData ?? {}).length}`);
+    // Structural entities: preserved verbatim when imported, otherwise the
+    // synthesis fallback emits one root per grid plus a map entity for map
+    // documents. Count what will actually be written.
+    const structuralCount = map.structuralEntityData
+      ? Object.keys(map.structuralEntityData).length
+      : (map.gridDataList?.length ?? 1) + (map.meta.category === 'Grid' ? 0 : 1);
+    lines.push(`  entityCount: ${allEntities.length + containedCount + structuralCount}`);
   }
   // Only emit postmapinit if it was present in the original file.
   // SS14 treats absence as "not yet initialized", adding false when absent can change behavior.
@@ -76,10 +82,16 @@ export function exportMap(map: ImportedMap, decalsDirty?: Set<number>): string {
   // registered under `orphans:`, and the game's loader relies on that
   // registration to attach the grid. Fabricating a maps entry or dropping
   // orphans corrupts every grid-format file.
+  // From-scratch documents have no imported lists; synthesize them per kind.
+  // Grid documents (savegrid shape) have no map entity: the grid registers
+  // under both `grids:` and `orphans:` so the loader attaches it to the
+  // target map on load.
+  const isGridDoc = map.meta.category === 'Grid';
   if (format >= 7) {
-    pushUidList(lines, 'maps', map.maps ?? [map.mapUid]);
-    pushUidList(lines, 'grids', map.grids ?? [map.gridUid]);
-    pushUidList(lines, 'orphans', map.orphans ?? []);
+    const allGridUids = map.gridDataList?.map(g => g.gridUid) ?? [map.gridUid];
+    pushUidList(lines, 'maps', map.maps ?? (isGridDoc ? [] : [map.mapUid]));
+    pushUidList(lines, 'grids', map.grids ?? allGridUids);
+    pushUidList(lines, 'orphans', map.orphans ?? (isGridDoc ? allGridUids : []));
     pushUidList(lines, 'nullspace', map.nullspace ?? []);
   }
 
@@ -156,33 +168,46 @@ export function exportMap(map: ImportedMap, decalsDirty?: Set<number>): string {
       }
     }
   } else {
-    // Fallback: generate minimal structural entities
-    const fallbackChunks = gridChunksMap.get(map.gridUid) ?? [];
-
-    lines.push(`  - uid: ${map.mapUid}`);
-    lines.push('    components:');
-    lines.push('    - type: MetaData');
-    lines.push('    - type: Transform');
-    lines.push('    - type: Map');
-    lines.push('      mapPaused: True');
-    lines.push('    - type: Broadphase');
-    lines.push('    - type: OccluderTree');
-
-    lines.push(`  - uid: ${map.gridUid}`);
-    lines.push('    components:');
-    lines.push('    - type: MetaData');
-    lines.push('      name: Station');
-    lines.push('    - type: Transform');
-    lines.push(`      parent: ${map.mapUid}`);
-    lines.push('    - type: MapGrid');
-    if (fallbackChunks.length > 0) {
-      lines.push('      chunks:');
-      for (const cl of fallbackChunks) lines.push(cl);
+    // Fallback: generate minimal structural entities for from-scratch
+    // documents, mirroring the game serializer's savemap/savegrid output.
+    // Map documents get a map entity with each grid parented to it; grid
+    // documents have no map entity and each grid root is parentless
+    // (`parent: invalid`, matching game-saved grid files).
+    if (!isGridDoc) {
+      lines.push(`  - uid: ${map.mapUid}`);
+      lines.push('    components:');
+      lines.push('    - type: MetaData');
+      lines.push('    - type: Transform');
+      lines.push('    - type: Map');
+      lines.push('      mapPaused: True');
+      lines.push('    - type: Broadphase');
+      lines.push('    - type: OccluderTree');
     }
-    // Append DecalGrid if we have dirty decals for this grid
-    const fallbackDecalLines = gridDecalsMap.get(map.gridUid);
-    if (fallbackDecalLines) {
-      for (const dl of fallbackDecalLines) lines.push(dl);
+
+    const fallbackGrids = map.gridDataList && map.gridDataList.length > 0
+      ? map.gridDataList.map(g => ({ uid: g.gridUid, pos: g.worldPosition }))
+      : [{ uid: map.gridUid, pos: { x: 0, y: 0 } }];
+
+    for (const g of fallbackGrids) {
+      lines.push(`  - uid: ${g.uid}`);
+      lines.push('    components:');
+      lines.push('    - type: MetaData');
+      lines.push('    - type: Transform');
+      if (g.pos.x !== 0 || g.pos.y !== 0) {
+        lines.push(`      pos: ${g.pos.x},${g.pos.y}`);
+      }
+      lines.push(isGridDoc ? '      parent: invalid' : `      parent: ${map.mapUid}`);
+      lines.push('    - type: MapGrid');
+      const fallbackChunks = gridChunksMap.get(g.uid) ?? [];
+      if (fallbackChunks.length > 0) {
+        lines.push('      chunks:');
+        for (const cl of fallbackChunks) lines.push(cl);
+      }
+      // Append DecalGrid if we have dirty decals for this grid
+      const fallbackDecalLines = gridDecalsMap.get(g.uid);
+      if (fallbackDecalLines) {
+        for (const dl of fallbackDecalLines) lines.push(dl);
+      }
     }
   }
 

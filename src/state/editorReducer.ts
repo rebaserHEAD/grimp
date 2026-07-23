@@ -573,7 +573,9 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         containedEntities: emptyGrid.containedEntities,
         mapUid: 0,
         gridUid: 1,
-        meta: { format: 6, postmapinit: false },
+        // savemap shape: the game saves format 7 with meta.category and no
+        // postmapinit key (absence = not yet initialized).
+        meta: { format: 7, category: 'Map', entityCount: 0 },
         maps: undefined,
         gridUidList: undefined,
         structuralEntityData: undefined,
@@ -585,6 +587,42 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         hasDocumentTerminator: undefined,
         entityOrder: undefined,
         nextEntityId: 2,  // UIDs 0 (map) and 1 (grid) reserved for structural entities
+        undoStack: [],
+        redoStack: [],
+        selectedDecalIds: [],
+        decalsDirty: new Set(),
+        dirty: false,
+      };
+    }
+
+    case 'NEW_GRID': {
+      markAllDirty();
+      rebuildSpatialIndex([]);
+      const emptyGrid = createEmptyGridData(1, 'Grid 1');
+      return {
+        ...state,
+        grids: [emptyGrid],
+        activeGridIndex: 0,
+        // Legacy aliases
+        grid: emptyGrid.grid,
+        entities: emptyGrid.entities,
+        containedEntities: emptyGrid.containedEntities,
+        // savegrid shape: no map entity at all. The grid loads as an orphan
+        // and reparents to whatever map the game loads it onto.
+        mapUid: -1,
+        gridUid: 1,
+        meta: { format: 7, category: 'Grid', entityCount: 0 },
+        maps: undefined,
+        gridUidList: undefined,
+        structuralEntityData: undefined,
+        entityRawComponents: undefined,
+        entityRawPreamble: undefined,
+        tilemap: undefined,
+        chunkKeyOrder: undefined,
+        lineEnding: undefined,
+        hasDocumentTerminator: undefined,
+        entityOrder: undefined,
+        nextEntityId: 2,  // UID 1 reserved for the grid root
         undoStack: [],
         redoStack: [],
         selectedDecalIds: [],

@@ -133,6 +133,18 @@ export function createEmptyGrid(): TileGrid {
   return { width: 0, height: 0, offsetX: 0, offsetY: 0, cells: [] };
 }
 
+/**
+ * Document kind, per the engine's meta.category discriminator
+ * (savemap → Map, savegrid → Grid). Older files may omit category:
+ * a format 7 file with an empty `maps:` list is a grid file, since
+ * savegrid registers the grid under `orphans:` with no map entity.
+ */
+export function getDocumentKind(state: Pick<EditorState, 'meta' | 'maps'>): 'Map' | 'Grid' {
+  if (state.meta.category === 'Grid') return 'Grid';
+  if (state.meta.category === 'Map') return 'Map';
+  return state.maps !== undefined && state.maps.length === 0 ? 'Grid' : 'Map';
+}
+
 export function createInitialState(): EditorState {
   const emptyGrid = createEmptyGridData(1, 'Grid 1');
   return {

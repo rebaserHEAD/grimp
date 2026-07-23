@@ -10,6 +10,7 @@ export type EditorAction =
   | { type: 'SET_PALETTE_ITEM'; item: PaletteItem }
   | { type: 'LOAD_MAP'; map: ImportedMap }
   | { type: 'NEW_MAP' }
+  | { type: 'NEW_GRID' }
   | { type: 'SET_REGISTRY'; registry: IPrototypeRegistry | null }
   | { type: 'SELECT_ENTITY'; uids: number[] }
   | { type: 'TOGGLE_SELECT_ENTITY'; uid: number }

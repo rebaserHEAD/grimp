@@ -70,6 +70,7 @@ function buildTemplate() {
     label: 'File',
     submenu: [
       appItem('New Map', 'CmdOrCtrl+N', 'file:new'),
+      appItem('New Grid', 'CmdOrCtrl+Shift+N', 'file:newGrid'),
       { type: 'separator' },
       appItem('Import .yml…', 'CmdOrCtrl+O', 'file:import'),
       appItem('Export .yml', 'CmdOrCtrl+S', 'file:export'),

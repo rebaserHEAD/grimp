@@ -2,6 +2,9 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 
 interface Props {
   onNewMap: () => void;
+  onNewGrid: () => void;
+  /** Document kind per the engine's meta.category (savemap → Map, savegrid → Grid). */
+  documentKind: 'Map' | 'Grid';
   onImport: (content: string) => void;
   onExport: () => void;
   onUndo: () => void;
@@ -99,7 +102,7 @@ const MenuDropdown: React.FC<{
 };
 
 export const MenuBar: React.FC<Props> = ({
-  onNewMap, onImport, onExport, onUndo, onRedo, canUndo, canRedo, dirty,
+  onNewMap, onNewGrid, documentKind, onImport, onExport, onUndo, onRedo, canUndo, canRedo, dirty,
   showGrid, onToggleGrid, showEntities, onToggleEntities,
   showSpaceBackground, onToggleSpaceBackground,
   showLighting, onToggleLighting,
@@ -152,11 +155,17 @@ export const MenuBar: React.FC<Props> = ({
     onNewMap();
   };
 
+  const handleNewGrid = () => {
+    if (dirty && !window.confirm('Unsaved changes will be lost. Continue?')) return;
+    onNewGrid();
+  };
+
   const openMenuFn = useCallback((name: string) => setOpenMenu(name), []);
   const closeMenu = useCallback(() => setOpenMenu(null), []);
 
   const fileItems: MenuItem[] = [
     { label: 'New Map', shortcut: 'Ctrl+N', action: handleNewMap },
+    { label: 'New Grid', shortcut: 'Ctrl+Shift+N', action: handleNewGrid },
     { label: 'separator', separator: true },
     { label: 'Import .yml...', shortcut: 'Ctrl+O', action: handleImportClick },
     { label: 'Export .yml', shortcut: 'Ctrl+S', action: onExport },
@@ -203,6 +212,15 @@ export const MenuBar: React.FC<Props> = ({
           onHoverOpen={() => openMenuFn(menu.name)}
         />
       ))}
+
+      <span
+        className="ml-2 text-[10px] uppercase tracking-wider text-muted border border-subtle rounded-sm px-1.5 py-0.5 select-none"
+        title={documentKind === 'Grid'
+          ? 'Grid document: loads onto an existing map (savegrid format)'
+          : 'Map document: a full map with its own map entity (savemap format)'}
+      >
+        {documentKind}
+      </span>
 
       {forkName && (
         <div className="relative ml-2" ref={forkMenuRef}>
@@ -274,6 +292,7 @@ const SHORTCUT_SECTIONS: { title: string; rows: [string, string][] }[] = [
       ['Ctrl+Z', 'Undo'],
       ['Ctrl+Y / Ctrl+Shift+Z', 'Redo'],
       ['Ctrl+N', 'New Map'],
+      ['Ctrl+Shift+N', 'New Grid'],
       ['Ctrl+O', 'Import .yml'],
       ['Ctrl+S', 'Export .yml'],
       ['Ctrl+F', 'Search entities on map'],

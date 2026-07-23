@@ -10,7 +10,7 @@
 // which is why the landing-screen background vanished. Serving dist/ as the
 // scheme root restores the origin-at-root assumption without editing any
 // upstream source.
-const { app, BrowserWindow, protocol, shell, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, protocol, shell, ipcMain, dialog, net } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { installMenu, updateMenuState } = require('./menu.cjs');
@@ -179,6 +179,22 @@ function createWindow() {
 app.whenReady().then(() => {
   if (!startUrl) {
     protocol.handle('app', serveFromDist);
+  } else {
+    // Dev: the page is served by Vite over http, so the app:// handler that
+    // normally answers /@fork requests never runs: fork resources 404 and
+    // every sprite falls back to placeholder rendering. Intercept http for
+    // the dev origin's fork prefix only; everything else (Vite modules, HMR)
+    // passes through untouched.
+    const devOrigin = new URL(startUrl).origin;
+    protocol.handle('http', (request) => {
+      const url = new URL(request.url);
+      const pathname = decodeURIComponent(url.pathname);
+      if (url.origin === devOrigin &&
+          (pathname === FORK_PREFIX || pathname.startsWith(FORK_PREFIX + '/'))) {
+        return serveForkFile(pathname.slice(FORK_PREFIX.length) || '/');
+      }
+      return net.fetch(request, { bypassCustomProtocolHandlers: true });
+    });
   }
   ipcMain.handle('fork:pick', handlePickFork);
 

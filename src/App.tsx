@@ -1,7 +1,7 @@
 import React, { useReducer, useCallback, useRef, useEffect, useState, useMemo } from 'react';
 import type { ToolType, PaletteItem } from './types';
 import { editorReducer } from './state/editorReducer';
-import { createInitialState, ensureGridContainsBounds } from './state/editorState';
+import { createInitialState, ensureGridContainsBounds, getDocumentKind } from './state/editorState';
 import type { ITool } from './tools/toolTypes';
 import { PaintTool } from './tools/paintTool';
 import { EraseTool } from './tools/eraseTool';
@@ -219,6 +219,14 @@ export const App: React.FC = () => {
     setStatusMessage('New map');
   }, []);
 
+  const handleNewGrid = useCallback(() => {
+    dispatch({ type: 'NEW_GRID' });
+    cameraRef.current.x = 0;
+    cameraRef.current.y = 0;
+    cameraRef.current.zoom = 1;
+    setStatusMessage('New grid');
+  }, []);
+
   const handleImport = useCallback((content: string) => {
     try {
       const map = importMap(content);
@@ -286,13 +294,15 @@ export const App: React.FC = () => {
         hasDocumentTerminator: state.hasDocumentTerminator,
         entityOrder: state.entityOrder,
       }, state.decalsDirty);
+      // Default filename follows the document kind (savemap vs savegrid).
+      const defaultName = getDocumentKind(state) === 'Grid' ? 'grid.yml' : 'map.yml';
       // Native save dialog in Electron; browser download otherwise.
       if (window.electronDialogs?.available) {
-        const saved = await window.electronDialogs.saveYaml(yaml, 'station.yml');
+        const saved = await window.electronDialogs.saveYaml(yaml, defaultName);
         setStatusMessage(saved ? `Exported ${saved}` : 'Export cancelled');
       } else {
-        downloadYAML(yaml, 'station.yml');
-        setStatusMessage('Exported station.yml');
+        downloadYAML(yaml, defaultName);
+        setStatusMessage(`Exported ${defaultName}`);
       }
     } catch (err) {
       setStatusMessage(`Export failed: ${err}`);
@@ -318,6 +328,9 @@ export const App: React.FC = () => {
     switch (command) {
       case 'file:new':
         if (!state.dirty || window.confirm('Unsaved changes will be lost. Continue?')) handleNewMap();
+        break;
+      case 'file:newGrid':
+        if (!state.dirty || window.confirm('Unsaved changes will be lost. Continue?')) handleNewGrid();
         break;
       case 'file:import': handleImportNative(); break;
       case 'file:export': handleExport(); break;
@@ -685,6 +698,8 @@ export const App: React.FC = () => {
       )}
       <MenuBar
         onNewMap={handleNewMap}
+        onNewGrid={handleNewGrid}
+        documentKind={getDocumentKind(state)}
         onImport={handleImport}
         onExport={handleExport}
         onUndo={handleUndo}

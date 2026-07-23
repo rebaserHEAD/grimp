@@ -12,15 +12,22 @@ const vite = spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], {
 });
 
 function waitForPort(port) {
-  const attempt = () => {
-    const sock = net.connect(port, '127.0.0.1');
+  // Vite may bind IPv4 (127.0.0.1) or IPv6 (::1) depending on the Node/OS
+  // stack, so probe both; first to answer wins.
+  let launched = false;
+  const attempt = (host) => {
+    const sock = net.connect(port, host);
     sock.on('connect', () => {
       sock.end();
-      launchElectron();
+      if (!launched) {
+        launched = true;
+        launchElectron();
+      }
     });
-    sock.on('error', () => setTimeout(attempt, 300));
+    sock.on('error', () => setTimeout(() => attempt(host), 300));
   };
-  attempt();
+  attempt('127.0.0.1');
+  attempt('::1');
 }
 
 function launchElectron() {
