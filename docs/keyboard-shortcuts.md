@@ -29,6 +29,7 @@ Tool shortcuts are case-insensitive and ignored when typing in input fields.
 | Ctrl+Y | Redo |
 | Ctrl+Shift+Z | Redo (alternative) |
 | Ctrl+N | New Map |
+| Ctrl+Shift+N | New Grid |
 | Ctrl+O | Import .yml |
 | Ctrl+S | Export .yml |
 | Space (hold) | Temporary pan mode |

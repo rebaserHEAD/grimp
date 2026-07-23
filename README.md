@@ -19,7 +19,30 @@ sheets, so it always reflects the current state of the content it is pointed at.
 > **no** Space Station 14 game assets (prototypes, textures, sprites). You supply those
 > from your own SS14 fork: see [Where it lives](#where-it-lives) below.
 
+## Direction
+
+GRIMP started as a browser-based map viewer/editor and is growing into a **maintained
+desktop application for authoring SS14 maps and ship grids**. The rendering core it
+inherited is excellent; the work going in now is about the mapper's real workflow:
+creating grid files from scratch, preparing ships for the shipyard, and matching what
+fork maintainers actually ask for in review. It still runs in the browser, but the
+desktop build (native menus, real file dialogs, local fork loading) is the primary target.
+
 ## Features
+
+### Authoring maps and ship grids
+
+- **Document kinds that match the game**: **New Map** and **New Grid** produce exactly
+  what the engine's `savemap` / `savegrid` write, format and structure identical. A
+  Map / Grid badge shows which kind you're editing. Grid files authored from scratch
+  load in-game through the engine's own grid loader (verified against `MapLoaderSystem`).
+- **Map Properties**: the file-side view you'd otherwise VV in-game. Edit the grid's
+  identity (name/description) and toggle ship switches: `Shuttle` (required by the
+  shipyard), `IFF`, `Roof`, and `BecomesStation` with a station id. Detects and cleans
+  up map-entity contamination on grids saved as maps. Edits to imported files preserve
+  byte-for-byte parity on every untouched line.
+
+### Editing
 
 - **Accurate rendering**: tiles, entities, and infrastructure render the same way they
   appear in-game: RSI sprite sheets, multi-layer compositing, DrawDepth sorting,
@@ -36,11 +59,16 @@ sheets, so it always reflects the current state of the content it is pointed at.
 - **Prefabs**: save a selected region as a reusable `.prefab.json` and stamp it elsewhere.
 - **Import/Export**: load existing SS14 `.yml` maps and export valid YAML that loads
   back in-game, preserving entities round-trip.
-- **Multi-grid** support, undo/redo, layer visibility toggles, T-Ray (subfloor) mode,
-  and lighting/shadow preview.
-- **Runs anywhere**: pick your fork folder in the browser (File System Access API, with
-  an upload fallback for Firefox/Safari) or deploy a build with pre-bundled resources.
-  All file processing happens locally in your browser; nothing is uploaded.
+- **Multi-grid** support, undo/redo, layer visibility toggles (including an Atmos Markers
+  toggle for the VAC. marker carpet on hulls), T-Ray (subfloor) mode, and lighting preview.
+
+### Running it
+
+- **Desktop app** (primary): native menus, native open/save dialogs, and local fork
+  loading. Packaged as a Windows portable `.exe` and a Linux `.AppImage`.
+- **Browser**: pick your fork folder (File System Access API, with an upload fallback for
+  Firefox/Safari) or deploy a build with pre-bundled resources.
+- All file processing happens locally; nothing is uploaded.
 
 ## Where it lives
 
@@ -80,6 +108,24 @@ screen, either:
 
 During development the Vite dev server also serves the fork's content live from
 `../../Resources`, so the built-in option works without a pre-bake step.
+
+### Desktop build
+
+The desktop app is the primary target. To run it against the live dev server:
+
+```bash
+npm run electron:dev
+```
+
+To produce distributable binaries:
+
+```bash
+npm run package        # Windows portable .exe (release/)
+```
+
+Tagged releases (`v*`) build the Windows `.exe` and Linux `.AppImage` via GitHub Actions
+and assemble them into a **draft** release for review before publishing. See
+[`.github/workflows/release.yml`](.github/workflows/release.yml).
 
 ## Pre-baking resources for deployment
 

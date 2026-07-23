@@ -25,11 +25,45 @@ The active fork name is shown in the menu bar. Click it and select "Switch Fork.
 2. Open the URL shown in the terminal (usually `http://localhost:5173`)
 3. Select your fork on the landing screen, or use built-in resources
 
-### Creating a Map
+### Creating a Document
 
-- **File > New Map** creates a blank canvas
-- **File > Import .yml** loads an existing SS14 map file
-- **File > Export .yml** saves the map as a `.yml` file that SS14 can load
+GRIMP works with the same two document kinds the game itself saves:
+
+- **File > New Map** (`Ctrl+N`) creates a full map: a map entity with grids parented to
+  it, the shape the game's `savemap` produces. Use this for stations and multi-grid maps.
+- **File > New Grid** (`Ctrl+Shift+N`) creates a standalone grid with no map entity, the
+  shape `savegrid` produces. This is what ships and POIs are: a grid file that loads onto
+  a map at runtime. Ships are grids because that's the shape they have to be.
+
+A **Map / Grid badge** in the menu bar shows which kind the current document is.
+
+- **File > Import .yml** (`Ctrl+O`) loads an existing SS14 map or grid file. The document
+  kind is read from the file, and the grid tab takes its name from the file's own
+  identity (falling back to the filename).
+- **File > Export .yml** (`Ctrl+S`) saves the document. The default filename follows the
+  kind (`map.yml` / `grid.yml`).
+
+### Map Properties
+
+**File > Map Properties** opens the file-side view of the current grid: the data you would
+otherwise inspect in-game with VV. It shows the document meta (kind, format, engine
+version, tile count) and lets you edit:
+
+- **Identity**: the grid's MetaData name and description.
+- **Ship switches**: toggle the components that make a grid function as a ship.
+  - **Shuttle**, an FTL-capable grid. The shipyard refuses to sell a ship without it.
+  - **IFF**, radar identity (label, color, visibility). Optional.
+  - **Roof**, required on Monolith ships.
+  - **BecomesStation** with a station id, which keys the grid into its `gameMap`
+    prototype's station config (name template, jobs).
+
+If a grid file was accidentally saved as a map, Map Properties detects the leftover
+map-entity components and offers one-click cleanup, which upstream maintainers require
+before merging.
+
+> **Note:** Edits to an imported file are applied surgically. Every line you did not
+> change stays byte-for-byte identical on export, so a rename or a single toggle produces
+> a clean, minimal diff.
 
 ### Navigation
 
@@ -320,7 +354,9 @@ Appears when Cable Draw or Pipe Draw tool is active. Select cable type (HV/MV/AP
 
 ### Layer Panel (right sidebar)
 
-Toggle visibility of entity layers: SubFloor, Floor Objects, Structures, Objects, Doors, Markers, Decals. Also toggle sub-floor visibility (T-Ray mode) and connection line overlay.
+Toggle visibility of entity layers: SubFloor, Floor Objects, Structures, Objects, Doors, Markers, Atmos Markers, Decals. Also toggle sub-floor visibility (T-Ray mode) and connection line overlay.
+
+**Atmos Markers** are the `AtmosFix` (VAC. / gas-fill) markers that ship hulls carpet across every space-adjacent tile. On a dense ship they bury the actual layout, so this toggle (also on **View > Atmos Markers**) hides just that family while leaving spawn points and other markers visible. Markers are detected by their `Marker` component, not just by name, so entities like warp points hide correctly.
 
 Hidden layers affect both rendering and interaction, entities and decals on hidden layers cannot be selected (click, box select, or scroll picker) and do not appear in the hover tooltip. This lets you isolate specific layer types for editing without accidentally selecting items on other layers.
 
