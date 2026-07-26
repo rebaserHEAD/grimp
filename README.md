@@ -154,6 +154,23 @@ See [`docs/`](docs/) for a full feature/architecture tour.
 
 React 18 · TypeScript · Vite · Canvas 2D rendering · js-yaml · Tailwind CSS.
 
+## Contributing
+
+Work lands through pull requests. Branch off `main`, make your change, and open a PR;
+the template walks you through the rest. CI has to go green before merge: it checks
+formatting (Prettier, `npm run format`), types, tests, and the production build.
+User-facing changes add a line to [CHANGELOG.md](CHANGELOG.md) under **Unreleased**.
+
+The full workflow lives in the wiki:
+
+- [Contributing](../../wiki/Contributing): the PR flow, testing standards, and the
+  export-parity sweep required for importer/exporter changes.
+- [UI Style Guide](../../wiki/UI-Style-Guide): theme tokens, chrome patterns, and
+  where the pixel art goes, for anything that touches the UI.
+
+One hard rule worth repeating: **no SS14 game content in this repository**, ever;
+not even as test fixtures. See the note at the top of this README.
+
 ## License
 
 This editor is released under the [MIT License](LICENSE).
