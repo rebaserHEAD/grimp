@@ -31,6 +31,11 @@ workflow copies it into the GitHub release notes.
   species, jack-o'-lanterns) draw at their true size instead of 1x, including
   mirrored sprites like the reversed lizard plushie. (#6)
 
+### Removed
+
+- The inert "Use Built-in Resources" option on the start screen. The editor
+  ships without bundled game content; the button could never activate. (#9)
+
 ### Fixed
 
 - Add Grid, grid rename, and Save as Prefab work in the desktop app again.

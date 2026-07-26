@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { FileSystemResourceProvider, HttpResourceProvider, setActiveProvider } from '../resourceProvider';
+import { FileSystemResourceProvider, setActiveProvider } from '../resourceProvider';
 import { initRegistry } from '../initRegistry';
 import { validateRepository, summarizeRepository } from '../directoryScanner';
 
@@ -52,13 +52,6 @@ describe('fork loading integration', () => {
     expect(registry.getEntity('WallSolid')).toBeDefined();
 
     provider.dispose();
-  });
-
-  it('HttpResourceProvider backward compatibility (string overload)', async () => {
-    // Verify string overload constructs HttpResourceProvider internally
-    const provider = new HttpResourceProvider('');
-    expect(provider.forkName).toBe('Built-in');
-    expect(provider.isLocal).toBe(false);
   });
 
   it('validates invalid repository', () => {

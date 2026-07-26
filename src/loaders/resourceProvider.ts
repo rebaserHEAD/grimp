@@ -1,6 +1,6 @@
 /**
- * Abstraction for reading SS14 resource files.
- * Allows the editor to load from HTTP (built-in) or local filesystem.
+ * Abstraction for reading SS14 resource files from a loaded fork
+ * (browser file map or the Electron fork bridge).
  *
  * Path conventions:
  * - `listFiles(dir)`: directory prefix without leading slash, e.g. `'Prototypes/Tiles'`
@@ -14,61 +14,12 @@ export interface ResourceProvider {
   readText(path: string): Promise<string>;
   /** Get a URL usable as `img.src`. Accepts paths with or without leading `/`. */
   getImageUrl(path: string): string;
-  /** Human-readable fork name (e.g. the picked folder name, or 'Built-in'). */
+  /** Human-readable fork name (e.g. the picked folder name). */
   readonly forkName: string;
-  /** Whether resources come from a local directory (vs built-in HTTP). */
+  /** Whether resources come from a local directory. */
   readonly isLocal: boolean;
   /** Release resources (revoke blob URLs, etc.). */
   dispose(): void;
-}
-
-function manifestName(dir: string): string | null {
-  if (dir.includes('Tiles')) return 'tiles';
-  if (dir.includes('Catalog')) return 'catalog';
-  if (dir.includes('Decals')) return 'decals';
-  if (dir.includes('Entities')) return 'entities';
-  return null;
-}
-
-export class HttpResourceProvider implements ResourceProvider {
-  readonly forkName: string;
-  readonly isLocal = false;
-  private baseUrl: string;
-
-  constructor(baseUrl: string = '', forkName: string = 'Built-in') {
-    this.baseUrl = baseUrl;
-    this.forkName = forkName;
-  }
-
-  async listFiles(dir: string, ext: string): Promise<string[]> {
-    const listUrl = `${this.baseUrl}/resources-list?dir=${encodeURIComponent(dir)}&ext=${encodeURIComponent(ext)}`;
-    try {
-      const res = await fetch(listUrl);
-      if (res.ok) return await res.json();
-    } catch {
-      /* fall through */
-    }
-
-    const name = manifestName(dir);
-    if (!name) return [];
-    const manifestUrl = `${this.baseUrl}/resources/_manifests/${name}.json`;
-    const res = await fetch(manifestUrl);
-    if (!res.ok) return [];
-    return await res.json();
-  }
-
-  async readText(path: string): Promise<string> {
-    const res = await fetch(`${this.baseUrl}/resources${path}`);
-    if (!res.ok) throw new Error(`Failed to read ${path}: ${res.status}`);
-    return res.text();
-  }
-
-  getImageUrl(path: string): string {
-    const normalized = path.startsWith('/') ? path : `/${path}`;
-    return `${this.baseUrl}/resources${normalized}`;
-  }
-
-  dispose(): void {}
 }
 
 export class FileSystemResourceProvider implements ResourceProvider {
