@@ -1,0 +1,9 @@
+# Build output
+dist/
+release/
+
+# Lockfile churn isn't worth formatting
+package-lock.json
+
+# Runtime data, not source
+public/prefabs/

@@ -15,7 +15,10 @@
     "package:dir": "npm run build:electron && electron-builder --win --dir --config.electronDist=node_modules/electron/dist",
     "package": "npm run build:electron && electron-builder --win --config.electronDist=node_modules/electron/dist",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
@@ -35,6 +38,7 @@
     "electron": "^43.2.0",
     "electron-builder": "^26.15.3",
     "png-to-ico": "^3.0.2",
+    "prettier": "^3.9.6",
     "sharp": "^0.35.3",
     "tailwindcss": "^4.2.1",
     "typescript": "^5.7.0",
