@@ -17,10 +17,11 @@ workflow copies it into the GitHub release notes.
 - Forks folder auto-discovery (desktop): point GRIMP at the folder holding
   your fork checkouts and the landing screen lists every fork it finds. The
   fork picker dialog also starts there. (#34)
-- Settings window (File > Settings, or Ctrl+,) with persisted preferences.
-  View toggles (grid, entities, space background, T-Ray, connection overlay,
-  performance HUD) now survive app restarts; stored in the desktop app's user
-  data folder, or browser storage in dev. (#19)
+- Settings window (File > Settings, or Ctrl+,) with persisted preferences,
+  managing the forks folder and recent-forks list. View toggles stay in the
+  View menu (they're flipped too often to bury in Settings) but now survive
+  app restarts too; everything is stored in the desktop app's user data
+  folder, or browser storage in dev. (#19)
 - Sprite `scale` is now rendered. Scaled sprites (Tippy, Narsie, dwarf
   species, jack-o'-lanterns) draw at their true size instead of 1x, including
   mirrored sprites like the reversed lizard plushie. (#6)

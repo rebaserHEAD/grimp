@@ -1,42 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import type { ViewSettings } from '../settings/settingsStore';
 
 interface Props {
-  view: ViewSettings;
-  onToggleView: (key: keyof ViewSettings) => void;
+  forksDirectory: string | null;
+  recentForksCount: number;
+  onChooseForksDirectory: () => void;
+  onClearForksDirectory: () => void;
+  onClearRecentForks: () => void;
   onClose: () => void;
 }
 
-interface ToggleRow {
-  key: keyof ViewSettings;
-  label: string;
-  description: string;
-}
+const isElectron = typeof window !== 'undefined' && !!window.electronFork?.available;
 
-const VIEW_ROWS: ToggleRow[] = [
-  { key: 'showGrid', label: 'Grid lines', description: 'Draw the tile grid over the canvas.' },
-  { key: 'showEntities', label: 'Entities', description: 'Render entities on the canvas.' },
-  { key: 'showSpaceBackground', label: 'Space background', description: 'Starfield behind the grid.' },
-  { key: 'showSubFloor', label: 'T-Ray view', description: 'Reveal subfloor entities (cables, pipes).' },
-  { key: 'showConnections', label: 'Connection overlay', description: 'Draw cable and pipe network links.' },
-];
-
-const DEBUG_ROWS: ToggleRow[] = [
-  { key: 'showPerfHUD', label: 'Performance HUD', description: 'Frame timing overlay in the corner.' },
-];
-
-const SECTIONS = [
-  { id: 'view', label: 'View', rows: VIEW_ROWS },
-  { id: 'debug', label: 'Debug', rows: DEBUG_ROWS },
-] as const;
+const SECTIONS = [{ id: 'forks', label: 'Forks' }] as const;
 
 /**
- * Application settings window (issue #19). Sections in a left rail, toggle
- * rows on the right. Values apply live and persist through the settings
- * store; there is no OK/Apply step.
+ * Application settings window (issue #19): the home for set-rarely
+ * configuration. Frequently-flipped workspace state (view toggles, overlays)
+ * lives in the View menu instead, not here; the store still persists those
+ * transparently. Changes apply live; there is no OK/Apply step.
  */
-export const SettingsModal: React.FC<Props> = ({ view, onToggleView, onClose }) => {
-  const [activeSection, setActiveSection] = useState<(typeof SECTIONS)[number]['id']>('view');
+export const SettingsModal: React.FC<Props> = ({
+  forksDirectory,
+  recentForksCount,
+  onChooseForksDirectory,
+  onClearForksDirectory,
+  onClearRecentForks,
+  onClose,
+}) => {
+  const [activeSection, setActiveSection] = useState<(typeof SECTIONS)[number]['id']>('forks');
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -82,23 +73,63 @@ export const SettingsModal: React.FC<Props> = ({ view, onToggleView, onClose }) 
             </button>
           </div>
           <div className="flex-1 overflow-y-auto px-5 py-3">
-            {section.rows.map((row) => (
-              <label
-                key={row.key}
-                className="flex items-start justify-between gap-4 py-2.5 border-b border-subtle/50 cursor-pointer select-none"
-              >
-                <span className="min-w-0">
-                  <span className="block text-xs text-primary">{row.label}</span>
-                  <span className="block text-[11px] text-muted leading-snug">{row.description}</span>
-                </span>
-                <input
-                  type="checkbox"
-                  checked={view[row.key]}
-                  onChange={() => onToggleView(row.key)}
-                  className="mt-0.5 shrink-0 accent-accent cursor-pointer"
-                />
-              </label>
-            ))}
+            {!isElectron ? (
+              <p className="text-xs text-muted py-2">Fork management is available in the desktop app.</p>
+            ) : (
+              <>
+                <div className="py-2.5 border-b border-subtle/50">
+                  <div className="flex items-start justify-between gap-4">
+                    <span className="min-w-0">
+                      <span className="block text-xs text-primary">Forks folder</span>
+                      <span className="block text-[11px] text-muted leading-snug">
+                        Scanned for fork checkouts on the launch screen; the fork picker starts here.
+                      </span>
+                      <span
+                        className="block text-[11px] text-primary truncate mt-1"
+                        title={forksDirectory ?? undefined}
+                      >
+                        {forksDirectory ?? 'Not set'}
+                      </span>
+                    </span>
+                    <span className="flex gap-2 shrink-0">
+                      <button
+                        onClick={onChooseForksDirectory}
+                        className="bg-active border border-subtle rounded text-white text-[11px] px-3 py-1.5 cursor-pointer hover:brightness-110"
+                      >
+                        Change…
+                      </button>
+                      {forksDirectory && (
+                        <button
+                          onClick={onClearForksDirectory}
+                          className="bg-subtle border border-subtle rounded text-primary text-[11px] px-3 py-1.5 cursor-pointer hover:bg-hover"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="py-2.5 border-b border-subtle/50">
+                  <div className="flex items-start justify-between gap-4">
+                    <span className="min-w-0">
+                      <span className="block text-xs text-primary">Recent forks</span>
+                      <span className="block text-[11px] text-muted leading-snug">
+                        The launch screen remembers the forks you load for one-click reopening.
+                      </span>
+                    </span>
+                    <button
+                      onClick={onClearRecentForks}
+                      disabled={recentForksCount === 0}
+                      className="shrink-0 bg-subtle border border-subtle rounded text-primary text-[11px] px-3 py-1.5
+                                 cursor-pointer hover:bg-hover disabled:opacity-50 disabled:cursor-default"
+                    >
+                      Clear list{recentForksCount > 0 ? ` (${recentForksCount})` : ''}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
           <div className="px-5 py-2.5 border-t border-subtle text-[11px] text-muted">
             Changes apply immediately and persist across launches.

@@ -15,17 +15,11 @@ import type { RepositorySummary } from '../loaders/directoryScanner';
 import { loadSettings, persistSettings, withRecentFork, withoutRecentFork } from '../settings/settingsStore';
 import type { AppSettings, RecentFork } from '../settings/settingsStore';
 
-type PickForkResult = { root: string; dir: string; name: string; keys: string[] } | { error: string } | null;
+type PickForkResult = Awaited<ReturnType<NonNullable<Window['electronFork']>['pickFork']>>;
 
 // Native fork bridge exposed by the Electron preload (absent in a browser).
-interface ElectronForkBridge {
-  available: boolean;
-  autoForkDir: string | null;
-  pickFork: (dir?: string | null, dialogDefaultDir?: string | null) => Promise<PickForkResult>;
-  discoverForks: (forksDir: string) => Promise<{ dir: string; name: string }[]>;
-  pickDirectory: (defaultPath?: string | null) => Promise<string | null>;
-}
-const electronFork: ElectronForkBridge | undefined = (window as any).electronFork;
+// Typed globally in src/electron.d.ts alongside the other preload bridges.
+const electronFork = window.electronFork;
 const isElectron = !!electronFork?.available;
 
 type SelectorState = 'idle' | 'scanning' | 'summary' | 'error';
