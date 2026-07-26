@@ -44,6 +44,7 @@ export interface SpriteInfo {
   drawDepth?: string;
   noRot?: boolean;         // true = don't apply canvas rotation (direction frame still selected by entity rotation)
   color?: string;          // component-level color (e.g., "#FFFFFF80" for semi-transparent puddles)
+  scale?: { x: number; y: number }; // component-level draw scale; negative components mirror (e.g., "-1, 1")
   iconSmoothKey?: string;  // IconSmooth key for neighbor matching (entities with same key connect)
   iconSmoothBase?: string; // IconSmooth state prefix (e.g., "state_" for tables, "swindow" for shuttle windows)
   iconSmoothMode?: 'Corners' | 'CardinalFlags' | 'Diagonal'; // Smoothing mode (default: Corners)

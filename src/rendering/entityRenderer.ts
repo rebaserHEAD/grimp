@@ -521,7 +521,10 @@ export function getEntitySprite(
 
 // ---- Extra layer loading (for multi-layer sprites like spawners) ----
 
-const extraLayerCache = new Map<string, SpriteDrawInfo[] | null>();
+/** SpriteDrawInfo plus the layer's own scale multiplier, if it declares one. */
+type ExtraLayerDrawInfo = SpriteDrawInfo & { layerScaleX?: number; layerScaleY?: number };
+
+const extraLayerCache = new Map<string, ExtraLayerDrawInfo[] | null>();
 const extraLayerLoadingSet = new Set<string>();
 
 /**
@@ -532,7 +535,7 @@ function getExtraLayers(
   prototype: string,
   direction: CardinalDirection,
   registry: IPrototypeRegistry,
-): SpriteDrawInfo[] | null | undefined {
+): ExtraLayerDrawInfo[] | null | undefined {
   const cacheKey = `${prototype}:${direction}:layers`;
 
   if (extraLayerCache.has(cacheKey)) {
@@ -549,7 +552,7 @@ function getExtraLayers(
 
   // Load all layers beyond the first (base layer is already rendered)
   extraLayerLoadingSet.add(cacheKey);
-  const layerPromises: Promise<SpriteDrawInfo | null>[] = [];
+  const layerPromises: Promise<ExtraLayerDrawInfo | null>[] = [];
 
   for (let i = 1; i < spriteInfo.layers.length; i++) {
     const layer = spriteInfo.layers[i];
@@ -562,12 +565,15 @@ function getExtraLayers(
       baseState: layer.state,
     };
 
-    layerPromises.push(loadSprite(layerSpriteInfo, direction, 0));
+    const layerScale = layer.scale;
+    layerPromises.push(loadSprite(layerSpriteInfo, direction, 0).then(d =>
+      d && layerScale ? { ...d, layerScaleX: layerScale.x, layerScaleY: layerScale.y } : d,
+    ));
   }
 
   Promise.all(layerPromises)
     .then(results => {
-      const validLayers = results.filter((r): r is SpriteDrawInfo => r !== null);
+      const validLayers = results.filter((r): r is ExtraLayerDrawInfo => r !== null);
       extraLayerCache.set(cacheKey, validLayers.length > 0 ? validLayers : null);
       markSceneDirty();
     })
@@ -660,6 +666,21 @@ function getSpriteColor(prototype: string, registry: IPrototypeRegistry): string
 
 export function clearSpriteColorCache(): void {
   spriteColorCache.clear();
+}
+
+const spriteScaleCache = new Map<string, { x: number; y: number } | null>();
+
+/** Component-level Sprite.scale draw multiplier (null = unscaled). */
+function getSpriteScale(prototype: string, registry: IPrototypeRegistry): { x: number; y: number } | null {
+  if (spriteScaleCache.has(prototype)) return spriteScaleCache.get(prototype)!;
+  const scale = registry.getSpriteInfo(prototype)?.scale ?? null;
+  const result = scale && (scale.x !== 1 || scale.y !== 1) ? scale : null;
+  spriteScaleCache.set(prototype, result);
+  return result;
+}
+
+export function clearSpriteScaleCache(): void {
+  spriteScaleCache.clear();
 }
 
 // ---- Tinted sprite cache (offscreen canvas) with LRU eviction ----
@@ -997,6 +1018,23 @@ export function renderEntities(
       ctx.translate(-cx, -cy);
     }
 
+    // Sprite.scale draw multiplier; a negative scale component mirrors around
+    // the tile center (e.g., PlushieLizardMirrored's "-1, 1"). The mirror
+    // transform wraps the base draw AND the extra layers, so it must save
+    // before (and restore after) the alpha save/restore pair below.
+    const protoScale = getSpriteScale(prototype, registry);
+    const scaleX = protoScale?.x ?? 1;
+    const scaleY = protoScale?.y ?? 1;
+    const mirrored = scaleX < 0 || scaleY < 0;
+    if (mirrored) {
+      const cx = screenX + tileScreenSize / 2;
+      const cy = screenY + tileScreenSize / 2;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(scaleX < 0 ? -1 : 1, scaleY < 0 ? -1 : 1);
+      ctx.translate(-cx, -cy);
+    }
+
     // Color tinting, pipe color, layer color, or component color
     const pipeColor = getAtmosPipeColor(entity);
     const spriteColor = !pipeColor ? getSpriteColor(prototype, registry) : null;
@@ -1012,9 +1050,9 @@ export function renderEntities(
 
     // Sprites larger than one tile (64x64 vehicles etc.) draw at their native
     // RSI size centered on the tile, matching in-game rendering, instead of
-    // being squeezed into a single tile.
-    const dw = tileScreenSize * (sprite.sw / TILE_SIZE);
-    const dh = tileScreenSize * (sprite.sh / TILE_SIZE);
+    // being squeezed into a single tile. Sprite.scale multiplies on top.
+    const dw = tileScreenSize * (sprite.sw / TILE_SIZE) * Math.abs(scaleX);
+    const dh = tileScreenSize * (sprite.sh / TILE_SIZE) * Math.abs(scaleY);
     const dx = screenX + (tileScreenSize - dw) / 2;
     const dy = screenY + (tileScreenSize - dh) / 2;
 
@@ -1034,13 +1072,14 @@ export function renderEntities(
       ctx.restore();
     }
 
-    // Draw extra sprite layers (e.g., spawner entity preview over the X marker)
+    // Draw extra sprite layers (e.g., spawner entity preview over the X marker).
+    // Component-level scale applies to every layer; per-layer scale multiplies on top.
     if (!cablePrefix) {
       const extraLayers = getExtraLayers(prototype, direction, registry);
       if (extraLayers) {
         for (const layerSprite of extraLayers) {
-          const lw = tileScreenSize * (layerSprite.sw / TILE_SIZE);
-          const lh = tileScreenSize * (layerSprite.sh / TILE_SIZE);
+          const lw = tileScreenSize * (layerSprite.sw / TILE_SIZE) * Math.abs(scaleX) * Math.abs(layerSprite.layerScaleX ?? 1);
+          const lh = tileScreenSize * (layerSprite.sh / TILE_SIZE) * Math.abs(scaleY) * Math.abs(layerSprite.layerScaleY ?? 1);
           ctx.drawImage(
             layerSprite.image,
             layerSprite.sx, layerSprite.sy, layerSprite.sw, layerSprite.sh,
@@ -1050,6 +1089,9 @@ export function renderEntities(
       }
     }
 
+    if (mirrored) {
+      ctx.restore();
+    }
     if (needsCanvasRotation) {
       ctx.restore();
     }

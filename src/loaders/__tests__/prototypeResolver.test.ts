@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveEntities, resolveTiles, extractSpriteInfo } from '../prototypeResolver';
+import { resolveEntities, resolveTiles, extractSpriteInfo, parseScale } from '../prototypeResolver';
 import type { RawEntityPrototype, RawTilePrototype } from '../registryTypes';
 
 describe('resolveTiles', () => {
@@ -124,6 +124,59 @@ describe('extractSpriteInfo', () => {
     ]);
     expect(info).not.toBeNull();
     expect(info!.baseState).toBe('green');
+  });
+
+  it('parses component-level scale from the "x,y" string form', () => {
+    const info = extractSpriteInfo([
+      { type: 'Sprite', sprite: 'Tips/tippy.rsi', state: 'left', scale: '4,4' },
+    ]);
+    expect(info!.scale).toEqual({ x: 4, y: 4 });
+  });
+
+  it('parses layer-level scale', () => {
+    const info = extractSpriteInfo([
+      {
+        type: 'Sprite',
+        sprite: 'Mobs/rat.rsi',
+        layers: [{ state: 'base', scale: '1.2, 1.2' }],
+      },
+    ]);
+    expect(info!.layers[0].scale).toEqual({ x: 1.2, y: 1.2 });
+  });
+
+  it('leaves scale undefined when absent', () => {
+    const info = extractSpriteInfo([
+      { type: 'Sprite', sprite: 'Markers/jobs.rsi', state: 'green' },
+    ]);
+    expect(info!.scale).toBeUndefined();
+  });
+});
+
+describe('parseScale', () => {
+  it('parses "x,y" strings with spaces and decimals', () => {
+    expect(parseScale('2,2')).toEqual({ x: 2, y: 2 });
+    expect(parseScale('1.2, 1.2')).toEqual({ x: 1.2, y: 1.2 });
+    expect(parseScale('1, 0.8')).toEqual({ x: 1, y: 0.8 });
+  });
+
+  it('parses negative mirror scales', () => {
+    expect(parseScale('-1, 1')).toEqual({ x: -1, y: 1 });
+  });
+
+  it('parses {x, y} map form', () => {
+    expect(parseScale({ x: 2, y: 3 })).toEqual({ x: 2, y: 3 });
+  });
+
+  it('unwraps the !type:-tagged scalar wrapper', () => {
+    expect(parseScale({ _ss14Tag: 'Vector2', value: '2,2' })).toEqual({ x: 2, y: 2 });
+  });
+
+  it('returns undefined for garbage', () => {
+    expect(parseScale(undefined)).toBeUndefined();
+    expect(parseScale(null)).toBeUndefined();
+    expect(parseScale('big')).toBeUndefined();
+    expect(parseScale('1,2,3')).toBeUndefined();
+    expect(parseScale({ x: 'a', y: 1 })).toBeUndefined();
   });
 });
 

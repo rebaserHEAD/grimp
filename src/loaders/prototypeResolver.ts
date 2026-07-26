@@ -81,6 +81,30 @@ function inferSmoothMode(
 }
 
 /**
+ * Parse a Sprite scale field. SS14 serializes Vector2 as an "x,y" scalar
+ * (e.g. "2,2", "1.2, 1.2", "-1, 1" for mirroring); tolerate {x, y} maps and
+ * the !type:-tagged scalar wrapper too.
+ */
+export function parseScale(raw: unknown): { x: number; y: number } | undefined {
+  if (raw == null) return undefined;
+  if (typeof raw === 'string') {
+    const parts = raw.split(',');
+    if (parts.length !== 2) return undefined;
+    const x = parseFloat(parts[0]);
+    const y = parseFloat(parts[1]);
+    return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : undefined;
+  }
+  if (typeof raw === 'object') {
+    const o = raw as Record<string, unknown>;
+    if ('value' in o) return parseScale(o.value);
+    const x = Number(o.x);
+    const y = Number(o.y);
+    return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : undefined;
+  }
+  return undefined;
+}
+
+/**
  * Extract sprite rendering info from a list of merged components.
  * Returns null if no Sprite component is present.
  */
@@ -96,7 +120,7 @@ export function extractSpriteInfo(components: RawComponent[]): SpriteInfo | null
     visible: l.visible as boolean | undefined,
     shader: l.shader as string | undefined,
     color: l.color as string | undefined,
-    scale: l.scale as { x: number; y: number } | undefined,
+    scale: parseScale(l.scale),
   }));
 
   // RSI path resolution: When layers exist, check if any layer relies on the top-level
@@ -182,6 +206,7 @@ export function extractSpriteInfo(components: RawComponent[]): SpriteInfo | null
     noRot: spriteComp.noRot === true || (spriteComp as Record<string, unknown>).norot === true
       ? true : undefined,
     color: spriteComp.color as string | undefined,
+    scale: parseScale(spriteComp.scale),
     iconSmoothKey: iconSmoothComp?.key as string | undefined,
     iconSmoothBase: inferSmoothBase(iconSmoothComp, baseState),
     iconSmoothMode: inferSmoothMode(iconSmoothComp),
