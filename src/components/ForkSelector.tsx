@@ -559,7 +559,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
              recent files / recent forks / discovered forks on the right. The
              right pane only exists on desktop once there is history. ---- */}
         {phase === 'idle' && (
-          <div className={hasLists ? 'grid grid-cols-[1fr_1.15fr] gap-6 items-start' : 'flex flex-col gap-4'}>
+          <div className={hasLists ? 'grid grid-cols-[1fr_1.15fr] gap-8 items-center' : 'flex flex-col gap-4'}>
             <div className="flex flex-col gap-4 min-w-0">
               {canPickFolder ? (
                 <>
@@ -588,46 +588,49 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
                     </div>
                   )}
 
-                  {/* Privacy & browser info */}
-                  <div className="bg-panel rounded-lg p-3 border border-subtle text-xs text-muted leading-relaxed flex flex-col gap-2">
-                    <p>
-                      <span className="text-primary font-medium">Privacy:</span>{' '}
-                      {isElectron
-                        ? 'Files are read on demand straight from the folder you pick. Nothing is uploaded or sent anywhere.'
-                        : 'Your browser will ask for permission to read the selected folder. No files are uploaded or sent to any server. All processing happens locally in your browser.'}
-                    </p>
-                    {!isElectron && (
+                  {/* Privacy & browser info. Browser build only: the desktop
+                      app reading local files locally is implied; the browser
+                      flow genuinely needs the misleading-upload-prompt note. */}
+                  {!isElectron && (
+                    <div className="bg-panel rounded-lg p-3 border border-subtle text-xs text-muted leading-relaxed flex flex-col gap-2">
                       <p>
-                        <span className="text-primary font-medium">Browser note:</span>{' '}
-                        {supportsDirectoryPicker ? (
-                          'Chrome and Edge use a native folder picker that reads files on demand. Your browser may ask you to confirm read access. This is standard and safe.'
-                        ) : (
-                          <>
-                            Firefox and Safari do not support the{' '}
-                            <a
-                              href="https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-accent underline hover:brightness-125"
-                            >
-                              File System Access API
-                            </a>
-                            , so the editor uses a{' '}
-                            <a
-                              href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/webkitdirectory"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-accent underline hover:brightness-125"
-                            >
-                              folder upload input
-                            </a>{' '}
-                            instead. Your browser may show an &quot;upload&quot; prompt. This is misleading; files stay
-                            on your machine and are never sent anywhere.
-                          </>
-                        )}
+                        <span className="text-primary font-medium">Privacy:</span> Your browser will ask for permission
+                        to read the selected folder. No files are uploaded or sent to any server. All processing happens
+                        locally in your browser.
                       </p>
-                    )}
-                  </div>
+                      {!isElectron && (
+                        <p>
+                          <span className="text-primary font-medium">Browser note:</span>{' '}
+                          {supportsDirectoryPicker ? (
+                            'Chrome and Edge use a native folder picker that reads files on demand. Your browser may ask you to confirm read access. This is standard and safe.'
+                          ) : (
+                            <>
+                              Firefox and Safari do not support the{' '}
+                              <a
+                                href="https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-accent underline hover:brightness-125"
+                              >
+                                File System Access API
+                              </a>
+                              , so the editor uses a{' '}
+                              <a
+                                href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/webkitdirectory"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-accent underline hover:brightness-125"
+                              >
+                                folder upload input
+                              </a>{' '}
+                              instead. Your browser may show an &quot;upload&quot; prompt. This is misleading; files
+                              stay on your machine and are never sent anywhere.
+                            </>
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="text-center text-warning text-sm py-3 px-4 rounded-lg bg-hover border border-subtle">
