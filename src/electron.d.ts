@@ -17,6 +17,13 @@ declare global {
         toggles: Record<string, boolean>;
       }) => void;
     };
+    electronSettings?: {
+      available: boolean;
+      /** Raw stored settings blob, or null when missing/corrupt. */
+      get: () => Promise<unknown>;
+      /** Overwrite the stored settings; resolves false on write failure. */
+      set: (settings: unknown) => Promise<boolean>;
+    };
     electronDialogs?: {
       available: boolean;
       /** Native open dialog; resolves file content + name, or null if cancelled. */

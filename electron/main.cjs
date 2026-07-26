@@ -249,6 +249,25 @@ app.whenReady().then(() => {
     }
   });
 
+  // Persisted app settings (settings.json in userData). The renderer owns the
+  // schema and does defaults-merging; main just round-trips JSON blobs.
+  const settingsPath = path.join(app.getPath('userData'), 'settings.json');
+  ipcMain.handle('settings:get', () => {
+    try {
+      return JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    } catch {
+      return null; // Missing or corrupt file: renderer falls back to defaults.
+    }
+  });
+  ipcMain.handle('settings:set', (_event, settings) => {
+    try {
+      fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+      return true;
+    } catch {
+      return false;
+    }
+  });
+
   ipcMain.handle('dialog:save-yaml', async (_event, { content, defaultName }) => {
     const result = await dialog.showSaveDialog(BrowserWindow.getFocusedWindow() ?? undefined, {
       title: 'Export map',

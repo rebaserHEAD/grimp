@@ -49,6 +49,9 @@ import { CollapsiblePanel } from './components/CollapsiblePanel';
 import { GridTabBar } from './components/GridTabBar';
 import { ConfirmModal } from './components/ConfirmModal';
 import { PromptModal } from './components/PromptModal';
+import { SettingsModal } from './components/SettingsModal';
+import { loadSettings, persistSettings, flushSettings } from './settings/settingsStore';
+import type { AppSettings, ViewSettings } from './settings/settingsStore';
 import { BenchmarkOverlay } from './components/BenchmarkOverlay';
 import { markSceneDirty, markOverlayDirty, markAllDirty } from './rendering/dirtyFlags';
 import { buildTransformComponent } from './tools/entityHelpers';
@@ -115,6 +118,10 @@ export const App: React.FC = () => {
   } | null>(null);
   const [validatorIssues, setValidatorIssues] = useState<ValidationIssue[] | null>(null);
   const [showMapProperties, setShowMapProperties] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  // Full settings blob as loaded; view-toggle writes spread over it so
+  // sections owned by other consumers (#11/#34/...) survive round-trips.
+  const settingsRef = useRef<AppSettings | null>(null);
   const [highlightTile, setHighlightTile] = useState<{ x: number; y: number; startTime: number } | null>(null);
   const [infraSelection, setInfraSelection] = useState<InfrastructureSelection>({
     mode: 'cable',
@@ -441,6 +448,9 @@ export const App: React.FC = () => {
       case 'view:showBenchmark':
         setShowBenchmark((b) => !b);
         break;
+      case 'app:settings':
+        setShowSettings(true);
+        break;
       case 'help:controls':
         setShowShortcuts(true);
         break;
@@ -456,6 +466,65 @@ export const App: React.FC = () => {
   useEffect(() => {
     if (!window.electronMenu?.available) return;
     return window.electronMenu.onCommand((command) => menuCommandRef.current(command));
+  }, []);
+
+  // ── Persisted settings (#19) ─────────────────────────────────────────────
+  // Seed the view toggles from the store once on startup, then write back
+  // (debounced) whenever they change. settingsRef guards the write path: no
+  // persisting until the initial load has landed.
+  useEffect(() => {
+    loadSettings().then((s) => {
+      setShowGrid(s.view.showGrid);
+      setShowEntities(s.view.showEntities);
+      setShowSpaceBackground(s.view.showSpaceBackground);
+      setShowSubFloor(s.view.showSubFloor);
+      setShowConnections(s.view.showConnections);
+      setShowPerfHUD(s.view.showPerfHUD);
+      settingsRef.current = s;
+      markSceneDirty();
+    });
+    // Passive flush so a debounced write isn't lost on close. Must never set
+    // returnValue here: a vetoing beforeunload is exactly the v1.2.1 bug.
+    window.addEventListener('beforeunload', flushSettings);
+    return () => window.removeEventListener('beforeunload', flushSettings);
+  }, []);
+
+  useEffect(() => {
+    if (!settingsRef.current) return;
+    const next: AppSettings = {
+      ...settingsRef.current,
+      view: { showGrid, showEntities, showSpaceBackground, showSubFloor, showConnections, showPerfHUD },
+    };
+    settingsRef.current = next;
+    persistSettings(next);
+  }, [showGrid, showEntities, showSpaceBackground, showSubFloor, showConnections, showPerfHUD]);
+
+  const handleToggleViewSetting = useCallback((key: keyof ViewSettings) => {
+    switch (key) {
+      case 'showGrid':
+        setShowGrid((v) => !v);
+        markSceneDirty();
+        break;
+      case 'showEntities':
+        setShowEntities((v) => !v);
+        markSceneDirty();
+        break;
+      case 'showSpaceBackground':
+        setShowSpaceBackground((v) => !v);
+        markSceneDirty();
+        break;
+      case 'showSubFloor':
+        setShowSubFloor((v) => !v);
+        markSceneDirty();
+        break;
+      case 'showConnections':
+        setShowConnections((v) => !v);
+        markSceneDirty();
+        break;
+      case 'showPerfHUD':
+        setShowPerfHUD((v) => !v);
+        break;
+    }
   }, []);
 
   // Keep the native menu's enabled/checked flags in sync with app state.
@@ -761,6 +830,7 @@ export const App: React.FC = () => {
       onEscape: state.activeTool === 'deviceLink' ? () => deviceLinkTool.cancelLinking() : undefined,
       onShowShortcuts: () => setShowShortcuts((s) => !s),
       onFocusSearch: () => searchInputRef.current?.focus(),
+      onOpenSettings: () => setShowSettings(true),
     }),
     [
       handleSelectTool,
@@ -903,6 +973,13 @@ export const App: React.FC = () => {
           </div>
         </div>
       )}
+      {showSettings && (
+        <SettingsModal
+          view={{ showGrid, showEntities, showSpaceBackground, showSubFloor, showConnections, showPerfHUD }}
+          onToggleView={handleToggleViewSetting}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
       {activePrompt && (
         <PromptModal
           title={activePrompt.title}
@@ -980,6 +1057,7 @@ export const App: React.FC = () => {
         onNewGrid={handleNewGrid}
         documentKind={getDocumentKind(state)}
         onShowMapProperties={() => setShowMapProperties(true)}
+        onShowSettings={() => setShowSettings(true)}
         onImport={handleImport}
         onExport={handleExport}
         onUndo={handleUndo}

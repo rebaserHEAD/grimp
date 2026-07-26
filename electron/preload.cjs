@@ -25,6 +25,14 @@ contextBridge.exposeInMainWorld('electronMenu', {
   setState: (state) => ipcRenderer.send('menu:state', state),
 });
 
+// Persisted settings store (userData/settings.json). The renderer owns the
+// schema; get() resolves the raw stored blob (or null), set() overwrites it.
+contextBridge.exposeInMainWorld('electronSettings', {
+  available: true,
+  get: () => ipcRenderer.invoke('settings:get'),
+  set: (settings) => ipcRenderer.invoke('settings:set', settings),
+});
+
 // Native file dialogs for import/export. Resolves to file content / saved
 // path, or null when the user cancels.
 contextBridge.exposeInMainWorld('electronDialogs', {
