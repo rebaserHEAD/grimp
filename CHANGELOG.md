@@ -12,6 +12,11 @@ workflow copies it into the GitHub release notes.
 
 ### Added
 
+- Start screen (desktop): the landing screen is now a VS Code-style welcome.
+  Recently opened map/grid files sit alongside recent forks and discovered
+  forks; a recent file remembers which fork it was opened under and one click
+  restores both, fork first, then the file. Files are recorded on native
+  open and save. (#35)
 - Recent forks on the landing screen (desktop): the last few forks you loaded
   are one click to reopen. Dead paths drop off the list automatically. (#11)
 - Forks folder auto-discovery (desktop): point GRIMP at the folder holding

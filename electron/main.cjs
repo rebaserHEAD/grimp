@@ -275,10 +275,26 @@ app.whenReady().then(() => {
     });
     if (result.canceled || result.filePaths.length === 0) return null;
     try {
-      // fileName rides along so the renderer can label unnamed grids after it.
+      // fileName rides along so the renderer can label unnamed grids after it;
+      // path so it can record the file on the recent-files list (#35).
       return {
         content: fs.readFileSync(result.filePaths[0], 'utf8'),
         fileName: path.basename(result.filePaths[0]),
+        path: result.filePaths[0],
+      };
+    } catch {
+      return null;
+    }
+  });
+
+  // Dialog-less read for replaying recent files (#35). Same result shape as
+  // dialog:open-yaml; null when the file is gone/unreadable.
+  ipcMain.handle('file:read-yaml', (_event, filePath) => {
+    try {
+      return {
+        content: fs.readFileSync(filePath, 'utf8'),
+        fileName: path.basename(filePath),
+        path: filePath,
       };
     } catch {
       return null;

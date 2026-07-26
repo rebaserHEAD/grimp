@@ -12,8 +12,14 @@ import {
 } from '../loaders/directoryScanner';
 import type { RepositorySummary } from '../loaders/directoryScanner';
 
-import { loadSettings, persistSettings, withRecentFork, withoutRecentFork } from '../settings/settingsStore';
-import type { AppSettings, RecentFork } from '../settings/settingsStore';
+import {
+  loadSettings,
+  persistSettings,
+  withRecentFork,
+  withoutRecentFork,
+  withoutRecentFile,
+} from '../settings/settingsStore';
+import type { AppSettings, RecentFork, RecentFile } from '../settings/settingsStore';
 
 type PickForkResult = Awaited<ReturnType<NonNullable<Window['electronFork']>['pickFork']>>;
 
@@ -25,7 +31,11 @@ const isElectron = !!electronFork?.available;
 type SelectorState = 'idle' | 'scanning' | 'summary' | 'error';
 
 interface ForkSelectorProps {
-  onReady: (provider: ResourceProvider, forkName: string) => void;
+  onReady: (
+    provider: ResourceProvider,
+    forkName: string,
+    opts?: { forkDir?: string | null; pendingFile?: { path: string; name: string } },
+  ) => void;
   builtInAvailable: boolean;
   builtInForkName: string;
 }
@@ -33,6 +43,26 @@ interface ForkSelectorProps {
 function formatNumber(n: number): string {
   return n.toLocaleString();
 }
+
+/** Last path segment, for labeling a fork by its checkout folder name. */
+function baseName(p: string): string {
+  return p.split(/[\\/]/).filter(Boolean).pop() ?? p;
+}
+
+const ListRow: React.FC<{ title: string; subtitle: string; onClick: () => void }> = ({ title, subtitle, onClick }) => (
+  <button
+    onClick={onClick}
+    title={subtitle}
+    className="w-full text-left px-3 py-2 rounded-lg bg-panel border border-subtle hover:bg-hover cursor-pointer transition-colors"
+  >
+    <span className="block text-sm text-primary truncate">{title}</span>
+    <span className="block text-[10px] text-muted truncate">{subtitle}</span>
+  </button>
+);
+
+const ListHeading: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="text-[9px] uppercase tracking-wider text-muted px-1">{children}</div>
+);
 
 const supportsDirectoryPicker = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
 const supportsWebkitDirectory = (() => {
@@ -56,6 +86,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
   // Landing-screen lists (#11 recent, #34 discovered). Electron-only: the
   // browser build has no stable directory paths to persist or rescan.
   const [recentForks, setRecentForks] = useState<RecentFork[]>([]);
+  const [recentFiles, setRecentFiles] = useState<RecentFile[]>([]);
   const [forksDirectory, setForksDirectory] = useState<string | null>(null);
   const [discovered, setDiscovered] = useState<{ dir: string; name: string }[]>([]);
   const settingsRef = useRef<AppSettings | null>(null);
@@ -68,6 +99,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
       if (cancelled) return;
       settingsRef.current = s;
       setRecentForks(s.fork.recentForks);
+      setRecentFiles(s.files.recentFiles);
       setForksDirectory(s.fork.forksDirectory);
       if (s.fork.forksDirectory) {
         const found = await electronFork!.discoverForks(s.fork.forksDirectory);
@@ -81,12 +113,13 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
 
   // Apply a settings mutation against the latest loaded blob, then sync
   // local list state and persist.
-  const updateForkSettings = useCallback((mutate: (s: AppSettings) => AppSettings) => {
+  const updateStoredSettings = useCallback((mutate: (s: AppSettings) => AppSettings) => {
     const current = settingsRef.current;
     if (!current) return;
     const next = mutate(current);
     settingsRef.current = next;
     setRecentForks(next.fork.recentForks);
+    setRecentFiles(next.files.recentFiles);
     setForksDirectory(next.fork.forksDirectory);
     persistSettings(next);
   }, []);
@@ -94,9 +127,9 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
   const recordRecentFork = useCallback(
     (dir: string | undefined, name: string) => {
       if (!dir || !settingsRef.current) return;
-      updateForkSettings((s) => withRecentFork(s, { dir, name }, new Date().toISOString()));
+      updateStoredSettings((s) => withRecentFork(s, { dir, name }, new Date().toISOString()));
     },
-    [updateForkSettings],
+    [updateStoredSettings],
   );
 
   const handleOpenFolder = useCallback(async () => {
@@ -220,7 +253,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
     if (electronKeys) {
       recordRecentFork(electronKeys.dir, electronKeys.name);
       const provider = new ElectronResourceProvider(electronKeys.keys, electronKeys.name);
-      onReady(provider, electronKeys.name);
+      onReady(provider, electronKeys.name, { forkDir: electronKeys.dir ?? null });
       return;
     }
     if (!fileMap) return;
@@ -244,7 +277,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
         return;
       }
       if (!result || 'error' in result || !validateKeys(result.keys).valid) {
-        if (fromRecent) updateForkSettings((s) => withoutRecentFork(s, dir));
+        if (fromRecent) updateStoredSettings((s) => withoutRecentFork(s, dir));
         setErrorMessage(
           result && 'error' in result
             ? `${result.error} The entry has been removed from the list.`
@@ -254,17 +287,53 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
         return;
       }
       recordRecentFork(result.dir, result.name);
-      onReady(new ElectronResourceProvider(result.keys, result.name), result.name);
+      onReady(new ElectronResourceProvider(result.keys, result.name), result.name, { forkDir: result.dir });
     },
-    [onReady, recordRecentFork, updateForkSettings],
+    [onReady, recordRecentFork, updateStoredSettings],
+  );
+
+  // One-click open for a recent file (#35): load its owning fork, then hand
+  // the file to the editor as a pending import (App opens it once the
+  // registry is ready). Dead forks/files drop the entry from the list.
+  const handleOpenRecentFile = useCallback(
+    async (entry: RecentFile) => {
+      if (!entry.forkDir) {
+        updateStoredSettings((s) => withoutRecentFile(s, entry.path));
+        setErrorMessage(`The fork for ${entry.name} is unknown. The entry has been removed from the list.`);
+        setPhase('error');
+        return;
+      }
+      setPhase('scanning');
+      setScanProgress(0);
+      let result: PickForkResult;
+      try {
+        result = await electronFork!.pickFork(entry.forkDir);
+      } catch (err) {
+        setErrorMessage(String(err));
+        setPhase('error');
+        return;
+      }
+      if (!result || 'error' in result || !validateKeys(result.keys).valid) {
+        updateStoredSettings((s) => withoutRecentFile(s, entry.path));
+        setErrorMessage(`The fork this file belongs to could not be loaded. The entry has been removed from the list.`);
+        setPhase('error');
+        return;
+      }
+      recordRecentFork(result.dir, result.name);
+      onReady(new ElectronResourceProvider(result.keys, result.name), result.name, {
+        forkDir: result.dir,
+        pendingFile: { path: entry.path, name: entry.name },
+      });
+    },
+    [onReady, recordRecentFork, updateStoredSettings],
   );
 
   const handleChooseForksDir = useCallback(async () => {
     const dir = await electronFork!.pickDirectory(forksDirectory);
     if (!dir) return;
-    updateForkSettings((s) => ({ ...s, fork: { ...s.fork, forksDirectory: dir } }));
+    updateStoredSettings((s) => ({ ...s, fork: { ...s.fork, forksDirectory: dir } }));
     setDiscovered(await electronFork!.discoverForks(dir));
-  }, [forksDirectory, updateForkSettings]);
+  }, [forksDirectory, updateStoredSettings]);
 
   // Dev/automation: launch straight into a fork when SS14_FORK_DIR is set.
   useEffect(() => {
@@ -274,7 +343,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
       const result = await electronFork!.pickFork(electronFork!.autoForkDir!);
       if (cancelled || !result || 'error' in result) return;
       if (!validateKeys(result.keys).valid) return;
-      onReady(new ElectronResourceProvider(result.keys, result.name), result.name);
+      onReady(new ElectronResourceProvider(result.keys, result.name), result.name, { forkDir: result.dir });
     })();
     return () => {
       cancelled = true;
@@ -455,6 +524,12 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
     };
   }, []);
 
+  const discoveredCandidates = discovered.filter((d) => !recentForks.some((r) => r.dir === d.dir));
+  const hasLists =
+    isElectron &&
+    phase === 'idle' &&
+    (recentFiles.length > 0 || recentForks.length > 0 || discoveredCandidates.length > 0);
+
   return (
     <div className="fixed inset-0 flex items-center justify-center font-['Segoe_UI',sans-serif]">
       {/* Space background canvas */}
@@ -470,139 +545,151 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
         onChange={handleFileInputChange}
       />
 
-      <div className="relative z-10 w-full max-w-[500px] mx-4 bg-surface/95 backdrop-blur-sm border border-subtle rounded-xl p-8 shadow-2xl">
+      <div
+        className={`relative z-10 w-full ${hasLists ? 'max-w-[880px]' : 'max-w-[500px]'} mx-4 bg-surface/95 backdrop-blur-sm border border-subtle rounded-xl p-8 shadow-2xl`}
+      >
         {/* Title.always visible */}
         <h1 className="text-2xl font-bold text-accent text-center mb-1">GRIMP</h1>
         <p className="text-xs text-muted text-center mb-1">Generally Reliable Interactive Mapping Program</p>
-        <p className="text-sm text-muted text-center mb-8">Select a fork to get started</p>
+        <p className="text-sm text-muted text-center mb-8">
+          {hasLists ? 'Pick up where you left off, or open a fork' : 'Select a fork to get started'}
+        </p>
 
-        {/* ---- IDLE ---- */}
+        {/* ---- IDLE: VS Code-style start screen (#35). Actions on the left;
+             recent files / recent forks / discovered forks on the right. The
+             right pane only exists on desktop once there is history. ---- */}
         {phase === 'idle' && (
-          <div className="flex flex-col gap-4">
-            {canPickFolder ? (
-              <>
-                <button
-                  onClick={handleOpenFolder}
-                  className="w-full py-3 px-4 rounded-lg bg-accent text-white font-semibold text-sm
+          <div className={hasLists ? 'grid grid-cols-[1fr_1.15fr] gap-6 items-start' : 'flex flex-col gap-4'}>
+            <div className="flex flex-col gap-4 min-w-0">
+              {canPickFolder ? (
+                <>
+                  <button
+                    onClick={handleOpenFolder}
+                    className="w-full py-3 px-4 rounded-lg bg-accent text-white font-semibold text-sm
                              hover:brightness-110 active:brightness-90 transition-all cursor-pointer
                              border-none outline-none focus:ring-2 focus:ring-accent/50"
-                >
-                  Open Fork Folder
-                </button>
+                  >
+                    Open Fork Folder
+                  </button>
 
-                {/* Recent forks (#11) and forks-folder discovery (#34), desktop only */}
-                {isElectron && recentForks.length > 0 && (
-                  <div className="flex flex-col gap-1.5">
-                    <div className="text-[9px] uppercase tracking-wider text-muted px-1">Recent</div>
-                    {recentForks.map((r) => (
+                  {isElectron && (
+                    <div className="flex items-center justify-between gap-2 px-1 text-[11px] text-muted">
+                      <span className="truncate" title={forksDirectory ?? undefined}>
+                        {forksDirectory
+                          ? `Forks folder: ${forksDirectory}`
+                          : 'Set a forks folder to auto-discover forks.'}
+                      </span>
                       <button
-                        key={r.dir}
-                        onClick={() => handleLoadFromDir(r.dir, true)}
-                        className="w-full text-left px-3 py-2 rounded-lg bg-panel border border-subtle
-                                   hover:bg-hover cursor-pointer transition-colors"
-                        title={r.dir}
+                        onClick={handleChooseForksDir}
+                        className="text-accent hover:brightness-125 bg-transparent border-none cursor-pointer text-[11px] shrink-0"
                       >
-                        <span className="block text-sm text-primary">{r.name}</span>
-                        <span className="block text-[10px] text-muted truncate">{r.dir}</span>
+                        {forksDirectory ? 'Change…' : 'Set forks folder…'}
                       </button>
+                    </div>
+                  )}
+
+                  {/* Privacy & browser info */}
+                  <div className="bg-panel rounded-lg p-3 border border-subtle text-xs text-muted leading-relaxed flex flex-col gap-2">
+                    <p>
+                      <span className="text-primary font-medium">Privacy:</span>{' '}
+                      {isElectron
+                        ? 'Files are read on demand straight from the folder you pick. Nothing is uploaded or sent anywhere.'
+                        : 'Your browser will ask for permission to read the selected folder. No files are uploaded or sent to any server. All processing happens locally in your browser.'}
+                    </p>
+                    {!isElectron && (
+                      <p>
+                        <span className="text-primary font-medium">Browser note:</span>{' '}
+                        {supportsDirectoryPicker ? (
+                          'Chrome and Edge use a native folder picker that reads files on demand. Your browser may ask you to confirm read access. This is standard and safe.'
+                        ) : (
+                          <>
+                            Firefox and Safari do not support the{' '}
+                            <a
+                              href="https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-accent underline hover:brightness-125"
+                            >
+                              File System Access API
+                            </a>
+                            , so the editor uses a{' '}
+                            <a
+                              href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/webkitdirectory"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-accent underline hover:brightness-125"
+                            >
+                              folder upload input
+                            </a>{' '}
+                            instead. Your browser may show an &quot;upload&quot; prompt. This is misleading; files stay
+                            on your machine and are never sent anywhere.
+                          </>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="text-center text-warning text-sm py-3 px-4 rounded-lg bg-hover border border-subtle">
+                  Your browser does not support folder selection. Please use Chrome, Edge, or Firefox for local fork
+                  loading.
+                </div>
+              )}
+
+              {builtInAvailable && (
+                <button
+                  onClick={handleUseBuiltIn}
+                  className="w-full py-3 px-4 rounded-lg bg-elevated text-primary font-medium text-sm
+                           hover:bg-hover active:brightness-90 transition-all cursor-pointer
+                           border border-subtle outline-none focus:ring-2 focus:ring-accent/50"
+                >
+                  Use Built-in Resources ({builtInForkName})
+                </button>
+              )}
+            </div>
+
+            {hasLists && (
+              <div className="flex flex-col gap-4 min-w-0">
+                {recentFiles.length > 0 && (
+                  <div className="flex flex-col gap-1.5">
+                    <ListHeading>Recent files</ListHeading>
+                    {recentFiles.map((f) => (
+                      <ListRow
+                        key={f.path}
+                        title={f.name}
+                        subtitle={`${f.forkDir ? baseName(f.forkDir) : 'unknown fork'} · ${f.path}`}
+                        onClick={() => handleOpenRecentFile(f)}
+                      />
                     ))}
                   </div>
                 )}
-                {isElectron &&
-                  (() => {
-                    const candidates = discovered.filter((d) => !recentForks.some((r) => r.dir === d.dir));
-                    if (candidates.length === 0) return null;
-                    return (
-                      <div className="flex flex-col gap-1.5">
-                        <div className="text-[9px] uppercase tracking-wider text-muted px-1">In your forks folder</div>
-                        {candidates.map((d) => (
-                          <button
-                            key={d.dir}
-                            onClick={() => handleLoadFromDir(d.dir, false)}
-                            className="w-full text-left px-3 py-2 rounded-lg bg-panel border border-subtle
-                                       hover:bg-hover cursor-pointer transition-colors"
-                            title={d.dir}
-                          >
-                            <span className="block text-sm text-primary">{d.name}</span>
-                            <span className="block text-[10px] text-muted truncate">{d.dir}</span>
-                          </button>
-                        ))}
-                      </div>
-                    );
-                  })()}
-                {isElectron && (
-                  <div className="flex items-center justify-between gap-2 px-1 text-[11px] text-muted">
-                    <span className="truncate" title={forksDirectory ?? undefined}>
-                      {forksDirectory
-                        ? `Forks folder: ${forksDirectory}`
-                        : 'Set a forks folder to auto-discover forks.'}
-                    </span>
-                    <button
-                      onClick={handleChooseForksDir}
-                      className="text-accent hover:brightness-125 bg-transparent border-none cursor-pointer text-[11px] shrink-0"
-                    >
-                      {forksDirectory ? 'Change…' : 'Set forks folder…'}
-                    </button>
+                {recentForks.length > 0 && (
+                  <div className="flex flex-col gap-1.5">
+                    <ListHeading>Recent forks</ListHeading>
+                    {recentForks.map((r) => (
+                      <ListRow
+                        key={r.dir}
+                        title={r.name}
+                        subtitle={r.dir}
+                        onClick={() => handleLoadFromDir(r.dir, true)}
+                      />
+                    ))}
                   </div>
                 )}
-
-                {/* Privacy & browser info */}
-                <div className="bg-panel rounded-lg p-3 border border-subtle text-xs text-muted leading-relaxed flex flex-col gap-2">
-                  <p>
-                    <span className="text-primary font-medium">Privacy:</span>{' '}
-                    {isElectron
-                      ? 'Files are read on demand straight from the folder you pick. Nothing is uploaded or sent anywhere.'
-                      : 'Your browser will ask for permission to read the selected folder. No files are uploaded or sent to any server. All processing happens locally in your browser.'}
-                  </p>
-                  {!isElectron && (
-                    <p>
-                      <span className="text-primary font-medium">Browser note:</span>{' '}
-                      {supportsDirectoryPicker ? (
-                        'Chrome and Edge use a native folder picker that reads files on demand. Your browser may ask you to confirm read access. This is standard and safe.'
-                      ) : (
-                        <>
-                          Firefox and Safari do not support the{' '}
-                          <a
-                            href="https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-accent underline hover:brightness-125"
-                          >
-                            File System Access API
-                          </a>
-                          , so the editor uses a{' '}
-                          <a
-                            href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/webkitdirectory"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-accent underline hover:brightness-125"
-                          >
-                            folder upload input
-                          </a>{' '}
-                          instead. Your browser may show an &quot;upload&quot; prompt. This is misleading; files stay on
-                          your machine and are never sent anywhere.
-                        </>
-                      )}
-                    </p>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="text-center text-warning text-sm py-3 px-4 rounded-lg bg-hover border border-subtle">
-                Your browser does not support folder selection. Please use Chrome, Edge, or Firefox for local fork
-                loading.
+                {discoveredCandidates.length > 0 && (
+                  <div className="flex flex-col gap-1.5">
+                    <ListHeading>In your forks folder</ListHeading>
+                    {discoveredCandidates.map((d) => (
+                      <ListRow
+                        key={d.dir}
+                        title={d.name}
+                        subtitle={d.dir}
+                        onClick={() => handleLoadFromDir(d.dir, false)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-
-            {builtInAvailable && (
-              <button
-                onClick={handleUseBuiltIn}
-                className="w-full py-3 px-4 rounded-lg bg-elevated text-primary font-medium text-sm
-                           hover:bg-hover active:brightness-90 transition-all cursor-pointer
-                           border border-subtle outline-none focus:ring-2 focus:ring-accent/50"
-              >
-                Use Built-in Resources ({builtInForkName})
-              </button>
             )}
           </div>
         )}

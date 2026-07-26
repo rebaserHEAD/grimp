@@ -44,10 +44,12 @@ declare global {
     };
     electronDialogs?: {
       available: boolean;
-      /** Native open dialog; resolves file content + name, or null if cancelled. */
-      openYaml: () => Promise<{ content: string; fileName: string } | null>;
+      /** Native open dialog; resolves file content + name + path, or null if cancelled. */
+      openYaml: () => Promise<{ content: string; fileName: string; path: string } | null>;
       /** Native save dialog; resolves the saved path, or null if cancelled. */
       saveYaml: (content: string, defaultName: string) => Promise<string | null>;
+      /** Dialog-less read for replaying recent files; null when gone/unreadable. */
+      readYaml: (filePath: string) => Promise<{ content: string; fileName: string; path: string } | null>;
     };
   }
 }

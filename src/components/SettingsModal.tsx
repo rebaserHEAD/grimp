@@ -3,15 +3,20 @@ import React, { useEffect, useState } from 'react';
 interface Props {
   forksDirectory: string | null;
   recentForksCount: number;
+  recentFilesCount: number;
   onChooseForksDirectory: () => void;
   onClearForksDirectory: () => void;
   onClearRecentForks: () => void;
+  onClearRecentFiles: () => void;
   onClose: () => void;
 }
 
 const isElectron = typeof window !== 'undefined' && !!window.electronFork?.available;
 
-const SECTIONS = [{ id: 'forks', label: 'Forks' }] as const;
+const SECTIONS = [
+  { id: 'forks', label: 'Forks' },
+  { id: 'files', label: 'Files' },
+] as const;
 
 /**
  * Application settings window (issue #19): the home for set-rarely
@@ -22,9 +27,11 @@ const SECTIONS = [{ id: 'forks', label: 'Forks' }] as const;
 export const SettingsModal: React.FC<Props> = ({
   forksDirectory,
   recentForksCount,
+  recentFilesCount,
   onChooseForksDirectory,
   onClearForksDirectory,
   onClearRecentForks,
+  onClearRecentFiles,
   onClose,
 }) => {
   const [activeSection, setActiveSection] = useState<(typeof SECTIONS)[number]['id']>('forks');
@@ -74,7 +81,26 @@ export const SettingsModal: React.FC<Props> = ({
           </div>
           <div className="flex-1 overflow-y-auto px-5 py-3">
             {!isElectron ? (
-              <p className="text-xs text-muted py-2">Fork management is available in the desktop app.</p>
+              <p className="text-xs text-muted py-2">Fork and file management is available in the desktop app.</p>
+            ) : section.id === 'files' ? (
+              <div className="py-2.5 border-b border-subtle/50">
+                <div className="flex items-start justify-between gap-4">
+                  <span className="min-w-0">
+                    <span className="block text-xs text-primary">Recent files</span>
+                    <span className="block text-[11px] text-muted leading-snug">
+                      The launch screen remembers the maps and grids you open, along with the fork they belong to.
+                    </span>
+                  </span>
+                  <button
+                    onClick={onClearRecentFiles}
+                    disabled={recentFilesCount === 0}
+                    className="shrink-0 bg-subtle border border-subtle rounded text-primary text-[11px] px-3 py-1.5
+                               cursor-pointer hover:bg-hover disabled:opacity-50 disabled:cursor-default"
+                  >
+                    Clear list{recentFilesCount > 0 ? ` (${recentFilesCount})` : ''}
+                  </button>
+                </div>
+              </div>
             ) : (
               <>
                 <div className="py-2.5 border-b border-subtle/50">
