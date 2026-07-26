@@ -20,8 +20,25 @@ export interface ViewSettings {
   showPerfHUD: boolean;
 }
 
+/** One remembered fork on the landing screen's recent list (#11). */
+export interface RecentFork {
+  /** Fork root directory as originally picked (replayable via pickFork). */
+  dir: string;
+  name: string;
+  /** ISO timestamp of the last successful load. */
+  lastOpened: string;
+}
+
+export interface ForkSettings {
+  /** Parent folder scanned for fork candidates on the landing screen (#34). */
+  forksDirectory: string | null;
+  /** Most-recently-used forks, newest first (#11). */
+  recentForks: RecentFork[];
+}
+
 export interface AppSettings {
   view: ViewSettings;
+  fork: ForkSettings;
   /** Unknown top-level sections written by newer versions are preserved. */
   [section: string]: unknown;
 }
@@ -35,7 +52,36 @@ export const DEFAULT_SETTINGS: AppSettings = {
     showConnections: false,
     showPerfHUD: false,
   },
+  fork: {
+    forksDirectory: null,
+    recentForks: [],
+  },
 };
+
+export const RECENT_FORKS_CAP = 6;
+
+/** New settings with `entry` at the front of the recent-forks list (move-to-front, capped). */
+export function withRecentFork(settings: AppSettings, entry: { dir: string; name: string }, now: string): AppSettings {
+  const rest = settings.fork.recentForks.filter((r) => r.dir !== entry.dir);
+  return {
+    ...settings,
+    fork: {
+      ...settings.fork,
+      recentForks: [{ dir: entry.dir, name: entry.name, lastOpened: now }, ...rest].slice(0, RECENT_FORKS_CAP),
+    },
+  };
+}
+
+/** New settings with the entry for `dir` removed (dead-path cleanup). */
+export function withoutRecentFork(settings: AppSettings, dir: string): AppSettings {
+  return {
+    ...settings,
+    fork: {
+      ...settings.fork,
+      recentForks: settings.fork.recentForks.filter((r) => r.dir !== dir),
+    },
+  };
+}
 
 const STORAGE_KEY = 'grimp-settings';
 
