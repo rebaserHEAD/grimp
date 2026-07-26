@@ -58,14 +58,41 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+
+      # Pull this version's section out of CHANGELOG.md for the release body.
+      # Falls back to a compare link if the section is missing (i.e. the
+      # changelog wasn't rolled over before tagging).
+      - name: Build release body from changelog
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v ver="$VERSION" '
+            /^## \[/ { insec = index($0, "[" ver "]") > 0; next }
+            insec { print }
+          ' CHANGELOG.md | sed -e '1{/^$/d}' > section.md
+
+          {
+            echo '> ⚠️ **Windows: this build is not code-signed yet.** SmartScreen will show'
+            echo '> "Windows protected your PC" on first run. Click **More info → Run anyway**.'
+            echo '> Signing is in progress and will remove this step in a future release.'
+            echo ''
+            if [ -s section.md ]; then
+              cat section.md
+            else
+              echo "_No changelog section found for ${VERSION}; see the full changelog._"
+            fi
+            echo ''
+            echo "Full changelog: https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/CHANGELOG.md"
+          } > body.md
 
       - name: Publish draft release
         uses: softprops/action-gh-release@v2
         with:
           files: artifacts/**/*
           draft: true
-          generate_release_notes: true
+          body_path: body.md
