@@ -48,6 +48,7 @@ import { PerformanceHUD } from './components/PerformanceHUD';
 import { CollapsiblePanel } from './components/CollapsiblePanel';
 import { GridTabBar } from './components/GridTabBar';
 import { ConfirmModal } from './components/ConfirmModal';
+import { PromptModal } from './components/PromptModal';
 import { BenchmarkOverlay } from './components/BenchmarkOverlay';
 import { markSceneDirty, markOverlayDirty, markAllDirty } from './rendering/dirtyFlags';
 import { buildTransformComponent } from './tools/entityHelpers';
@@ -105,6 +106,7 @@ export const App: React.FC = () => {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [layerVisibility, setLayerVisibility] = useState<LayerVisibility>({ ...DEFAULT_LAYER_VISIBILITY });
   const [pendingDeleteGridUid, setPendingDeleteGridUid] = useState<number | null>(null);
+  const [activePrompt, setActivePrompt] = useState<{ title: string; defaultValue?: string; onSubmit: (value: string) => void } | null>(null);
   const [validatorIssues, setValidatorIssues] = useState<ValidationIssue[] | null>(null);
   const [showMapProperties, setShowMapProperties] = useState(false);
   const [highlightTile, setHighlightTile] = useState<{ x: number; y: number; startTime: number } | null>(null);
@@ -396,8 +398,11 @@ export const App: React.FC = () => {
   }, []);
 
   const handleAddGrid = useCallback(() => {
-    const name = prompt('New grid name:', `Grid ${state.grids.length + 1}`);
-    if (name) dispatch({ type: 'ADD_GRID', name });
+    setActivePrompt({
+      title: 'New Grid',
+      defaultValue: `Grid ${state.grids.length + 1}`,
+      onSubmit: (name) => dispatch({ type: 'ADD_GRID', name }),
+    });
   }, [state.grids.length]);
 
   const handleDeleteGrid = useCallback((gridUid: number) => {
@@ -414,6 +419,20 @@ export const App: React.FC = () => {
 
   const handleRenameGrid = useCallback((gridUid: number, newName: string) => {
     dispatch({ type: 'RENAME_GRID', gridUid, name: newName });
+  }, []);
+
+  const handleRequestRename = useCallback((gridUid: number, currentName: string) => {
+    setActivePrompt({
+      title: 'Rename Grid',
+      defaultValue: currentName,
+      onSubmit: (name) => {
+        if (name !== currentName) handleRenameGrid(gridUid, name);
+      },
+    });
+  }, [handleRenameGrid]);
+
+  const requestPrompt = useCallback((opts: { title: string; defaultValue?: string; onSubmit: (value: string) => void }) => {
+    setActivePrompt(opts);
   }, []);
 
   const handleFocusGrid = useCallback((index: number) => {
@@ -688,6 +707,17 @@ export const App: React.FC = () => {
           </div>
         </div>
       )}
+      {activePrompt && (
+        <PromptModal
+          title={activePrompt.title}
+          defaultValue={activePrompt.defaultValue}
+          onSubmit={(value) => {
+            setActivePrompt(null);
+            activePrompt.onSubmit(value);
+          }}
+          onCancel={() => setActivePrompt(null)}
+        />
+      )}
       {pendingDeleteGridUid !== null && (() => {
         const grid = state.grids.find(g => g.gridUid === pendingDeleteGridUid);
         const entityCount = grid ? grid.entities.length : 0;
@@ -778,7 +808,7 @@ export const App: React.FC = () => {
             onSelectGrid={handleSelectGrid}
             onAddGrid={handleAddGrid}
             onDeleteGrid={handleDeleteGrid}
-            onRenameGrid={handleRenameGrid}
+            onRequestRename={handleRequestRename}
             onFocusGrid={handleFocusGrid}
             entities={state.entities}
             registry={state.registry}
@@ -805,6 +835,7 @@ export const App: React.FC = () => {
               lightingEnabled={state.lightingEnabled}
               decalPlacementSettingsRef={decalPlacementSettingsRef}
               highlightTile={highlightTile}
+              requestPrompt={requestPrompt}
             />
           </div>
         </div>

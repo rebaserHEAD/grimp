@@ -780,19 +780,25 @@ export class SelectTool implements ITool {
       items.push({
         label: 'Save as Prefab...',
         action: () => {
-          const name = window.prompt('Prefab name:');
-          if (!name) return;
-          const prefab = serializePrefab({
-            name,
-            minX: this.selMinX,
-            minY: this.selMinY,
-            maxX: this.selMaxX,
-            maxY: this.selMaxY,
-            grid: ctx.state.grid,
-            entities: ctx.state.entities,
-            entityRawComponents: ctx.state.entityRawComponents ?? {},
-          });
-          downloadPrefab(prefab, name);
+          const savePrefab = (name: string) => {
+            const prefab = serializePrefab({
+              name,
+              minX: this.selMinX,
+              minY: this.selMinY,
+              maxX: this.selMaxX,
+              maxY: this.selMaxY,
+              grid: ctx.state.grid,
+              entities: ctx.state.entities,
+              entityRawComponents: ctx.state.entityRawComponents ?? {},
+            });
+            downloadPrefab(prefab, name);
+          };
+          if (ctx.requestPrompt) {
+            ctx.requestPrompt({ title: 'Save as Prefab', onSubmit: savePrefab });
+          } else {
+            const name = window.prompt('Prefab name:');
+            if (name) savePrefab(name);
+          }
         },
       });
     }

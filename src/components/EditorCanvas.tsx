@@ -45,6 +45,7 @@ interface Props {
   lightingEnabled: boolean;
   decalPlacementSettingsRef: React.MutableRefObject<DecalPlacementSettings>;
   highlightTile?: { x: number; y: number; startTime: number } | null;
+  requestPrompt?: ToolContext['requestPrompt'];
 }
 
 const TILE_SIZE = 32;
@@ -52,6 +53,7 @@ const TILE_SIZE = 32;
 export const EditorCanvas: React.FC<Props> = ({
   state, dispatch, camera, activeTool, showEntities, showGrid, showSpaceBackground, isSpaceHeld, isRHeld,
   showSubFloor, layerVisibility, showConnections, lightingEnabled, decalPlacementSettingsRef, highlightTile,
+  requestPrompt,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isPanning = useRef(false);
@@ -149,8 +151,9 @@ export const EditorCanvas: React.FC<Props> = ({
         decalPlacementSettingsRef.current = { ...decalPlacementSettingsRef.current, color };
       },
       layerVisibility: layerVisibilityRef.current,
+      requestPrompt,
     };
-  }, [dispatch, camera]);
+  }, [dispatch, camera, requestPrompt]);
 
   // Check if we should pan (middle button, space held, or pan tool active)
   const shouldPan = useCallback((button: number) => {

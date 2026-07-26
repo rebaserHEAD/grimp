@@ -20,6 +20,8 @@ export interface ToolContext {
   setDecalColor?: (color: string | null) => void;
   /** Current layer visibility, tools should respect this for selection/interaction. */
   layerVisibility?: LayerVisibility;
+  /** Ask the user for a text value via the in-app PromptModal (window.prompt no-ops under Electron). */
+  requestPrompt?: (opts: { title: string; defaultValue?: string; onSubmit: (value: string) => void }) => void;
 }
 
 export interface ITool {

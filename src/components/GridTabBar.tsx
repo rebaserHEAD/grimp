@@ -10,7 +10,8 @@ interface Props {
   onSelectGrid: (index: number) => void;
   onAddGrid: () => void;
   onDeleteGrid: (gridUid: number) => void;
-  onRenameGrid: (gridUid: number, newName: string) => void;
+  /** Open the rename prompt for a grid (double-click on its tab). */
+  onRequestRename: (gridUid: number, currentName: string) => void;
   onFocusGrid: (index: number) => void;
   entities: ImportedEntity[];
   registry: IPrototypeRegistry | null;
@@ -20,7 +21,7 @@ interface Props {
 }
 
 export const GridTabBar: React.FC<Props> = ({
-  grids, activeGridIndex, onSelectGrid, onAddGrid, onDeleteGrid, onRenameGrid, onFocusGrid,
+  grids, activeGridIndex, onSelectGrid, onAddGrid, onDeleteGrid, onRequestRename, onFocusGrid,
   entities, registry, onSearchNavigate, searchInputRef, onValidate,
 }) => {
   return (
@@ -38,10 +39,7 @@ export const GridTabBar: React.FC<Props> = ({
                   : 'bg-panel text-muted hover:text-primary hover:bg-hover'
                 }`}
               onClick={() => onSelectGrid(idx)}
-              onDoubleClick={() => {
-                const name = prompt('Rename grid:', gd.name);
-                if (name && name !== gd.name) onRenameGrid(gd.gridUid, name);
-              }}
+              onDoubleClick={() => onRequestRename(gd.gridUid, gd.name)}
               onAuxClick={(e) => {
                 if (e.button === 1 && grids.length > 1) {
                   e.preventDefault();
