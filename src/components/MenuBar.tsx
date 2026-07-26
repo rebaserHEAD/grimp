@@ -6,6 +6,7 @@ interface Props {
   /** Document kind per the engine's meta.category (savemap → Map, savegrid → Grid). */
   documentKind: 'Map' | 'Grid';
   onShowMapProperties: () => void;
+  onShowSettings: () => void;
   onImport: (content: string, fileName?: string) => void;
   onExport: () => void;
   onUndo: () => void;
@@ -109,6 +110,7 @@ export const MenuBar: React.FC<Props> = ({
   onNewGrid,
   documentKind,
   onShowMapProperties,
+  onShowSettings,
   onImport,
   onExport,
   onUndo,
@@ -197,6 +199,7 @@ export const MenuBar: React.FC<Props> = ({
     { label: 'Export .yml', shortcut: 'Ctrl+S', action: onExport },
     { label: 'separator2', separator: true },
     { label: 'Map Properties...', action: onShowMapProperties },
+    { label: 'Settings...', shortcut: 'Ctrl+,', action: onShowSettings },
   ];
 
   const editItems: MenuItem[] = [

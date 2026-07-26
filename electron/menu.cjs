@@ -76,6 +76,7 @@ function buildTemplate() {
       appItem('Export .yml', 'CmdOrCtrl+S', 'file:export'),
       { type: 'separator' },
       appItem('Map Properties…', undefined, 'file:properties'),
+      appItem('Settings…', 'CmdOrCtrl+,', 'app:settings'),
       { type: 'separator' },
       { label: 'Switch Fork…', enabled: menuState.hasFork, click: () => send('fork:switch') },
       ...(isMac ? [] : [{ type: 'separator' }, { role: 'quit' }]),

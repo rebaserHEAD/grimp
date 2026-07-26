@@ -16,6 +16,7 @@ interface KeyboardActions {
   onEscape?: () => void;
   onShowShortcuts?: () => void;
   onFocusSearch?: () => void;
+  onOpenSettings?: () => void;
 }
 
 const TOOL_SHORTCUTS: Record<string, ToolType> = {
@@ -57,6 +58,15 @@ export function useKeyboard(actions: KeyboardActions): { isSpaceHeld: boolean; i
       if (e.code === 'Space') {
         e.preventDefault();
         setIsSpaceHeld(true);
+        return;
+      }
+
+      // Settings (Ctrl+,). The native menu shows the accelerator but doesn't
+      // register it (menu.cjs registerAccelerator:false), so this is the one
+      // live binding in both builds.
+      if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+        e.preventDefault();
+        actions.onOpenSettings?.();
         return;
       }
 

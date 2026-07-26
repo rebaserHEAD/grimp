@@ -12,6 +12,10 @@ workflow copies it into the GitHub release notes.
 
 ### Added
 
+- Settings window (File > Settings, or Ctrl+,) with persisted preferences.
+  View toggles (grid, entities, space background, T-Ray, connection overlay,
+  performance HUD) now survive app restarts; stored in the desktop app's user
+  data folder, or browser storage in dev. (#19)
 - Sprite `scale` is now rendered. Scaled sprites (Tippy, Narsie, dwarf
   species, jack-o'-lanterns) draw at their true size instead of 1x, including
   mirrored sprites like the reversed lizard plushie. (#6)
