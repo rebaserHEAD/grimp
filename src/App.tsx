@@ -50,8 +50,8 @@ import { GridTabBar } from './components/GridTabBar';
 import { ConfirmModal } from './components/ConfirmModal';
 import { PromptModal } from './components/PromptModal';
 import { SettingsModal } from './components/SettingsModal';
-import { loadSettings, persistSettings, flushSettings } from './settings/settingsStore';
-import type { AppSettings, ViewSettings } from './settings/settingsStore';
+import { loadSettings, persistSettings, flushSettings, DEFAULT_SETTINGS } from './settings/settingsStore';
+import type { AppSettings, ForkSettings } from './settings/settingsStore';
 import { BenchmarkOverlay } from './components/BenchmarkOverlay';
 import { markSceneDirty, markOverlayDirty, markAllDirty } from './rendering/dirtyFlags';
 import { buildTransformComponent } from './tools/entityHelpers';
@@ -122,6 +122,7 @@ export const App: React.FC = () => {
   // Full settings blob as loaded; view-toggle writes spread over it so
   // sections owned by other consumers (#11/#34/...) survive round-trips.
   const settingsRef = useRef<AppSettings | null>(null);
+  const [forkSettings, setForkSettings] = useState<ForkSettings>(DEFAULT_SETTINGS.fork);
   const [highlightTile, setHighlightTile] = useState<{ x: number; y: number; startTime: number } | null>(null);
   const [infraSelection, setInfraSelection] = useState<InfrastructureSelection>({
     mode: 'cable',
@@ -480,6 +481,7 @@ export const App: React.FC = () => {
       setShowSubFloor(s.view.showSubFloor);
       setShowConnections(s.view.showConnections);
       setShowPerfHUD(s.view.showPerfHUD);
+      setForkSettings(s.fork);
       settingsRef.current = s;
       markSceneDirty();
     });
@@ -499,33 +501,24 @@ export const App: React.FC = () => {
     persistSettings(next);
   }, [showGrid, showEntities, showSpaceBackground, showSubFloor, showConnections, showPerfHUD]);
 
-  const handleToggleViewSetting = useCallback((key: keyof ViewSettings) => {
-    switch (key) {
-      case 'showGrid':
-        setShowGrid((v) => !v);
-        markSceneDirty();
-        break;
-      case 'showEntities':
-        setShowEntities((v) => !v);
-        markSceneDirty();
-        break;
-      case 'showSpaceBackground':
-        setShowSpaceBackground((v) => !v);
-        markSceneDirty();
-        break;
-      case 'showSubFloor':
-        setShowSubFloor((v) => !v);
-        markSceneDirty();
-        break;
-      case 'showConnections':
-        setShowConnections((v) => !v);
-        markSceneDirty();
-        break;
-      case 'showPerfHUD':
-        setShowPerfHUD((v) => !v);
-        break;
-    }
+  // Fork settings edited from the Settings window. These are rare, deliberate
+  // actions, so writes flush immediately instead of riding the debounce.
+  const updateForkSettings = useCallback((mutate: (f: ForkSettings) => ForkSettings) => {
+    const current = settingsRef.current;
+    if (!current) return;
+    const next: AppSettings = { ...current, fork: mutate(current.fork) };
+    settingsRef.current = next;
+    setForkSettings(next.fork);
+    persistSettings(next);
+    flushSettings();
   }, []);
+
+  const handleChooseForksDirectory = useCallback(async () => {
+    if (!window.electronFork?.available) return;
+    const dir = await window.electronFork.pickDirectory(settingsRef.current?.fork.forksDirectory ?? null);
+    if (!dir) return;
+    updateForkSettings((f) => ({ ...f, forksDirectory: dir }));
+  }, [updateForkSettings]);
 
   // Keep the native menu's enabled/checked flags in sync with app state.
   useEffect(() => {
@@ -975,8 +968,11 @@ export const App: React.FC = () => {
       )}
       {showSettings && (
         <SettingsModal
-          view={{ showGrid, showEntities, showSpaceBackground, showSubFloor, showConnections, showPerfHUD }}
-          onToggleView={handleToggleViewSetting}
+          forksDirectory={forkSettings.forksDirectory}
+          recentForksCount={forkSettings.recentForks.length}
+          onChooseForksDirectory={handleChooseForksDirectory}
+          onClearForksDirectory={() => updateForkSettings((f) => ({ ...f, forksDirectory: null }))}
+          onClearRecentForks={() => updateForkSettings((f) => ({ ...f, recentForks: [] }))}
           onClose={() => setShowSettings(false)}
         />
       )}
