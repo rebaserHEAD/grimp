@@ -50,8 +50,15 @@ import { GridTabBar } from './components/GridTabBar';
 import { ConfirmModal } from './components/ConfirmModal';
 import { PromptModal } from './components/PromptModal';
 import { SettingsModal } from './components/SettingsModal';
-import { loadSettings, persistSettings, flushSettings, DEFAULT_SETTINGS } from './settings/settingsStore';
-import type { AppSettings, ForkSettings } from './settings/settingsStore';
+import {
+  loadSettings,
+  persistSettings,
+  flushSettings,
+  withRecentFile,
+  withoutRecentFile,
+  DEFAULT_SETTINGS,
+} from './settings/settingsStore';
+import type { AppSettings, ForkSettings, FileSettings } from './settings/settingsStore';
 import { BenchmarkOverlay } from './components/BenchmarkOverlay';
 import { markSceneDirty, markOverlayDirty, markAllDirty } from './rendering/dirtyFlags';
 import { buildTransformComponent } from './tools/entityHelpers';
@@ -123,6 +130,35 @@ export const App: React.FC = () => {
   // sections owned by other consumers (#11/#34/...) survive round-trips.
   const settingsRef = useRef<AppSettings | null>(null);
   const [forkSettings, setForkSettings] = useState<ForkSettings>(DEFAULT_SETTINGS.fork);
+  const [fileSettings, setFileSettings] = useState<FileSettings>(DEFAULT_SETTINGS.files);
+  // Fork root dir of the currently loaded fork (Electron; null in browser).
+  // Stamped onto recent-file entries so they can restore their fork context.
+  const currentForkDirRef = useRef<string | null>(null);
+  // A recent-file open waiting for the fork's registry init to finish.
+  const [pendingOpenFile, setPendingOpenFile] = useState<{ path: string; name: string } | null>(null);
+
+  // Recent project files (#35): recorded on native open/save with the owning
+  // fork's dir, so the start screen can restore fork + file in one click.
+  // Declared early: handleExport/handleImportNative reference them.
+  const recordRecentFile = useCallback((path: string, name: string) => {
+    const current = settingsRef.current;
+    if (!current) return;
+    const next = withRecentFile(current, { path, name, forkDir: currentForkDirRef.current }, new Date().toISOString());
+    settingsRef.current = next;
+    setFileSettings(next.files);
+    persistSettings(next);
+    flushSettings();
+  }, []);
+
+  const dropRecentFile = useCallback((path: string) => {
+    const current = settingsRef.current;
+    if (!current) return;
+    const next = withoutRecentFile(current, path);
+    settingsRef.current = next;
+    setFileSettings(next.files);
+    persistSettings(next);
+    flushSettings();
+  }, []);
   const [highlightTile, setHighlightTile] = useState<{ x: number; y: number; startTime: number } | null>(null);
   const [infraSelection, setInfraSelection] = useState<InfrastructureSelection>({
     mode: 'cable',
@@ -154,22 +190,33 @@ export const App: React.FC = () => {
       .catch(() => {});
   }, []);
 
-  // Called when the ForkSelector picks a provider
-  const handleForkReady = useCallback((provider: ResourceProvider, name: string) => {
-    setForkProvider(provider);
-    setForkName(name);
-    setActiveProvider(provider);
-    setLoadingMessage('Discovering prototypes...');
-    initRegistry(provider, (msg) => setLoadingMessage(msg))
-      .then((registry) => {
-        dispatch({ type: 'SET_REGISTRY', registry });
-        setStatusMessage('Ready');
-      })
-      .catch((err) => {
-        setLoadingMessage(`Resource load failed: ${err}`);
-        setLoadFailed(true);
-      });
-  }, []);
+  // Called when the ForkSelector picks a provider. opts.forkDir stamps
+  // recent-file entries; opts.pendingFile is a recent file to import once the
+  // registry is ready (the fork-then-file one-click flow, #35).
+  const handleForkReady = useCallback(
+    (
+      provider: ResourceProvider,
+      name: string,
+      opts?: { forkDir?: string | null; pendingFile?: { path: string; name: string } },
+    ) => {
+      currentForkDirRef.current = opts?.forkDir ?? null;
+      setForkProvider(provider);
+      setForkName(name);
+      setActiveProvider(provider);
+      setLoadingMessage('Discovering prototypes...');
+      initRegistry(provider, (msg) => setLoadingMessage(msg))
+        .then((registry) => {
+          dispatch({ type: 'SET_REGISTRY', registry });
+          setStatusMessage('Ready');
+          if (opts?.pendingFile) setPendingOpenFile(opts.pendingFile);
+        })
+        .catch((err) => {
+          setLoadingMessage(`Resource load failed: ${err}`);
+          setLoadFailed(true);
+        });
+    },
+    [],
+  );
 
   const handleSwitchFork = useCallback(() => {
     if (forkProvider) {
@@ -182,6 +229,7 @@ export const App: React.FC = () => {
     setForkProvider(null);
     setForkName('');
     setLoadFailed(false);
+    currentForkDirRef.current = null;
   }, [forkProvider]);
 
   // Warn on unsaved changes before closing/navigating away.
@@ -358,6 +406,7 @@ export const App: React.FC = () => {
       if (window.electronDialogs?.available) {
         const saved = await window.electronDialogs.saveYaml(yaml, defaultName);
         setStatusMessage(saved ? `Exported ${saved}` : 'Export cancelled');
+        if (saved) recordRecentFile(saved, saved.split(/[\\/]/).pop() ?? saved);
       } else {
         downloadYAML(yaml, defaultName);
         setStatusMessage(`Exported ${defaultName}`);
@@ -383,6 +432,7 @@ export const App: React.FC = () => {
     state.lineEnding,
     state.hasDocumentTerminator,
     state.entityOrder,
+    recordRecentFile,
   ]);
 
   // Native open dialog for import (Electron); the browser build uses MenuBar's
@@ -390,8 +440,29 @@ export const App: React.FC = () => {
   const handleImportNative = useCallback(async () => {
     if (!window.electronDialogs?.available) return;
     const opened = await window.electronDialogs.openYaml();
-    if (opened != null) handleImport(opened.content, opened.fileName);
-  }, [handleImport]);
+    if (opened != null) {
+      handleImport(opened.content, opened.fileName);
+      recordRecentFile(opened.path, opened.fileName);
+    }
+  }, [handleImport, recordRecentFile]);
+
+  // Complete a recent-file open once the fork's registry is up: read by path,
+  // import, refresh recency. Files that no longer exist drop off the list.
+  useEffect(() => {
+    if (!pendingOpenFile || !state.registry) return;
+    const file = pendingOpenFile;
+    setPendingOpenFile(null);
+    (async () => {
+      const opened = await window.electronDialogs?.readYaml(file.path);
+      if (!opened) {
+        dropRecentFile(file.path);
+        setStatusMessage(`Could not open ${file.name}: removed from recent files`);
+        return;
+      }
+      handleImport(opened.content, opened.fileName);
+      recordRecentFile(opened.path, opened.fileName);
+    })();
+  }, [pendingOpenFile, state.registry, handleImport, recordRecentFile, dropRecentFile]);
 
   const handleUndo = useCallback(() => dispatch({ type: 'UNDO' }), []);
   const handleRedo = useCallback(() => dispatch({ type: 'REDO' }), []);
@@ -482,6 +553,7 @@ export const App: React.FC = () => {
       setShowConnections(s.view.showConnections);
       setShowPerfHUD(s.view.showPerfHUD);
       setForkSettings(s.fork);
+      setFileSettings(s.files);
       settingsRef.current = s;
       markSceneDirty();
     });
@@ -509,6 +581,16 @@ export const App: React.FC = () => {
     const next: AppSettings = { ...current, fork: mutate(current.fork) };
     settingsRef.current = next;
     setForkSettings(next.fork);
+    persistSettings(next);
+    flushSettings();
+  }, []);
+
+  const updateFileSettings = useCallback((mutate: (f: FileSettings) => FileSettings) => {
+    const current = settingsRef.current;
+    if (!current) return;
+    const next: AppSettings = { ...current, files: mutate(current.files) };
+    settingsRef.current = next;
+    setFileSettings(next.files);
     persistSettings(next);
     flushSettings();
   }, []);
@@ -970,9 +1052,11 @@ export const App: React.FC = () => {
         <SettingsModal
           forksDirectory={forkSettings.forksDirectory}
           recentForksCount={forkSettings.recentForks.length}
+          recentFilesCount={fileSettings.recentFiles.length}
           onChooseForksDirectory={handleChooseForksDirectory}
           onClearForksDirectory={() => updateForkSettings((f) => ({ ...f, forksDirectory: null }))}
           onClearRecentForks={() => updateForkSettings((f) => ({ ...f, recentForks: [] }))}
+          onClearRecentFiles={() => updateFileSettings((f) => ({ ...f, recentFiles: [] }))}
           onClose={() => setShowSettings(false)}
         />
       )}

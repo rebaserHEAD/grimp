@@ -6,8 +6,11 @@ import {
   flushSettings,
   withRecentFork,
   withoutRecentFork,
+  withRecentFile,
+  withoutRecentFile,
   DEFAULT_SETTINGS,
   RECENT_FORKS_CAP,
+  RECENT_FILES_CAP,
 } from '../settingsStore';
 import type { AppSettings } from '../settingsStore';
 
@@ -86,6 +89,43 @@ describe('recent-forks helpers', () => {
     const before = base();
     withRecentFork(before, { dir: 'C:/a', name: 'a' }, NOW);
     expect(before.fork.recentForks).toEqual([]);
+  });
+});
+
+describe('recent-files helpers', () => {
+  const NOW = '2026-07-26T00:00:00.000Z';
+  const base = (): AppSettings => mergeSettings(null);
+  const triad = { path: 'C:/maps/adjutant.yml', name: 'adjutant.yml', forkDir: 'C:/src/Triad_Sector' };
+
+  it('adds a new file at the front with its owning fork', () => {
+    const s = withRecentFile(base(), triad, NOW);
+    expect(s.files.recentFiles).toEqual([{ ...triad, lastOpened: NOW }]);
+  });
+
+  it('moves a re-opened file to the front and can re-home it to a new fork', () => {
+    let s = withRecentFile(base(), triad, '2026-01-01T00:00:00.000Z');
+    s = withRecentFile(s, { path: 'C:/maps/other.yml', name: 'other.yml', forkDir: null }, '2026-01-02T00:00:00.000Z');
+    s = withRecentFile(s, { ...triad, forkDir: 'C:/src/Hyperion' }, NOW);
+    expect(s.files.recentFiles.map((f) => f.path)).toEqual(['C:/maps/adjutant.yml', 'C:/maps/other.yml']);
+    expect(s.files.recentFiles[0].forkDir).toBe('C:/src/Hyperion');
+    expect(s.files.recentFiles[0].lastOpened).toBe(NOW);
+  });
+
+  it('caps the list, evicting the oldest', () => {
+    let s = base();
+    for (let i = 0; i < RECENT_FILES_CAP + 2; i++) {
+      s = withRecentFile(s, { path: `C:/maps/m${i}.yml`, name: `m${i}.yml`, forkDir: null }, NOW);
+    }
+    expect(s.files.recentFiles).toHaveLength(RECENT_FILES_CAP);
+    expect(s.files.recentFiles[0].path).toBe(`C:/maps/m${RECENT_FILES_CAP + 1}.yml`);
+  });
+
+  it('removes dead entries and leaves fork lists untouched', () => {
+    let s = withRecentFork(base(), { dir: 'C:/src/Triad_Sector', name: 'Triad_Sector' }, NOW);
+    s = withRecentFile(s, triad, NOW);
+    s = withoutRecentFile(s, triad.path);
+    expect(s.files.recentFiles).toEqual([]);
+    expect(s.fork.recentForks).toHaveLength(1);
   });
 });
 

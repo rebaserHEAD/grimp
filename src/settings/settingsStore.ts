@@ -36,9 +36,27 @@ export interface ForkSettings {
   recentForks: RecentFork[];
 }
 
+/** One remembered map/grid file on the start screen's recent list (#35). */
+export interface RecentFile {
+  /** Absolute file path. */
+  path: string;
+  /** Display name (file basename). */
+  name: string;
+  /** Fork root the file was opened under, so one click restores fork + file. */
+  forkDir: string | null;
+  /** ISO timestamp of the last successful open/save. */
+  lastOpened: string;
+}
+
+export interface FileSettings {
+  /** Most-recently-used project files, newest first (#35). */
+  recentFiles: RecentFile[];
+}
+
 export interface AppSettings {
   view: ViewSettings;
   fork: ForkSettings;
+  files: FileSettings;
   /** Unknown top-level sections written by newer versions are preserved. */
   [section: string]: unknown;
 }
@@ -55,6 +73,9 @@ export const DEFAULT_SETTINGS: AppSettings = {
   fork: {
     forksDirectory: null,
     recentForks: [],
+  },
+  files: {
+    recentFiles: [],
   },
 };
 
@@ -79,6 +100,35 @@ export function withoutRecentFork(settings: AppSettings, dir: string): AppSettin
     fork: {
       ...settings.fork,
       recentForks: settings.fork.recentForks.filter((r) => r.dir !== dir),
+    },
+  };
+}
+
+export const RECENT_FILES_CAP = 8;
+
+/** New settings with `entry` at the front of the recent-files list (move-to-front, capped). */
+export function withRecentFile(
+  settings: AppSettings,
+  entry: { path: string; name: string; forkDir: string | null },
+  now: string,
+): AppSettings {
+  const rest = settings.files.recentFiles.filter((f) => f.path !== entry.path);
+  return {
+    ...settings,
+    files: {
+      ...settings.files,
+      recentFiles: [{ ...entry, lastOpened: now }, ...rest].slice(0, RECENT_FILES_CAP),
+    },
+  };
+}
+
+/** New settings with the entry for `path` removed (dead-file cleanup). */
+export function withoutRecentFile(settings: AppSettings, path: string): AppSettings {
+  return {
+    ...settings,
+    files: {
+      ...settings.files,
+      recentFiles: settings.files.recentFiles.filter((f) => f.path !== path),
     },
   };
 }

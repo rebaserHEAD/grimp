@@ -44,4 +44,6 @@ contextBridge.exposeInMainWorld('electronDialogs', {
   available: true,
   openYaml: () => ipcRenderer.invoke('dialog:open-yaml'),
   saveYaml: (content, defaultName) => ipcRenderer.invoke('dialog:save-yaml', { content, defaultName }),
+  // Dialog-less read for replaying recent files; null when gone/unreadable.
+  readYaml: (filePath) => ipcRenderer.invoke('file:read-yaml', filePath),
 });
