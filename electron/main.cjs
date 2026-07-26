@@ -138,20 +138,44 @@ function loadForkFromDir(dir) {
   }
 
   currentForkRoot = resourcesDir;
-  return { root: resourcesDir, name: path.basename(dir), keys };
+  // dir rides along so the renderer can persist a replayable path (recent
+  // forks); root may be dir/Resources and is not what pickFork(dir) expects.
+  return { root: resourcesDir, dir, name: path.basename(dir), keys };
 }
 
-async function handlePickFork(_event, presetDir) {
+async function handlePickFork(_event, presetDir, dialogDefaultDir) {
   let dir = presetDir || process.env.SS14_FORK_DIR || null;
   if (!dir) {
     const result = await dialog.showOpenDialog({
       title: 'Select an SS14 fork folder',
+      defaultPath: dialogDefaultDir || undefined,
       properties: ['openDirectory'],
     });
     if (result.canceled || result.filePaths.length === 0) return null;
     dir = result.filePaths[0];
   }
   return loadForkFromDir(dir);
+}
+
+// Scan a forks folder one level deep for directories that pass the same
+// fork test as loadForkFromDir (Resources/Prototypes present).
+function handleDiscoverForks(_event, forksDir) {
+  const found = [];
+  let entries;
+  try {
+    entries = fs.readdirSync(forksDir, { withFileTypes: true });
+  } catch {
+    return found; // Missing/unreadable folder: nothing to discover.
+  }
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const dir = path.join(forksDir, entry.name);
+    const resourcesDir = fs.existsSync(path.join(dir, 'Resources')) ? path.join(dir, 'Resources') : dir;
+    if (fs.existsSync(path.join(resourcesDir, 'Prototypes'))) {
+      found.push({ dir, name: entry.name });
+    }
+  }
+  return found;
 }
 
 function createWindow() {
@@ -222,6 +246,18 @@ app.whenReady().then(() => {
     });
   }
   ipcMain.handle('fork:pick', handlePickFork);
+  ipcMain.handle('fork:discover', handleDiscoverForks);
+
+  // Generic directory picker (used to choose the forks folder, #34).
+  ipcMain.handle('dialog:pick-directory', async (_event, defaultPath) => {
+    const result = await dialog.showOpenDialog(BrowserWindow.getFocusedWindow() ?? undefined, {
+      title: 'Select your forks folder',
+      defaultPath: defaultPath || undefined,
+      properties: ['openDirectory'],
+    });
+    if (result.canceled || result.filePaths.length === 0) return null;
+    return result.filePaths[0];
+  });
 
   // Native menu keeps its enabled/checked flags in sync with renderer state.
   // The same push carries the unsaved-changes flag for the close guard.

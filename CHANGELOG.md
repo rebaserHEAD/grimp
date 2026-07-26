@@ -12,6 +12,11 @@ workflow copies it into the GitHub release notes.
 
 ### Added
 
+- Recent forks on the landing screen (desktop): the last few forks you loaded
+  are one click to reopen. Dead paths drop off the list automatically. (#11)
+- Forks folder auto-discovery (desktop): point GRIMP at the folder holding
+  your fork checkouts and the landing screen lists every fork it finds. The
+  fork picker dialog also starts there. (#34)
 - Settings window (File > Settings, or Ctrl+,) with persisted preferences.
   View toggles (grid, entities, space background, T-Ray, connection overlay,
   performance HUD) now survive app restarts; stored in the desktop app's user

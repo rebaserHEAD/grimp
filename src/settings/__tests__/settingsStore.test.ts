@@ -1,5 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mergeSettings, loadSettings, persistSettings, flushSettings, DEFAULT_SETTINGS } from '../settingsStore';
+import {
+  mergeSettings,
+  loadSettings,
+  persistSettings,
+  flushSettings,
+  withRecentFork,
+  withoutRecentFork,
+  DEFAULT_SETTINGS,
+  RECENT_FORKS_CAP,
+} from '../settingsStore';
 import type { AppSettings } from '../settingsStore';
 
 describe('mergeSettings', () => {
@@ -33,6 +42,50 @@ describe('mergeSettings', () => {
   it('ignores explicit undefined values', () => {
     const merged = mergeSettings({ view: { showGrid: undefined } });
     expect(merged.view.showGrid).toBe(DEFAULT_SETTINGS.view.showGrid);
+  });
+});
+
+describe('recent-forks helpers', () => {
+  const NOW = '2026-07-26T00:00:00.000Z';
+  const base = (): AppSettings => mergeSettings(null);
+
+  it('adds a new fork at the front', () => {
+    const s = withRecentFork(base(), { dir: 'C:/src/Triad_Sector', name: 'Triad_Sector' }, NOW);
+    expect(s.fork.recentForks).toEqual([{ dir: 'C:/src/Triad_Sector', name: 'Triad_Sector', lastOpened: NOW }]);
+  });
+
+  it('moves a re-opened fork to the front and updates its timestamp', () => {
+    let s = withRecentFork(base(), { dir: 'C:/a', name: 'a' }, '2026-01-01T00:00:00.000Z');
+    s = withRecentFork(s, { dir: 'C:/b', name: 'b' }, '2026-01-02T00:00:00.000Z');
+    s = withRecentFork(s, { dir: 'C:/a', name: 'a' }, NOW);
+    expect(s.fork.recentForks.map((r) => r.dir)).toEqual(['C:/a', 'C:/b']);
+    expect(s.fork.recentForks[0].lastOpened).toBe(NOW);
+    expect(s.fork.recentForks).toHaveLength(2);
+  });
+
+  it('caps the list, evicting the oldest', () => {
+    let s = base();
+    for (let i = 0; i < RECENT_FORKS_CAP + 3; i++) {
+      s = withRecentFork(s, { dir: `C:/fork${i}`, name: `fork${i}` }, NOW);
+    }
+    expect(s.fork.recentForks).toHaveLength(RECENT_FORKS_CAP);
+    expect(s.fork.recentForks[0].dir).toBe(`C:/fork${RECENT_FORKS_CAP + 2}`);
+    expect(s.fork.recentForks.some((r) => r.dir === 'C:/fork0')).toBe(false);
+  });
+
+  it('removes dead entries without touching the rest', () => {
+    let s = withRecentFork(base(), { dir: 'C:/a', name: 'a' }, NOW);
+    s = withRecentFork(s, { dir: 'C:/b', name: 'b' }, NOW);
+    s = withoutRecentFork(s, 'C:/a');
+    expect(s.fork.recentForks.map((r) => r.dir)).toEqual(['C:/b']);
+    s = withoutRecentFork(s, 'C:/never-there');
+    expect(s.fork.recentForks.map((r) => r.dir)).toEqual(['C:/b']);
+  });
+
+  it('does not mutate the input settings', () => {
+    const before = base();
+    withRecentFork(before, { dir: 'C:/a', name: 'a' }, NOW);
+    expect(before.fork.recentForks).toEqual([]);
   });
 });
 

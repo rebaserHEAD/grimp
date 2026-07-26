@@ -12,11 +12,18 @@ import {
 } from '../loaders/directoryScanner';
 import type { RepositorySummary } from '../loaders/directoryScanner';
 
+import { loadSettings, persistSettings, withRecentFork, withoutRecentFork } from '../settings/settingsStore';
+import type { AppSettings, RecentFork } from '../settings/settingsStore';
+
+type PickForkResult = { root: string; dir: string; name: string; keys: string[] } | { error: string } | null;
+
 // Native fork bridge exposed by the Electron preload (absent in a browser).
 interface ElectronForkBridge {
   available: boolean;
   autoForkDir: string | null;
-  pickFork: (dir?: string) => Promise<{ root: string; name: string; keys: string[] } | { error: string } | null>;
+  pickFork: (dir?: string | null, dialogDefaultDir?: string | null) => Promise<PickForkResult>;
+  discoverForks: (forksDir: string) => Promise<{ dir: string; name: string }[]>;
+  pickDirectory: (defaultPath?: string | null) => Promise<string | null>;
 }
 const electronFork: ElectronForkBridge | undefined = (window as any).electronFork;
 const isElectron = !!electronFork?.available;
@@ -47,10 +54,56 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
   const [scanTotal, setScanTotal] = useState(0);
   const [summary, setSummary] = useState<RepositorySummary | null>(null);
   const [fileMap, setFileMap] = useState<Map<string, File> | null>(null);
-  const [electronKeys, setElectronKeys] = useState<{ keys: string[]; name: string } | null>(null);
+  const [electronKeys, setElectronKeys] = useState<{ keys: string[]; name: string; dir?: string } | null>(null);
   const [forkName, setForkName] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Landing-screen lists (#11 recent, #34 discovered). Electron-only: the
+  // browser build has no stable directory paths to persist or rescan.
+  const [recentForks, setRecentForks] = useState<RecentFork[]>([]);
+  const [forksDirectory, setForksDirectory] = useState<string | null>(null);
+  const [discovered, setDiscovered] = useState<{ dir: string; name: string }[]>([]);
+  const settingsRef = useRef<AppSettings | null>(null);
+
+  useEffect(() => {
+    if (!isElectron) return;
+    let cancelled = false;
+    (async () => {
+      const s = await loadSettings();
+      if (cancelled) return;
+      settingsRef.current = s;
+      setRecentForks(s.fork.recentForks);
+      setForksDirectory(s.fork.forksDirectory);
+      if (s.fork.forksDirectory) {
+        const found = await electronFork!.discoverForks(s.fork.forksDirectory);
+        if (!cancelled) setDiscovered(found);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Apply a settings mutation against the latest loaded blob, then sync
+  // local list state and persist.
+  const updateForkSettings = useCallback((mutate: (s: AppSettings) => AppSettings) => {
+    const current = settingsRef.current;
+    if (!current) return;
+    const next = mutate(current);
+    settingsRef.current = next;
+    setRecentForks(next.fork.recentForks);
+    setForksDirectory(next.fork.forksDirectory);
+    persistSettings(next);
+  }, []);
+
+  const recordRecentFork = useCallback(
+    (dir: string | undefined, name: string) => {
+      if (!dir || !settingsRef.current) return;
+      updateForkSettings((s) => withRecentFork(s, { dir, name }, new Date().toISOString()));
+    },
+    [updateForkSettings],
+  );
 
   const handleOpenFolder = useCallback(async () => {
     if (isElectron) {
@@ -58,7 +111,8 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
       setScanProgress(0);
       let result;
       try {
-        result = await electronFork!.pickFork();
+        // Seed the dialog at the configured forks folder when there is one.
+        result = await electronFork!.pickFork(null, forksDirectory);
       } catch (err) {
         setErrorMessage(String(err));
         setPhase('error');
@@ -80,7 +134,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
         return;
       }
       setSummary(summarizeKeys(result.keys));
-      setElectronKeys({ keys: result.keys, name: result.name });
+      setElectronKeys({ keys: result.keys, name: result.name, dir: result.dir });
       setForkName(result.name);
       setPhase('summary');
       return;
@@ -127,7 +181,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
       setScanProgress(0);
       fileInputRef.current?.click();
     }
-  }, []);
+  }, [forksDirectory]);
 
   const handleFileInputChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -170,6 +224,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
 
   const handleLoad = useCallback(() => {
     if (electronKeys) {
+      recordRecentFork(electronKeys.dir, electronKeys.name);
       const provider = new ElectronResourceProvider(electronKeys.keys, electronKeys.name);
       onReady(provider, electronKeys.name);
       return;
@@ -177,7 +232,45 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
     if (!fileMap) return;
     const provider = new FileSystemResourceProvider(fileMap, forkName);
     onReady(provider, forkName);
-  }, [electronKeys, fileMap, forkName, onReady]);
+  }, [electronKeys, fileMap, forkName, onReady, recordRecentFork]);
+
+  // One-click load for recent/discovered entries: straight through to the
+  // editor on success (no summary stop), mirroring the autoForkDir flow.
+  // Dead recent paths are dropped from the list instead of erroring loudly.
+  const handleLoadFromDir = useCallback(
+    async (dir: string, fromRecent: boolean) => {
+      setPhase('scanning');
+      setScanProgress(0);
+      let result: PickForkResult;
+      try {
+        result = await electronFork!.pickFork(dir);
+      } catch (err) {
+        setErrorMessage(String(err));
+        setPhase('error');
+        return;
+      }
+      if (!result || 'error' in result || !validateKeys(result.keys).valid) {
+        if (fromRecent) updateForkSettings((s) => withoutRecentFork(s, dir));
+        setErrorMessage(
+          result && 'error' in result
+            ? `${result.error} The entry has been removed from the list.`
+            : 'This fork could not be loaded. The entry has been removed from the list.',
+        );
+        setPhase('error');
+        return;
+      }
+      recordRecentFork(result.dir, result.name);
+      onReady(new ElectronResourceProvider(result.keys, result.name), result.name);
+    },
+    [onReady, recordRecentFork, updateForkSettings],
+  );
+
+  const handleChooseForksDir = useCallback(async () => {
+    const dir = await electronFork!.pickDirectory(forksDirectory);
+    if (!dir) return;
+    updateForkSettings((s) => ({ ...s, fork: { ...s.fork, forksDirectory: dir } }));
+    setDiscovered(await electronFork!.discoverForks(dir));
+  }, [forksDirectory, updateForkSettings]);
 
   // Dev/automation: launch straight into a fork when SS14_FORK_DIR is set.
   useEffect(() => {
@@ -402,6 +495,62 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
                 >
                   Open Fork Folder
                 </button>
+
+                {/* Recent forks (#11) and forks-folder discovery (#34), desktop only */}
+                {isElectron && recentForks.length > 0 && (
+                  <div className="flex flex-col gap-1.5">
+                    <div className="text-[9px] uppercase tracking-wider text-muted px-1">Recent</div>
+                    {recentForks.map((r) => (
+                      <button
+                        key={r.dir}
+                        onClick={() => handleLoadFromDir(r.dir, true)}
+                        className="w-full text-left px-3 py-2 rounded-lg bg-panel border border-subtle
+                                   hover:bg-hover cursor-pointer transition-colors"
+                        title={r.dir}
+                      >
+                        <span className="block text-sm text-primary">{r.name}</span>
+                        <span className="block text-[10px] text-muted truncate">{r.dir}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {isElectron &&
+                  (() => {
+                    const candidates = discovered.filter((d) => !recentForks.some((r) => r.dir === d.dir));
+                    if (candidates.length === 0) return null;
+                    return (
+                      <div className="flex flex-col gap-1.5">
+                        <div className="text-[9px] uppercase tracking-wider text-muted px-1">In your forks folder</div>
+                        {candidates.map((d) => (
+                          <button
+                            key={d.dir}
+                            onClick={() => handleLoadFromDir(d.dir, false)}
+                            className="w-full text-left px-3 py-2 rounded-lg bg-panel border border-subtle
+                                       hover:bg-hover cursor-pointer transition-colors"
+                            title={d.dir}
+                          >
+                            <span className="block text-sm text-primary">{d.name}</span>
+                            <span className="block text-[10px] text-muted truncate">{d.dir}</span>
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                {isElectron && (
+                  <div className="flex items-center justify-between gap-2 px-1 text-[11px] text-muted">
+                    <span className="truncate" title={forksDirectory ?? undefined}>
+                      {forksDirectory
+                        ? `Forks folder: ${forksDirectory}`
+                        : 'Set a forks folder to auto-discover forks.'}
+                    </span>
+                    <button
+                      onClick={handleChooseForksDir}
+                      className="text-accent hover:brightness-125 bg-transparent border-none cursor-pointer text-[11px] shrink-0"
+                    >
+                      {forksDirectory ? 'Change…' : 'Set forks folder…'}
+                    </button>
+                  </div>
+                )}
 
                 {/* Privacy & browser info */}
                 <div className="bg-panel rounded-lg p-3 border border-subtle text-xs text-muted leading-relaxed flex flex-col gap-2">

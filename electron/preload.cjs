@@ -9,8 +9,13 @@ contextBridge.exposeInMainWorld('electronFork', {
   // Optional dev/automation convenience: launch straight into a fork.
   autoForkDir: process.env.SS14_FORK_DIR || null,
   // pickFork() shows a native directory dialog; pickFork(dir) uses dir directly.
-  // Resolves to { root, name, keys } | { error } | null (cancelled).
-  pickFork: (dir) => ipcRenderer.invoke('fork:pick', dir ?? null),
+  // dialogDefaultDir seeds the dialog's starting folder (the forks folder).
+  // Resolves to { root, dir, name, keys } | { error } | null (cancelled).
+  pickFork: (dir, dialogDefaultDir) => ipcRenderer.invoke('fork:pick', dir ?? null, dialogDefaultDir ?? null),
+  // Scan a forks folder one level deep; resolves [{ dir, name }] candidates.
+  discoverForks: (forksDir) => ipcRenderer.invoke('fork:discover', forksDir),
+  // Generic directory picker; resolves the chosen path or null (cancelled).
+  pickDirectory: (defaultPath) => ipcRenderer.invoke('dialog:pick-directory', defaultPath ?? null),
 });
 
 // Native application menu bridge. onCommand delivers menu clicks to the
