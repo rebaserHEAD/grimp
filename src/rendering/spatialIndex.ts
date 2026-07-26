@@ -25,8 +25,8 @@ export function spatialGeneration(): number {
 
 /** Numeric tile key: packs floored x,y into a single 32-bit number. Valid for [-32768, 32767]. */
 export function tileKey(x: number, y: number): number {
-  const ix = Math.floor(x) & 0xFFFF;
-  const iy = Math.floor(y) & 0xFFFF;
+  const ix = Math.floor(x) & 0xffff;
+  const iy = Math.floor(y) & 0xffff;
   return (ix << 16) | iy;
 }
 
@@ -66,7 +66,7 @@ export function spatialRemove(uid: number): void {
   uidToEntity.delete(uid);
   const list = cells.get(key);
   if (!list) return;
-  const idx = list.findIndex(e => e.uid === uid);
+  const idx = list.findIndex((e) => e.uid === uid);
   if (idx >= 0) {
     list.splice(idx, 1);
     if (list.length === 0) cells.delete(key);
@@ -79,10 +79,7 @@ export function spatialGetAt(worldX: number, worldY: number): ImportedEntity[] {
 }
 
 /** Get all entities in a world-coordinate rectangle (inclusive). O(area). */
-export function spatialGetInRect(
-  minX: number, minY: number,
-  maxX: number, maxY: number,
-): ImportedEntity[] {
+export function spatialGetInRect(minX: number, minY: number, maxX: number, maxY: number): ImportedEntity[] {
   const result: ImportedEntity[] = [];
   for (let y = minY; y <= maxY; y++) {
     for (let x = minX; x <= maxX; x++) {
@@ -118,7 +115,7 @@ export function spatialSize(): number {
  * Logs warnings if there's a mismatch.
  */
 export function spatialDebugVerify(entities: ImportedEntity[]): void {
-  const entityUids = new Set(entities.map(e => e.uid));
+  const entityUids = new Set(entities.map((e) => e.uid));
   const indexUids = new Set(uidToKey.keys());
 
   // Check uidToKey vs entity array
@@ -139,14 +136,20 @@ export function spatialDebugVerify(entities: ImportedEntity[]): void {
     for (const e of list) {
       cellEntityCount++;
       if (!indexUids.has(e.uid)) {
-        console.warn(`[SpatialIndex] ORPHAN: Entity uid=${e.uid} proto=${e.prototype} in cell ${key} but NOT in uidToKey`);
+        console.warn(
+          `[SpatialIndex] ORPHAN: Entity uid=${e.uid} proto=${e.prototype} in cell ${key} but NOT in uidToKey`,
+        );
       }
       if (!entityUids.has(e.uid)) {
-        console.warn(`[SpatialIndex] ORPHAN: Entity uid=${e.uid} proto=${e.prototype} in cell ${key} but NOT in entity array`);
+        console.warn(
+          `[SpatialIndex] ORPHAN: Entity uid=${e.uid} proto=${e.prototype} in cell ${key} but NOT in entity array`,
+        );
       }
     }
   }
   if (cellEntityCount !== indexUids.size) {
-    console.warn(`[SpatialIndex] COUNT MISMATCH: ${cellEntityCount} entities in cells vs ${indexUids.size} in uidToKey`);
+    console.warn(
+      `[SpatialIndex] COUNT MISMATCH: ${cellEntityCount} entities in cells vs ${indexUids.size} in uidToKey`,
+    );
   }
 }

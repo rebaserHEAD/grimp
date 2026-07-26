@@ -80,10 +80,7 @@ describe('grid file (saved ship) roundtrip', () => {
 
 describe('leading comment preservation', () => {
   const header =
-    '# SPDX-FileCopyrightText: 2025 Example Author\n' +
-    '#\n' +
-    '# SPDX-License-Identifier: AGPL-3.0-or-later\n' +
-    '\n';
+    '# SPDX-FileCopyrightText: 2025 Example Author\n' + '#\n' + '# SPDX-License-Identifier: AGPL-3.0-or-later\n' + '\n';
 
   it('preserves SPDX license headers through roundtrip', () => {
     const yaml = makeGridFileYaml(header);

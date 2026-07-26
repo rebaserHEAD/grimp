@@ -39,10 +39,7 @@ export function resolveTiles(rawTiles: RawTilePrototype[]): Map<string, Resolved
  * If explicitly set in YAML, use that. Otherwise, try to infer from the baseState:
  * e.g., baseState "splat0" → base "splat" (used by puddles where PuddleSystem sets base at runtime).
  */
-function inferSmoothBase(
-  iconSmoothComp: RawComponent | undefined,
-  baseState: string,
-): string | undefined {
+function inferSmoothBase(iconSmoothComp: RawComponent | undefined, baseState: string): string | undefined {
   if (!iconSmoothComp) return undefined;
 
   // Explicit base from YAML (e.g., "state_" for tables, "swindow" for shuttle windows)
@@ -109,11 +106,11 @@ export function parseScale(raw: unknown): { x: number; y: number } | undefined {
  * Returns null if no Sprite component is present.
  */
 export function extractSpriteInfo(components: RawComponent[]): SpriteInfo | null {
-  const spriteComp = components.find(c => c.type === 'Sprite');
+  const spriteComp = components.find((c) => c.type === 'Sprite');
   if (!spriteComp) return null;
 
   const rawLayers = (spriteComp.layers ?? []) as Array<Record<string, unknown>>;
-  const layers: SpriteLayerInfo[] = rawLayers.map(l => ({
+  const layers: SpriteLayerInfo[] = rawLayers.map((l) => ({
     state: (l.state as string) ?? '',
     sprite: l.sprite as string | undefined,
     map: l.map as string[] | undefined,
@@ -130,7 +127,7 @@ export function extractSpriteInfo(components: RawComponent[]): SpriteInfo | null
   // first visible layer's sprite. If some layers lack their own sprite, the top-level is
   // meaningful (e.g., GasVentPump where layer 1 relies on the top-level vent.rsi).
   const topLevelSprite = spriteComp.sprite as string | undefined;
-  const anyLayerReliesOnTopLevel = layers.length > 0 && layers.some(l => !l.sprite);
+  const anyLayerReliesOnTopLevel = layers.length > 0 && layers.some((l) => !l.sprite);
   let rsiPath: string | undefined;
 
   if (layers.length > 0 && !anyLayerReliesOnTopLevel) {
@@ -174,26 +171,26 @@ export function extractSpriteInfo(components: RawComponent[]): SpriteInfo | null
 
   // EntityStorageVisuals override: lockers/crates define their closed-state sprite
   // via stateBaseClosed in the EntityStorageVisuals component, overriding the Sprite layer state.
-  const storageVisuals = components.find(c => c.type === 'EntityStorageVisuals');
+  const storageVisuals = components.find((c) => c.type === 'EntityStorageVisuals');
   if (storageVisuals?.stateBaseClosed) {
     baseState = storageVisuals.stateBaseClosed as string;
   }
 
   // Extract IconSmooth data (used for both baseState fallback and corner rendering info)
-  const iconSmoothComp = components.find(c => c.type === 'IconSmooth');
+  const iconSmoothComp = components.find((c) => c.type === 'IconSmooth');
 
   // IconSmooth fallback: entities with IconSmooth (tables, carpets, walls, windows) use
   // corner-based rendering with states `{base}0`-`{base}7`. For the default baseState
   // (used as palette preview and when corner rendering isn't available), prefer 'full'.
   if (!baseState && iconSmoothComp) {
-    const iconComp = components.find(c => c.type === 'Icon');
+    const iconComp = components.find((c) => c.type === 'Icon');
     const iconState = iconComp?.state as string | undefined;
     baseState = iconState || 'full';
   }
 
   // Last resort: Icon component state (for non-IconSmooth entities)
   if (!baseState) {
-    const iconComp = components.find(c => c.type === 'Icon');
+    const iconComp = components.find((c) => c.type === 'Icon');
     if (iconComp) {
       baseState = (iconComp.state as string) ?? '';
     }
@@ -203,8 +200,7 @@ export function extractSpriteInfo(components: RawComponent[]): SpriteInfo | null
     rsiPath,
     baseState,
     drawDepth: spriteComp.drawdepth as string | undefined,
-    noRot: spriteComp.noRot === true || (spriteComp as Record<string, unknown>).norot === true
-      ? true : undefined,
+    noRot: spriteComp.noRot === true || (spriteComp as Record<string, unknown>).norot === true ? true : undefined,
     color: spriteComp.color as string | undefined,
     scale: parseScale(spriteComp.scale),
     iconSmoothKey: iconSmoothComp?.key as string | undefined,
@@ -249,9 +245,7 @@ function mergeComponents(chain: RawEntityPrototype[]): RawComponent[] {
  * Resolve entity prototypes by merging parent chains.
  * Abstract entities are used for resolution but excluded from results.
  */
-export function resolveEntities(
-  entries: EntityEntry[],
-): Map<string, ResolvedEntity> {
+export function resolveEntities(entries: EntityEntry[]): Map<string, ResolvedEntity> {
   // Index all prototypes by ID (including abstract ones, needed for resolution)
   const protoById = new Map<string, EntityEntry>();
   for (const entry of entries) {
@@ -276,9 +270,7 @@ export function resolveEntities(
     const proto = entry.proto;
 
     // Resolve parent(s), SS14 supports single or multiple parents
-    const parentIds = proto.parent
-      ? Array.isArray(proto.parent) ? proto.parent : [proto.parent]
-      : [];
+    const parentIds = proto.parent ? (Array.isArray(proto.parent) ? proto.parent : [proto.parent]) : [];
 
     // Collect ancestor chains (for multi-parent, merge in order)
     const ancestorChain: RawEntityPrototype[] = [];
@@ -286,7 +278,7 @@ export function resolveEntities(
       const parentChain = buildChain(parentId, new Set(visited));
       for (const ancestor of parentChain) {
         // Avoid duplicates if multiple parents share ancestors
-        if (!ancestorChain.some(a => a.id === ancestor.id)) {
+        if (!ancestorChain.some((a) => a.id === ancestor.id)) {
           ancestorChain.push(ancestor);
         }
       }
@@ -334,9 +326,7 @@ export function resolveEntities(
  * Resolve decal prototypes by merging parent chains for sprite info.
  * Abstract decals are used for resolution but excluded from results.
  */
-export function resolveDecals(
-  rawDecals: RawDecalPrototype[],
-): Map<string, DecalPrototypeInfo> {
+export function resolveDecals(rawDecals: RawDecalPrototype[]): Map<string, DecalPrototypeInfo> {
   // Index all decals by ID (including abstract ones, needed for parent resolution)
   const protoById = new Map<string, RawDecalPrototype>();
   for (const raw of rawDecals) {
@@ -352,15 +342,13 @@ export function resolveDecals(
     if (!proto) return [];
 
     visited.add(id);
-    const parentIds = proto.parent
-      ? Array.isArray(proto.parent) ? proto.parent : [proto.parent]
-      : [];
+    const parentIds = proto.parent ? (Array.isArray(proto.parent) ? proto.parent : [proto.parent]) : [];
 
     const ancestors: RawDecalPrototype[] = [];
     for (const parentId of parentIds) {
       const parentChain = buildChain(parentId, new Set(visited));
       for (const ancestor of parentChain) {
-        if (!ancestors.some(a => a.id === ancestor.id)) {
+        if (!ancestors.some((a) => a.id === ancestor.id)) {
           ancestors.push(ancestor);
         }
       }

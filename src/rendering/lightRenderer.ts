@@ -7,7 +7,7 @@ import { spatialGetInRect } from './spatialIndex';
 
 export interface GradientStop {
   offset: number; // 0-1
-  color: string;  // rgba() string
+  color: string; // rgba() string
 }
 
 export interface LightInfo {
@@ -32,7 +32,7 @@ const DEFAULTS: LightInfo = {
 
 function parseOffset(raw: unknown): { x: number; y: number } {
   if (typeof raw === 'string') {
-    const parts = raw.split(',').map(s => parseFloat(s.trim()));
+    const parts = raw.split(',').map((s) => parseFloat(s.trim()));
     if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
       return { x: parts[0], y: parts[1] };
     }
@@ -49,20 +49,15 @@ function parseOffset(raw: unknown): { x: number; y: number } {
  * fall back to defaults.
  * Returns null if neither instance nor prototype has PointLight.
  */
-export function extractLightInfo(
-  entity: ImportedEntity,
-  registry: IPrototypeRegistry | null,
-): LightInfo | null {
-  const instanceComp = entity.components.find(
-    c => (c as Record<string, unknown>).type === 'PointLight',
-  ) as Record<string, unknown> | undefined;
+export function extractLightInfo(entity: ImportedEntity, registry: IPrototypeRegistry | null): LightInfo | null {
+  const instanceComp = entity.components.find((c) => (c as Record<string, unknown>).type === 'PointLight') as
+    Record<string, unknown> | undefined;
 
   let protoComp: Record<string, unknown> | undefined;
   if (registry) {
     const resolved = registry.getEntity(entity.prototype);
     if (resolved) {
-      protoComp = resolved.components.find(c => c.type === 'PointLight') as
-        Record<string, unknown> | undefined;
+      protoComp = resolved.components.find((c) => c.type === 'PointLight') as Record<string, unknown> | undefined;
     }
   }
 
@@ -109,11 +104,7 @@ const GRADIENT_SAMPLES = 8;
  * Approximates SS14's attenuation curve using sampled gradient stops.
  * Energy scales brightness. Falloff controls curve steepness (default 6.8).
  */
-export function computeGradientStops(
-  hexColor: string,
-  energy: number,
-  falloff: number,
-): GradientStop[] {
+export function computeGradientStops(hexColor: string, energy: number, falloff: number): GradientStop[] {
   const r = parseInt(hexColor.slice(1, 3), 16) || 0;
   const g = parseInt(hexColor.slice(3, 5), 16) || 0;
   const b = parseInt(hexColor.slice(5, 7), 16) || 0;
@@ -193,11 +184,13 @@ export function collectVisibleLights(
     const ly = cy + worldOffY * tileSize;
 
     // Frustum cull: skip if light circle is fully outside canvas
-    if (lx + radiusPx < 0 || lx - radiusPx > canvasW ||
-      ly + radiusPx < 0 || ly - radiusPx > canvasH) continue;
+    if (lx + radiusPx < 0 || lx - radiusPx > canvasW || ly + radiusPx < 0 || ly - radiusPx > canvasH) continue;
 
     visibleLights.push({
-      lx, ly, radiusPx, light,
+      lx,
+      ly,
+      radiusPx,
+      light,
       worldX: entity.position.x + 0.5 + worldOffX,
       worldY: entity.position.y + 0.5 + worldOffY,
       entityTileX: Math.floor(entity.position.x),
@@ -214,13 +207,20 @@ export function collectVisibleLights(
  */
 function clipToVisibility(
   ctx: CanvasRenderingContext2D,
-  worldX: number, worldY: number,
+  worldX: number,
+  worldY: number,
   radius: number,
   wallCache: WallSegmentCache,
-  camera: { worldToScreenX(wx: number, w: number): number; worldToScreenY(wy: number, h: number): number; zoom: number },
-  canvasW: number, canvasH: number,
+  camera: {
+    worldToScreenX(wx: number, w: number): number;
+    worldToScreenY(wy: number, h: number): number;
+    zoom: number;
+  },
+  canvasW: number,
+  canvasH: number,
   tileSize: number,
-  entityTileX: number, entityTileY: number,
+  entityTileX: number,
+  entityTileY: number,
 ): void {
   const nearbySegments = wallCache.getSegmentsInRadius(worldX, worldY, radius);
   if (nearbySegments.length === 0) return; // No clip needed, no nearby walls
@@ -263,7 +263,13 @@ export function renderLightmap(
   ctx: CanvasRenderingContext2D,
   entities: readonly ImportedEntity[],
   registry: IPrototypeRegistry | null,
-  camera: { x: number; y: number; worldToScreenX(wx: number, w: number): number; worldToScreenY(wy: number, h: number): number; zoom: number },
+  camera: {
+    x: number;
+    y: number;
+    worldToScreenX(wx: number, w: number): number;
+    worldToScreenY(wy: number, h: number): number;
+    zoom: number;
+  },
   canvasW: number,
   canvasH: number,
   wallCache?: WallSegmentCache,
@@ -274,7 +280,8 @@ export function renderLightmap(
   const visibleLights = collectVisibleLights(
     registry,
     { x: camera.x, y: camera.y, tileScreenSize: tileSize },
-    canvasW, canvasH,
+    canvasW,
+    canvasH,
   );
 
   // === Pass 1: Darkness overlay ===
@@ -286,7 +293,19 @@ export function renderLightmap(
   for (const { lx, ly, radiusPx, light, worldX, worldY, entityTileX, entityTileY } of visibleLights) {
     ctx.save();
     if (wallCache && wallCache.segments.length > 0) {
-      clipToVisibility(ctx, worldX, worldY, light.radius, wallCache, camera, canvasW, canvasH, tileSize, entityTileX, entityTileY);
+      clipToVisibility(
+        ctx,
+        worldX,
+        worldY,
+        light.radius,
+        wallCache,
+        camera,
+        canvasW,
+        canvasH,
+        tileSize,
+        entityTileX,
+        entityTileY,
+      );
     }
     const stops = computeGradientStops('#FFFFFF', light.energy, light.falloff);
     const grad = ctx.createRadialGradient(lx, ly, 0, lx, ly, radiusPx);
@@ -303,7 +322,19 @@ export function renderLightmap(
   for (const { lx, ly, radiusPx, light, worldX, worldY, entityTileX, entityTileY } of visibleLights) {
     ctx.save();
     if (wallCache && wallCache.segments.length > 0) {
-      clipToVisibility(ctx, worldX, worldY, light.radius, wallCache, camera, canvasW, canvasH, tileSize, entityTileX, entityTileY);
+      clipToVisibility(
+        ctx,
+        worldX,
+        worldY,
+        light.radius,
+        wallCache,
+        camera,
+        canvasW,
+        canvasH,
+        tileSize,
+        entityTileX,
+        entityTileY,
+      );
     }
     const stops = computeGradientStops(light.color, light.energy * 0.4, light.falloff);
     const grad = ctx.createRadialGradient(lx, ly, 0, lx, ly, radiusPx);

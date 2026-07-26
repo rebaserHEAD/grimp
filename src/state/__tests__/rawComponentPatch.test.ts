@@ -74,34 +74,21 @@ describe('setComponentField', () => {
   });
 
   it('inserts a new field alphabetically among top-level fields', () => {
-    const lines = [
-      '    - type: MetaData',
-      '      name: Adjutant',
-      '    - type: MapGrid',
-    ];
+    const lines = ['    - type: MetaData', '      name: Adjutant', '    - type: MapGrid'];
     const out = setComponentField(lines, 'MetaData', 'desc', 'A ship.');
-    expect(out).toEqual([
-      '    - type: MetaData',
-      '      desc: A ship.',
-      '      name: Adjutant',
-      '    - type: MapGrid',
-    ]);
+    expect(out).toEqual(['    - type: MetaData', '      desc: A ship.', '      name: Adjutant', '    - type: MapGrid']);
   });
 
   it('removes a field when value is null', () => {
     const out = setComponentField(adjutantStyleRaw(), 'MetaData', 'desc', null);
-    expect(out.some(l => l.includes('desc:'))).toBe(false);
+    expect(out.some((l) => l.includes('desc:'))).toBe(false);
     expect(out).toHaveLength(adjutantStyleRaw().length - 1);
   });
 
   it('creates the component block when missing', () => {
     const lines = ['    - type: MapGrid'];
     const out = setComponentField(lines, 'MetaData', 'name', 'Warspite');
-    expect(out).toEqual([
-      '    - type: MapGrid',
-      '    - type: MetaData',
-      '      name: Warspite',
-    ]);
+    expect(out).toEqual(['    - type: MapGrid', '    - type: MetaData', '      name: Warspite']);
   });
 
   it('quotes values that need YAML quoting', () => {
@@ -111,9 +98,7 @@ describe('setComponentField', () => {
 
   it('refuses to replace a non-scalar field', () => {
     // GridAtmosphere.data is a nested mapping; replacing its line alone would corrupt
-    expect(() =>
-      setComponentField(adjutantStyleRaw(), 'GridAtmosphere', 'data', 'x'),
-    ).toThrow();
+    expect(() => setComponentField(adjutantStyleRaw(), 'GridAtmosphere', 'data', 'x')).toThrow();
   });
 });
 

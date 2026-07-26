@@ -19,16 +19,15 @@ A `.prefab.json` file containing a self-contained room/region:
   ],
   "entities": [
     {
-      "dx": 2, "dy": 1,
+      "dx": 2,
+      "dy": 1,
       "prototype": "OperatingTable",
       "rotation": 0,
       "components": [{ "type": "Transform" }],
       "rawYamlLines": ["    - type: Transform"]
     }
   ],
-  "deviceLinks": [
-    { "sourceIdx": 0, "targetIdx": 1, "port": "Pressed", "sink": "Toggle" }
-  ]
+  "deviceLinks": [{ "sourceIdx": 0, "targetIdx": 1, "port": "Pressed", "sink": "Toggle" }]
 }
 ```
 
@@ -92,12 +91,12 @@ Prefab entities carry `rawYamlLines` which are stored in `entityRawComponents` o
 
 ## Source Files
 
-| File | Purpose |
-|------|---------|
-| `src/prefab/prefabTypes.ts` | `PrefabData`, `PrefabEntity`, `PrefabDeviceLink` interfaces |
-| `src/prefab/prefabSerializer.ts` | Capture editor region → `PrefabData` |
-| `src/prefab/prefabPlacer.ts` | Stamp `PrefabData` → `Command` for dispatch |
-| `src/prefab/prefabIO.ts` | JSON parse/stringify, browser file download |
-| `src/tools/prefabPlaceTool.ts` | Tool for cursor-following ghost preview + click-to-stamp |
-| `src/components/PrefabPanel.tsx` | Library panel with file import and directory browsing |
-| `src/components/ContextMenu.tsx` | Generic right-click context menu |
+| File                             | Purpose                                                     |
+| -------------------------------- | ----------------------------------------------------------- |
+| `src/prefab/prefabTypes.ts`      | `PrefabData`, `PrefabEntity`, `PrefabDeviceLink` interfaces |
+| `src/prefab/prefabSerializer.ts` | Capture editor region → `PrefabData`                        |
+| `src/prefab/prefabPlacer.ts`     | Stamp `PrefabData` → `Command` for dispatch                 |
+| `src/prefab/prefabIO.ts`         | JSON parse/stringify, browser file download                 |
+| `src/tools/prefabPlaceTool.ts`   | Tool for cursor-following ghost preview + click-to-stamp    |
+| `src/components/PrefabPanel.tsx` | Library panel with file import and directory browsing       |
+| `src/components/ContextMenu.tsx` | Generic right-click context menu                            |

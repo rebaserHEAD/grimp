@@ -8,7 +8,13 @@ import type { ClipboardData, ClipboardEntity, ClipboardDecal } from '../state/cl
 import type { ContextMenuItem } from '../components/ContextMenu';
 import { serializePrefab } from '../prefab/prefabSerializer';
 import { downloadPrefab } from '../prefab/prefabIO';
-import { updateTransformPos, updateTransformRot, normalizeRotation, cloneComponentsWithPos, cloneComponentsWithPosRot } from './entityHelpers';
+import {
+  updateTransformPos,
+  updateTransformRot,
+  normalizeRotation,
+  cloneComponentsWithPos,
+  cloneComponentsWithPosRot,
+} from './entityHelpers';
 import { markOverlayDirty } from '../rendering/dirtyFlags';
 import { spatialGetInRect, tileKey } from '../rendering/spatialIndex';
 
@@ -46,7 +52,10 @@ export class SelectTool implements ITool {
   /** Compute bounding box from the tile set. Returns null if empty. */
   private computeBounds(): { minX: number; minY: number; maxX: number; maxY: number } | null {
     if (this.selectedTiles.size === 0) return null;
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
     for (const key of this.selectedTiles) {
       const comma = key.indexOf(',');
       const x = parseInt(key.substring(0, comma), 10);
@@ -165,7 +174,7 @@ export class SelectTool implements ITool {
     const bounds = this.computeBounds();
     if (!bounds) return [];
     const candidates = spatialGetInRect(bounds.minX, bounds.minY, bounds.maxX, bounds.maxY);
-    return candidates.filter(e => {
+    return candidates.filter((e) => {
       const tx = Math.floor(e.position.x);
       const ty = Math.floor(e.position.y);
       return this.selectedTiles.has(`${tx},${ty}`);
@@ -176,7 +185,7 @@ export class SelectTool implements ITool {
   private getDecalsInSelection(ctx: ToolContext): DecalInstance[] {
     if (this.selectedTiles.size === 0) return [];
     const activeGrid = ctx.state.grids[ctx.state.activeGridIndex];
-    return activeGrid.decals.decals.filter(d => {
+    return activeGrid.decals.decals.filter((d) => {
       const tx = Math.floor(d.position.x);
       const ty = Math.floor(d.position.y);
       return this.selectedTiles.has(`${tx},${ty}`);
@@ -213,7 +222,7 @@ export class SelectTool implements ITool {
         dy: e.position.y - bounds.minY,
         prototype: e.prototype,
         rotation: e.rotation,
-        components: e.components.map(c => ({ ...c })),
+        components: e.components.map((c) => ({ ...c })),
         ...(e.spriteStateOverride ? { spriteStateOverride: e.spriteStateOverride } : {}),
       });
     }
@@ -234,8 +243,13 @@ export class SelectTool implements ITool {
     }
 
     setClipboard({
-      width: w, height: h, tiles, entities: clipEntities, decals: clipDecals,
-      originX: bounds.minX, originY: bounds.minY,
+      width: w,
+      height: h,
+      tiles,
+      entities: clipEntities,
+      decals: clipDecals,
+      originX: bounds.minX,
+      originY: bounds.minY,
     });
   }
 
@@ -315,12 +329,12 @@ export class SelectTool implements ITool {
 
     // Capture entities as relative offsets
     const selEntities = this.getEntitiesInSelection(ctx.state.entities);
-    const clipEntities: ClipboardEntity[] = selEntities.map(e => ({
+    const clipEntities: ClipboardEntity[] = selEntities.map((e) => ({
       dx: e.position.x - this.selMinX,
       dy: e.position.y - this.selMinY,
       prototype: e.prototype,
       rotation: e.rotation,
-      components: e.components.map(c => ({ ...c })),
+      components: e.components.map((c) => ({ ...c })),
       ...(e.spriteStateOverride ? { spriteStateOverride: e.spriteStateOverride } : {}),
     }));
 
@@ -465,9 +479,21 @@ export class SelectTool implements ITool {
 
   /** Rotate a region of tiles + entities + decals 90 degrees. */
   private rotateRegion(
-    data: { width: number; height: number; tiles: (import('../types').TileCell | null)[]; entities: ClipboardEntity[]; decals?: ClipboardDecal[] },
+    data: {
+      width: number;
+      height: number;
+      tiles: (import('../types').TileCell | null)[];
+      entities: ClipboardEntity[];
+      decals?: ClipboardDecal[];
+    },
     direction: 'cw' | 'ccw',
-  ): { width: number; height: number; tiles: (import('../types').TileCell | null)[]; entities: ClipboardEntity[]; decals?: ClipboardDecal[] } {
+  ): {
+    width: number;
+    height: number;
+    tiles: (import('../types').TileCell | null)[];
+    entities: ClipboardEntity[];
+    decals?: ClipboardDecal[];
+  } {
     const { width: W, height: H, tiles, entities } = data;
     const newW = H;
     const newH = W;
@@ -491,7 +517,7 @@ export class SelectTool implements ITool {
     }
 
     const delta = direction === 'cw' ? -Math.PI / 2 : Math.PI / 2;
-    const newEntities: ClipboardEntity[] = entities.map(e => {
+    const newEntities: ClipboardEntity[] = entities.map((e) => {
       let newDx: number, newDy: number;
       // Entity positions are fractional (tile centers at x+0.5), so the mapping
       // uses W/H (not W-1/H-1) to correctly place entities at the center of the
@@ -514,7 +540,7 @@ export class SelectTool implements ITool {
 
     // Rotate decals, use tile-index transform (W-1, H-1) since decal positions are
     // integer tile-origin, not tile-center like entities
-    const newDecals: ClipboardDecal[] | undefined = data.decals?.map(d => {
+    const newDecals: ClipboardDecal[] | undefined = data.decals?.map((d) => {
       let newDx: number, newDy: number;
       if (direction === 'cw') {
         newDx = d.dy;
@@ -545,8 +571,10 @@ export class SelectTool implements ITool {
 
     const expanded = ensureGridContainsBounds(
       ctx.state.grid,
-      this.pasteX, this.pasteY,
-      this.pasteX + width - 1, this.pasteY + height - 1,
+      this.pasteX,
+      this.pasteY,
+      this.pasteX + width - 1,
+      this.pasteY + height - 1,
       0,
     );
     if (expanded !== ctx.state.grid) {
@@ -811,12 +839,7 @@ export class SelectTool implements ITool {
     return items;
   }
 
-  renderPreview(
-    canvasCtx: CanvasRenderingContext2D,
-    toolCtx: ToolContext,
-    cursorTileX: number,
-    cursorTileY: number,
-  ) {
+  renderPreview(canvasCtx: CanvasRenderingContext2D, toolCtx: ToolContext, cursorTileX: number, cursorTileY: number) {
     const { camera, canvasW, canvasH } = toolCtx;
     const tileScreenSize = camera.tileScreenSize;
 
@@ -838,12 +861,18 @@ export class SelectTool implements ITool {
       }
 
       // Color-code the new marquee based on selection mode
-      const fill = this.selectMode === 'subtract' ? 'rgba(255, 40, 40, 0.4)'
-        : this.selectMode === 'add' ? 'rgba(60, 255, 60, 0.25)'
-          : 'rgba(50, 130, 255, 0.25)';
-      const stroke = this.selectMode === 'subtract' ? 'rgba(255, 30, 30, 1)'
-        : this.selectMode === 'add' ? 'rgba(50, 255, 50, 0.9)'
-          : '#ffffff';
+      const fill =
+        this.selectMode === 'subtract'
+          ? 'rgba(255, 40, 40, 0.4)'
+          : this.selectMode === 'add'
+            ? 'rgba(60, 255, 60, 0.25)'
+            : 'rgba(50, 130, 255, 0.25)';
+      const stroke =
+        this.selectMode === 'subtract'
+          ? 'rgba(255, 30, 30, 1)'
+          : this.selectMode === 'add'
+            ? 'rgba(50, 255, 50, 0.9)'
+            : '#ffffff';
 
       const screenX = camera.worldToScreenX(this.selMinX, canvasW);
       const screenY = camera.worldToScreenY(this.selMaxY, canvasH);
@@ -888,8 +917,13 @@ export class SelectTool implements ITool {
     if (this.phase === 'moving') {
       // Draw contour at moved position
       this.renderSelectionContour(
-        canvasCtx, camera, canvasW, canvasH, tileScreenSize,
-        this.moveOffsetX, this.moveOffsetY,
+        canvasCtx,
+        camera,
+        canvasW,
+        canvasH,
+        tileScreenSize,
+        this.moveOffsetX,
+        this.moveOffsetY,
       );
 
       // Ghost tiles
@@ -1044,11 +1078,7 @@ export class SelectTool implements ITool {
       canvasCtx.fillStyle = '#ffffff';
       canvasCtx.font = '11px monospace';
       canvasCtx.textAlign = 'center';
-      canvasCtx.fillText(
-        `${this.selectedTiles.size} tiles`,
-        sx + w / 2,
-        sy - 4,
-      );
+      canvasCtx.fillText(`${this.selectedTiles.size} tiles`, sx + w / 2, sy - 4);
     }
   }
 

@@ -19,8 +19,14 @@ function bresenham(x0: number, y0: number, x1: number, y1: number): [number, num
     points.push([cx, cy]);
     if (cx === x1 && cy === y1) break;
     const e2 = 2 * err;
-    if (e2 > -dy) { err -= dy; cx += sx; }
-    if (e2 < dx) { err += dx; cy += sy; }
+    if (e2 > -dy) {
+      err -= dy;
+      cx += sx;
+    }
+    if (e2 < dx) {
+      err += dx;
+      cy += sy;
+    }
   }
   return points;
 }
@@ -62,7 +68,11 @@ export class LineTool implements ITool {
 
     if (paletteItem.type === 'entity') {
       const { entityChanges } = createEntitiesAtPositions(
-        points, paletteItem.id, state.entities, state.nextEntityId, state.gridUid,
+        points,
+        paletteItem.id,
+        state.entities,
+        state.nextEntityId,
+        state.gridUid,
       );
       if (entityChanges.length > 0) {
         ctx.dispatch({
@@ -76,7 +86,11 @@ export class LineTool implements ITool {
     if (paletteItem.type === 'decal' && ctx.decalSettings) {
       const activeGrid = state.grids[state.activeGridIndex];
       const { decalChanges } = createDecalsAtPositions(
-        points, paletteItem.id, activeGrid.decals.decals, activeGrid.decals.nextDecalId, ctx.decalSettings,
+        points,
+        paletteItem.id,
+        activeGrid.decals.decals,
+        activeGrid.decals.nextDecalId,
+        ctx.decalSettings,
       );
       if (decalChanges.length > 0) {
         ctx.dispatch({
@@ -90,7 +104,10 @@ export class LineTool implements ITool {
     if (paletteItem.type !== 'tile') return;
 
     // Expand grid
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
     for (const [x, y] of points) {
       if (x < minX) minX = x;
       if (x > maxX) maxX = x;
@@ -125,12 +142,7 @@ export class LineTool implements ITool {
     }
   }
 
-  renderPreview(
-    canvasCtx: CanvasRenderingContext2D,
-    toolCtx: ToolContext,
-    cursorTileX: number,
-    cursorTileY: number,
-  ) {
+  renderPreview(canvasCtx: CanvasRenderingContext2D, toolCtx: ToolContext, cursorTileX: number, cursorTileY: number) {
     const { camera, canvasW, canvasH } = toolCtx;
     const tileScreenSize = camera.tileScreenSize;
 

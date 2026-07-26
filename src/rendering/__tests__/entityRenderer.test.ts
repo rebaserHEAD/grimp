@@ -1,13 +1,17 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Camera } from '../camera';
 import {
-  calculateCornerFills, calculateCardinalMask,
-  clearCornerFillCache, clearCardinalMaskCache,
+  calculateCornerFills,
+  calculateCardinalMask,
+  clearCornerFillCache,
+  clearCardinalMaskCache,
   clearSmoothInfoCache,
   buildSmoothKeyGrid,
-  getTintedCacheSize, TINTED_CACHE_MAX,
+  getTintedCacheSize,
+  TINTED_CACHE_MAX,
   clearPipeColorCache,
-  getPrototypeFlags, clearPrototypeFlags,
+  getPrototypeFlags,
+  clearPrototypeFlags,
   hasSubFloorHide,
   hasCableConnectionAt,
 } from '../entityRenderer';
@@ -193,7 +197,7 @@ describe('calculateCornerFills cache', () => {
     expect(result2).not.toBe(result1);
 
     // NE corner fill should now include E neighbor
-    const neCorner = result2.find(c => c.direction === 'east')!;
+    const neCorner = result2.find((c) => c.direction === 'east')!;
     // NE: N=CCW(1), E=CW(4) → fill should have bits 1 and 4 = 5
     expect(neCorner.fill).toBe(5);
   });
@@ -286,10 +290,7 @@ describe('smooth key grid batch lookup', () => {
 
   it('buildSmoothKeyGrid identifies tiles with smooth entities', () => {
     const registry = makeSmoothRegistry();
-    rebuildSpatialIndex([
-      makeWallEntity(1, 5, 5),
-      makeWallEntity(2, 5, 6),
-    ]);
+    rebuildSpatialIndex([makeWallEntity(1, 5, 5), makeWallEntity(2, 5, 6)]);
     const grid = buildSmoothKeyGrid(0, 0, 10, 10, registry);
     expect(grid.get(tileKey(5, 5))).toBe('walls');
     expect(grid.get(tileKey(5, 6))).toBe('walls');
@@ -317,8 +318,9 @@ describe('smooth key grid batch lookup', () => {
     const fillsWithGrid = calculateCornerFills(5, 5, 'walls', registry, grid);
 
     // Results should match
-    expect(fillsWithGrid.map(f => ({ fill: f.fill, direction: f.direction })))
-      .toEqual(fillsNoGrid.map(f => ({ fill: f.fill, direction: f.direction })));
+    expect(fillsWithGrid.map((f) => ({ fill: f.fill, direction: f.direction }))).toEqual(
+      fillsNoGrid.map((f) => ({ fill: f.fill, direction: f.direction })),
+    );
   });
 
   it('calculateCardinalMask with grid matches without grid', () => {
@@ -418,9 +420,16 @@ describe('hasSubFloorHide', () => {
     return {
       getTile: () => null,
       getEntity: () => ({
-        id: 'test', name: 'test', description: '', suffix: '', abstract: false,
-        categories: [], placement: {}, components,
-        spriteInfo: null, sourceCategory: 'Other',
+        id: 'test',
+        name: 'test',
+        description: '',
+        suffix: '',
+        abstract: false,
+        categories: [],
+        placement: {},
+        components,
+        spriteInfo: null,
+        sourceCategory: 'Other',
         raw: { type: 'entity' as const, id: 'test' },
       }),
       getAllTiles: () => [],

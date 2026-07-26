@@ -39,11 +39,7 @@ export class Camera {
   }
 
   /** Center and fit tile-space bounds into the canvas. */
-  fitBounds(
-    bounds: { minX: number; maxX: number; minY: number; maxY: number },
-    canvasW: number,
-    canvasH: number,
-  ) {
+  fitBounds(bounds: { minX: number; maxX: number; minY: number; maxY: number }, canvasW: number, canvasH: number) {
     this.x = (bounds.minX + bounds.maxX) / 2;
     this.y = (bounds.minY + bounds.maxY) / 2;
     const mapW = bounds.maxX - bounds.minX;

@@ -55,12 +55,7 @@ export class FillTool implements ITool {
   onMouseMove() {}
   onMouseUp() {}
 
-  renderPreview(
-    canvasCtx: CanvasRenderingContext2D,
-    toolCtx: ToolContext,
-    cursorTileX: number,
-    cursorTileY: number,
-  ) {
+  renderPreview(canvasCtx: CanvasRenderingContext2D, toolCtx: ToolContext, cursorTileX: number, cursorTileY: number) {
     if (!toolCtx.paletteItem || toolCtx.paletteItem.type !== 'tile') return;
 
     const { camera, canvasW, canvasH } = toolCtx;

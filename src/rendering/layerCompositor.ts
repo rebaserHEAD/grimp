@@ -45,15 +45,33 @@ export class LayerCompositor {
     this.canvasFactory = canvasFactory ?? defaultCanvasFactory;
   }
 
-  get bufferWidth(): number { return this._bufferW; }
-  get bufferHeight(): number { return this._bufferH; }
-  get physicalWidth(): number { return this._physicalW; }
-  get physicalHeight(): number { return this._physicalH; }
-  get isTilesDirty(): boolean { return this._tilesDirty; }
-  get isEntitiesDirty(): boolean { return this._entitiesDirty; }
-  get isConnectionsDirty(): boolean { return this._connectionsDirty; }
-  get isLightDirty(): boolean { return this._lightDirty; }
-  get isDecalsDirty(): boolean { return this._decalsDirty; }
+  get bufferWidth(): number {
+    return this._bufferW;
+  }
+  get bufferHeight(): number {
+    return this._bufferH;
+  }
+  get physicalWidth(): number {
+    return this._physicalW;
+  }
+  get physicalHeight(): number {
+    return this._physicalH;
+  }
+  get isTilesDirty(): boolean {
+    return this._tilesDirty;
+  }
+  get isEntitiesDirty(): boolean {
+    return this._entitiesDirty;
+  }
+  get isConnectionsDirty(): boolean {
+    return this._connectionsDirty;
+  }
+  get isLightDirty(): boolean {
+    return this._lightDirty;
+  }
+  get isDecalsDirty(): boolean {
+    return this._decalsDirty;
+  }
 
   resize(viewportW: number, viewportH: number, dpr: number): void {
     this._dpr = dpr;
@@ -84,11 +102,23 @@ export class LayerCompositor {
     return c;
   }
 
-  invalidateTiles(): void { this._tilesDirty = true; }
-  invalidateEntities(): void { this._entitiesDirty = true; this._lightDirty = true; this._decalsDirty = true; }
-  invalidateConnections(): void { this._connectionsDirty = true; }
-  invalidateLight(): void { this._lightDirty = true; }
-  invalidateDecals(): void { this._decalsDirty = true; }
+  invalidateTiles(): void {
+    this._tilesDirty = true;
+  }
+  invalidateEntities(): void {
+    this._entitiesDirty = true;
+    this._lightDirty = true;
+    this._decalsDirty = true;
+  }
+  invalidateConnections(): void {
+    this._connectionsDirty = true;
+  }
+  invalidateLight(): void {
+    this._lightDirty = true;
+  }
+  invalidateDecals(): void {
+    this._decalsDirty = true;
+  }
 
   invalidateAll(): void {
     this._tilesDirty = true;
@@ -116,14 +146,17 @@ export class LayerCompositor {
     this.snapZoom = zoom;
   }
 
-  get snapshotX(): number { return this.snapX; }
-  get snapshotY(): number { return this.snapY; }
-  get snapshotZoom(): number { return this.snapZoom; }
+  get snapshotX(): number {
+    return this.snapX;
+  }
+  get snapshotY(): number {
+    return this.snapY;
+  }
+  get snapshotZoom(): number {
+    return this.snapZoom;
+  }
 
-  panExceedsMargin(
-    offsetX: number, offsetY: number,
-    viewportW: number, viewportH: number,
-  ): boolean {
+  panExceedsMargin(offsetX: number, offsetY: number, viewportW: number, viewportH: number): boolean {
     const marginPxX = viewportW * this.margin;
     const marginPxY = viewportH * this.margin;
     return Math.abs(offsetX) > marginPxX || Math.abs(offsetY) > marginPxY;
@@ -153,10 +186,20 @@ export class LayerCompositor {
     return this.decalCanvas?.getContext('2d') ?? null;
   }
 
-  getDecalCanvas(): HTMLCanvasElement | null { return this.decalCanvas; }
+  getDecalCanvas(): HTMLCanvasElement | null {
+    return this.decalCanvas;
+  }
 
-  getTileCanvas(): HTMLCanvasElement | null { return this.tileCanvas; }
-  getEntityCanvas(): HTMLCanvasElement | null { return this.entityCanvas; }
-  getConnectionCanvas(): HTMLCanvasElement | null { return this.connectionCanvas; }
-  getLightCanvas(): HTMLCanvasElement | null { return this.lightCanvas; }
+  getTileCanvas(): HTMLCanvasElement | null {
+    return this.tileCanvas;
+  }
+  getEntityCanvas(): HTMLCanvasElement | null {
+    return this.entityCanvas;
+  }
+  getConnectionCanvas(): HTMLCanvasElement | null {
+    return this.connectionCanvas;
+  }
+  getLightCanvas(): HTMLCanvasElement | null {
+    return this.lightCanvas;
+  }
 }

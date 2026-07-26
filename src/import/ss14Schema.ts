@@ -11,7 +11,9 @@ import yaml from 'js-yaml';
 const MULTI_TYPE_MAPPING = new yaml.Type('!type:', {
   kind: 'mapping',
   multi: true,
-  represent(data: any) { return data; },
+  represent(data: any) {
+    return data;
+  },
   construct(data: any, type?: string) {
     if (data !== null && typeof data === 'object') {
       data._ss14Tag = type;
@@ -23,7 +25,9 @@ const MULTI_TYPE_MAPPING = new yaml.Type('!type:', {
 const MULTI_TYPE_SCALAR = new yaml.Type('!type:', {
   kind: 'scalar',
   multi: true,
-  represent(data: any) { return String(data); },
+  represent(data: any) {
+    return String(data);
+  },
   construct(data: any, type?: string) {
     return { _ss14Tag: type, value: data };
   },
@@ -32,14 +36,12 @@ const MULTI_TYPE_SCALAR = new yaml.Type('!type:', {
 const MULTI_TYPE_SEQUENCE = new yaml.Type('!type:', {
   kind: 'sequence',
   multi: true,
-  represent(data: any) { return data; },
+  represent(data: any) {
+    return data;
+  },
   construct(data: any, type?: string) {
     return { _ss14Tag: type, items: data };
   },
 });
 
-export const SS14_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
-  MULTI_TYPE_MAPPING,
-  MULTI_TYPE_SCALAR,
-  MULTI_TYPE_SEQUENCE,
-]);
+export const SS14_SCHEMA = yaml.DEFAULT_SCHEMA.extend([MULTI_TYPE_MAPPING, MULTI_TYPE_SCALAR, MULTI_TYPE_SEQUENCE]);

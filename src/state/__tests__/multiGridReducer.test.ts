@@ -13,9 +13,7 @@ function makeEntity(uid: number, proto: string, gridUid: number): ImportedEntity
     prototype: proto,
     position: { x: 5.5, y: 3.5 },
     rotation: 0,
-    components: [
-      { type: 'Transform', pos: '5.5,3.5', parent: gridUid },
-    ],
+    components: [{ type: 'Transform', pos: '5.5,3.5', parent: gridUid }],
   };
 }
 
@@ -24,7 +22,10 @@ function makeTwoGridState(): EditorState {
     ...createEmptyGridData(2, 'Main Station'),
     entities: [makeEntity(3, 'WallSolid', 2)],
     grid: {
-      width: 16, height: 16, offsetX: 0, offsetY: 0,
+      width: 16,
+      height: 16,
+      offsetX: 0,
+      offsetY: 0,
       cells: Array.from({ length: 256 }, () => ({ tileId: 'FloorSteel' })),
     },
   };
@@ -33,7 +34,10 @@ function makeTwoGridState(): EditorState {
     entities: [makeEntity(4, 'APCBasic', 100)],
     worldPosition: { x: 50.5, y: 20.5 },
     grid: {
-      width: 16, height: 16, offsetX: 0, offsetY: 0,
+      width: 16,
+      height: 16,
+      offsetX: 0,
+      offsetY: 0,
       cells: Array.from({ length: 256 }, () => ({ tileId: 'FloorWood' })),
     },
   };
@@ -116,13 +120,15 @@ describe('multi-grid reducer', () => {
         ...createEmptyGridData(2, 'G1'),
         entities: [makeEntity(3, 'LockerBotanist', 2)],
         containedEntities: {
-          3: [{
-            uid: 9999,
-            prototype: 'Crowbar',
-            position: { x: 0, y: 0 },
-            rotation: 0,
-            components: [{ type: 'Transform', parent: 3 }],
-          }],
+          3: [
+            {
+              uid: 9999,
+              prototype: 'Crowbar',
+              position: { x: 0, y: 0 },
+              rotation: 0,
+              components: [{ type: 'Transform', parent: 3 }],
+            },
+          ],
         },
       };
 
@@ -260,11 +266,14 @@ describe('multi-grid reducer', () => {
       const state = makeTwoGridState();
       const command: Command = {
         label: 'Paint tile',
-        tileChanges: [{
-          x: 0, y: 0,
-          before: { tileId: 'FloorSteel' },
-          after: { tileId: 'Plating' },
-        }],
+        tileChanges: [
+          {
+            x: 0,
+            y: 0,
+            before: { tileId: 'FloorSteel' },
+            after: { tileId: 'Plating' },
+          },
+        ],
         entityChanges: [],
       };
 
@@ -296,11 +305,14 @@ describe('multi-grid reducer', () => {
       const state = makeTwoGridState();
       const command: Command = {
         label: 'Paint',
-        tileChanges: [{
-          x: 0, y: 0,
-          before: { tileId: 'FloorSteel' },
-          after: { tileId: 'Plating' },
-        }],
+        tileChanges: [
+          {
+            x: 0,
+            y: 0,
+            before: { tileId: 'FloorSteel' },
+            after: { tileId: 'Plating' },
+          },
+        ],
         entityChanges: [],
       };
 
@@ -312,11 +324,14 @@ describe('multi-grid reducer', () => {
       const state = makeTwoGridState(); // active = grid 0 (uid=2)
       const command: Command = {
         label: 'Paint shuttle',
-        tileChanges: [{
-          x: 0, y: 0,
-          before: { tileId: 'FloorWood' },
-          after: { tileId: 'Plating' },
-        }],
+        tileChanges: [
+          {
+            x: 0,
+            y: 0,
+            before: { tileId: 'FloorWood' },
+            after: { tileId: 'Plating' },
+          },
+        ],
         entityChanges: [],
         gridUid: 100, // target grid 1
       };
@@ -334,11 +349,14 @@ describe('multi-grid reducer', () => {
       // Paint on grid 0
       const command: Command = {
         label: 'Paint',
-        tileChanges: [{
-          x: 0, y: 0,
-          before: { tileId: 'FloorSteel' },
-          after: { tileId: 'Plating' },
-        }],
+        tileChanges: [
+          {
+            x: 0,
+            y: 0,
+            before: { tileId: 'FloorSteel' },
+            after: { tileId: 'Plating' },
+          },
+        ],
         entityChanges: [],
       };
       state = editorReducer(state, { type: 'APPLY_COMMAND', command });
@@ -380,11 +398,14 @@ describe('multi-grid reducer', () => {
       let state = makeTwoGridState();
       const command: Command = {
         label: 'Paint',
-        tileChanges: [{
-          x: 0, y: 0,
-          before: { tileId: 'FloorSteel' },
-          after: { tileId: 'Plating' },
-        }],
+        tileChanges: [
+          {
+            x: 0,
+            y: 0,
+            before: { tileId: 'FloorSteel' },
+            after: { tileId: 'Plating' },
+          },
+        ],
         entityChanges: [],
       };
 
@@ -414,7 +435,11 @@ describe('multi-grid reducer', () => {
       let state = makeTwoGridState();
       state = editorReducer(state, {
         type: 'APPLY_COMMAND',
-        command: { label: 'x', tileChanges: [], entityChanges: [{ action: 'add', entity: makeEntity(200, 'Chair', 2) }] },
+        command: {
+          label: 'x',
+          tileChanges: [],
+          entityChanges: [{ action: 'add', entity: makeEntity(200, 'Chair', 2) }],
+        },
       });
       const result = editorReducer(state, { type: 'NEW_MAP' });
       expect(result.undoStack).toEqual([]);

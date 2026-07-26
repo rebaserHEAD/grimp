@@ -17,10 +17,17 @@ function makeMockRegistry(): IPrototypeRegistry {
   return {
     getTile: () => null,
     getEntity: (id) => ({
-      id, name: id, description: '', suffix: '', abstract: false,
-      categories: [], placement: {}, components: [],
+      id,
+      name: id,
+      description: '',
+      suffix: '',
+      abstract: false,
+      categories: [],
+      placement: {},
+      components: [],
       spriteInfo: { rsiPath: 'test.rsi', baseState: 'base', layers: [] },
-      sourceCategory: 'Other', raw: { type: 'entity' as const, id },
+      sourceCategory: 'Other',
+      raw: { type: 'entity' as const, id },
     }),
     getAllTiles: () => [],
     getAllEntities: () => [],
@@ -47,10 +54,15 @@ function makeToolContext(
 ): { ctx: ToolContext; dispatched: any[]; getDecalColor: () => string | null } {
   rebuildSpatialIndex(entities);
   const dispatched: any[] = [];
-  const grid = tileId ? {
-    width: 20, height: 20, offsetX: 0, offsetY: 0,
-    cells: Array.from({ length: 400 }, () => ({ tileId: tileId! })),
-  } : { width: 0, height: 0, offsetX: 0, offsetY: 0, cells: [] };
+  const grid = tileId
+    ? {
+        width: 20,
+        height: 20,
+        offsetX: 0,
+        offsetY: 0,
+        cells: Array.from({ length: 400 }, () => ({ tileId: tileId! })),
+      }
+    : { width: 0, height: 0, offsetX: 0, offsetY: 0, cells: [] };
 
   const baseState = createInitialState();
   // Put decals into the active grid
@@ -59,7 +71,7 @@ function makeToolContext(
     ...grids[0],
     grid,
     entities,
-    decals: { decals, nextDecalId: decals.length > 0 ? Math.max(...decals.map(d => d.id)) + 1 : 0 },
+    decals: { decals, nextDecalId: decals.length > 0 ? Math.max(...decals.map((d) => d.id)) + 1 : 0 },
   };
 
   const state = {
@@ -73,14 +85,18 @@ function makeToolContext(
   let decalColor: string | null = null;
   const ctx: ToolContext = {
     state,
-    dispatch: (action: any) => { dispatched.push(action); },
+    dispatch: (action: any) => {
+      dispatched.push(action);
+    },
     camera: { tileScreenSize: 32 } as any,
     canvasW: 800,
     canvasH: 600,
     paletteItem: null,
     shiftHeld: false,
     ctrlHeld: false,
-    setDecalColor: (color: string | null) => { decalColor = color; },
+    setDecalColor: (color: string | null) => {
+      decalColor = color;
+    },
     layerVisibility,
   };
   return { ctx, dispatched, getDecalColor: () => decalColor };
@@ -95,9 +111,9 @@ describe('EyedropperTool', () => {
 
       tool.onMouseDown(ctx, 5, 5, 0);
 
-      const paletteAction = dispatched.find(a => a.type === 'SET_PALETTE_ITEM');
+      const paletteAction = dispatched.find((a) => a.type === 'SET_PALETTE_ITEM');
       expect(paletteAction.item).toEqual({ type: 'entity', id: 'APCBasic' });
-      expect(dispatched.find(a => a.type === 'SET_TOOL').tool).toBe('entityPlace');
+      expect(dispatched.find((a) => a.type === 'SET_TOOL').tool).toBe('entityPlace');
     });
 
     it('picks tile when no entity at location', () => {
@@ -106,9 +122,9 @@ describe('EyedropperTool', () => {
 
       tool.onMouseDown(ctx, 3, 3, 0);
 
-      const paletteAction = dispatched.find(a => a.type === 'SET_PALETTE_ITEM');
+      const paletteAction = dispatched.find((a) => a.type === 'SET_PALETTE_ITEM');
       expect(paletteAction.item).toEqual({ type: 'tile', id: 'FloorSteel' });
-      expect(dispatched.find(a => a.type === 'SET_TOOL').tool).toBe('paint');
+      expect(dispatched.find((a) => a.type === 'SET_TOOL').tool).toBe('paint');
     });
 
     it('does not pick on right click', () => {
@@ -135,10 +151,10 @@ describe('EyedropperTool', () => {
 
       tool.onMouseDown(ctx, 5, 5, 0);
 
-      const paletteAction = dispatched.find(a => a.type === 'SET_PALETTE_ITEM');
+      const paletteAction = dispatched.find((a) => a.type === 'SET_PALETTE_ITEM');
       expect(paletteAction.item.type).toBe('entity');
       expect(paletteAction.item.id).toBe('GasVentPump');
-      expect(dispatched.find(a => a.type === 'SET_TOOL').tool).toBe('entityPlace');
+      expect(dispatched.find((a) => a.type === 'SET_TOOL').tool).toBe('entityPlace');
     });
   });
 
@@ -211,9 +227,9 @@ describe('EyedropperTool', () => {
       // Click to confirm selection
       tool.onMouseDown(ctx, 5, 5, 0);
 
-      const paletteAction = dispatched.find(a => a.type === 'SET_PALETTE_ITEM');
+      const paletteAction = dispatched.find((a) => a.type === 'SET_PALETTE_ITEM');
       expect(paletteAction.item).toEqual({ type: 'tile', id: 'FloorSteel' });
-      expect(dispatched.find(a => a.type === 'SET_TOOL').tool).toBe('paint');
+      expect(dispatched.find((a) => a.type === 'SET_TOOL').tool).toBe('paint');
       expect(tool.getPickerState().open).toBe(false);
     });
 
@@ -225,7 +241,7 @@ describe('EyedropperTool', () => {
       tool.onWheel!(ctx, 5, 5, 1);
 
       const items = tool.getPickerState().items;
-      const tileItem = items.find(i => i.type === 'tile');
+      const tileItem = items.find((i) => i.type === 'tile');
       expect(tileItem).toBeDefined();
       expect(tileItem!.id).toBe('Plating');
     });
@@ -263,7 +279,7 @@ describe('EyedropperTool', () => {
       tool.onWheel!(ctx, 5, 5, 1);
 
       const items = tool.getPickerState().items;
-      expect(items.every(i => i.type === 'entity')).toBe(true);
+      expect(items.every((i) => i.type === 'entity')).toBe(true);
       expect(items).toHaveLength(2);
     });
   });
@@ -276,10 +292,10 @@ describe('EyedropperTool', () => {
 
       tool.onMouseDown(ctx, 3, 3, 0);
 
-      const paletteAction = dispatched.find(a => a.type === 'SET_PALETTE_ITEM');
+      const paletteAction = dispatched.find((a) => a.type === 'SET_PALETTE_ITEM');
       expect(paletteAction).toBeDefined();
       expect(paletteAction.item).toEqual({ type: 'decal', id: 'BotGreyscale' });
-      expect(dispatched.find(a => a.type === 'SET_TOOL').tool).toBe('paint');
+      expect(dispatched.find((a) => a.type === 'SET_TOOL').tool).toBe('paint');
     });
 
     it('entity takes priority over decal on click', () => {
@@ -290,7 +306,7 @@ describe('EyedropperTool', () => {
 
       tool.onMouseDown(ctx, 5, 5, 0);
 
-      const paletteAction = dispatched.find(a => a.type === 'SET_PALETTE_ITEM');
+      const paletteAction = dispatched.find((a) => a.type === 'SET_PALETTE_ITEM');
       expect(paletteAction.item.type).toBe('entity');
     });
 
@@ -346,7 +362,7 @@ describe('EyedropperTool', () => {
 
       tool.onMouseDown(ctx, 5, 5, 0);
 
-      const paletteAction = dispatched.find(a => a.type === 'SET_PALETTE_ITEM');
+      const paletteAction = dispatched.find((a) => a.type === 'SET_PALETTE_ITEM');
       expect(paletteAction).toBeDefined();
       expect(paletteAction.item.type).toBe('decal');
       expect(paletteAction.item.id).toBe('BotGreyscale');
@@ -361,7 +377,7 @@ describe('EyedropperTool', () => {
 
       tool.onMouseDown(ctx, 5, 5, 0);
 
-      const paletteAction = dispatched.find(a => a.type === 'SET_PALETTE_ITEM');
+      const paletteAction = dispatched.find((a) => a.type === 'SET_PALETTE_ITEM');
       expect(paletteAction.item.type).toBe('entity');
     });
 

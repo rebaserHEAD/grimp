@@ -57,14 +57,14 @@ function getDrawDepthValue(drawDepth: string | undefined): number {
 // ---- Layer group filtering ----
 
 export interface LayerVisibility {
-  subfloor: boolean;     // DrawDepth -22 to -13 (cables, pipes)
+  subfloor: boolean; // DrawDepth -22 to -13 (cables, pipes)
   floorObjects: boolean; // DrawDepth -12 to -5
-  structures: boolean;   // DrawDepth -2 to -1 (walls, windows)
-  objects: boolean;       // DrawDepth 0 to +7 (furniture, machines, wall mounts)
-  doors: boolean;        // DrawDepth +8 to +10
-  markers: boolean;      // Spawn points and mapping helpers
+  structures: boolean; // DrawDepth -2 to -1 (walls, windows)
+  objects: boolean; // DrawDepth 0 to +7 (furniture, machines, wall mounts)
+  doors: boolean; // DrawDepth +8 to +10
+  markers: boolean; // Spawn points and mapping helpers
   atmosMarkers: boolean; // AtmosFix (vacuum/gas-fill) markers; hulls carpet these
-  decals: boolean;       // Decal overlays (floor markings, arrows, etc.)
+  decals: boolean; // Decal overlays (floor markings, arrows, etc.)
 }
 
 export const DEFAULT_LAYER_VISIBILITY: LayerVisibility = {
@@ -123,7 +123,7 @@ export function isAtmosFixPrototype(prototype: string, registry?: IPrototypeRegi
   const cached = atmosFixCache.get(prototype);
   if (cached !== undefined) return cached;
   const entity = registry.getEntity(prototype);
-  const result = entity ? entity.components.some(c => c.type === 'AtmosFixMarker') : false;
+  const result = entity ? entity.components.some((c) => c.type === 'AtmosFixMarker') : false;
   atmosFixCache.set(prototype, result);
   return result;
 }
@@ -140,7 +140,7 @@ export function isMarkerPrototype(prototype: string, registry?: IPrototypeRegist
   const cached = markerComponentCache.get(prototype);
   if (cached !== undefined) return cached;
   const entity = registry.getEntity(prototype);
-  const result = entity ? entity.components.some(c => c.type === 'Marker') : false;
+  const result = entity ? entity.components.some((c) => c.type === 'Marker') : false;
   markerComponentCache.set(prototype, result);
   return result;
 }
@@ -177,8 +177,13 @@ export function isLayerVisible(
 
 /** Prototypes with SubFloorHide component (infrastructure hidden under floors). */
 const SUBFLOOR_PREFIXES = [
-  'Cable', 'GasPipe', 'DisposalPipe', 'DisposalJunction', 'DisposalYJunction',
-  'DisposalBend', 'DisposalTrunk',
+  'Cable',
+  'GasPipe',
+  'DisposalPipe',
+  'DisposalJunction',
+  'DisposalYJunction',
+  'DisposalBend',
+  'DisposalTrunk',
 ];
 
 const subFloorCache = new Map<string, boolean>();
@@ -188,11 +193,14 @@ export function hasSubFloorHide(prototype: string, registry: IPrototypeRegistry)
   if (subFloorCache.has(prototype)) return subFloorCache.get(prototype)!;
   let result = false;
   for (const prefix of SUBFLOOR_PREFIXES) {
-    if (prototype.startsWith(prefix)) { result = true; break; }
+    if (prototype.startsWith(prefix)) {
+      result = true;
+      break;
+    }
   }
   if (!result) {
     const entity = registry.getEntity(prototype);
-    if (entity) result = entity.components.some(c => c.type === 'SubFloorHide');
+    if (entity) result = entity.components.some((c) => c.type === 'SubFloorHide');
   }
   subFloorCache.set(prototype, result);
   return result;
@@ -228,10 +236,7 @@ function getCableStatePrefix(prototype: string): string | null {
  * Prototypes that act as cable connection points (e.g., CableTerminal connects to HV/MV).
  * Cables visually connect to these even though they aren't the same prototype.
  */
-const CABLE_CONNECTOR_PROTOTYPES = new Set([
-  'CableTerminal',
-  'CableTerminalUncuttable',
-]);
+const CABLE_CONNECTOR_PROTOTYPES = new Set(['CableTerminal', 'CableTerminalUncuttable']);
 
 /** Exported for testing */
 export function hasCableConnectionAt(x: number, y: number, proto: string): boolean {
@@ -239,8 +244,7 @@ export function hasCableConnectionAt(x: number, y: number, proto: string): boole
   for (const e of entities) {
     if (e.prototype === proto) return true;
     // CableTerminal connects to HV and MV cables
-    if (CABLE_CONNECTOR_PROTOTYPES.has(e.prototype) &&
-      (proto === 'CableHV' || proto === 'CableMV')) return true;
+    if (CABLE_CONNECTOR_PROTOTYPES.has(e.prototype) && (proto === 'CableHV' || proto === 'CableMV')) return true;
   }
   return false;
 }
@@ -251,10 +255,10 @@ function getCableConnectionMask(entity: ImportedEntity): number {
   const proto = entity.prototype;
 
   let mask = 0;
-  if (hasCableConnectionAt(ex, ey + 1, proto)) mask |= 1;  // North
-  if (hasCableConnectionAt(ex, ey - 1, proto)) mask |= 2;  // South
-  if (hasCableConnectionAt(ex + 1, ey, proto)) mask |= 4;  // East
-  if (hasCableConnectionAt(ex - 1, ey, proto)) mask |= 8;  // West
+  if (hasCableConnectionAt(ex, ey + 1, proto)) mask |= 1; // North
+  if (hasCableConnectionAt(ex, ey - 1, proto)) mask |= 2; // South
+  if (hasCableConnectionAt(ex + 1, ey, proto)) mask |= 4; // East
+  if (hasCableConnectionAt(ex - 1, ey, proto)) mask |= 8; // West
   return mask;
 }
 
@@ -271,9 +275,10 @@ const smoothInfoCache = new Map<string, SmoothInfo | null>();
 function getSmoothInfo(prototype: string, registry: IPrototypeRegistry): SmoothInfo | null {
   if (smoothInfoCache.has(prototype)) return smoothInfoCache.get(prototype)!;
   const spriteInfo = registry.getSpriteInfo(prototype);
-  const result = spriteInfo?.iconSmoothKey && spriteInfo?.iconSmoothBase
-    ? { key: spriteInfo.iconSmoothKey, base: spriteInfo.iconSmoothBase, mode: spriteInfo.iconSmoothMode ?? 'Corners' }
-    : null;
+  const result =
+    spriteInfo?.iconSmoothKey && spriteInfo?.iconSmoothBase
+      ? { key: spriteInfo.iconSmoothKey, base: spriteInfo.iconSmoothBase, mode: spriteInfo.iconSmoothMode ?? 'Corners' }
+      : null;
   smoothInfoCache.set(prototype, result);
   return result;
 }
@@ -289,7 +294,10 @@ export function clearSmoothInfoCache(): void {
  * Each tile is resolved once, replacing per-entity per-neighbor spatial lookups.
  */
 export function buildSmoothKeyGrid(
-  minX: number, minY: number, maxX: number, maxY: number,
+  minX: number,
+  minY: number,
+  maxX: number,
+  maxY: number,
   registry: IPrototypeRegistry,
 ): Map<number, string> {
   const grid = new Map<number, string>();
@@ -327,18 +335,26 @@ function hasSmoothKeyAt(x: number, y: number, smoothKey: string, registry: IProt
 
 // ---- Generation-keyed caches for smooth calculations ----
 
-const cornerFillCache = new Map<string, { gen: number; fills: Array<{ fill: number; direction: CardinalDirection }> }>();
+const cornerFillCache = new Map<
+  string,
+  { gen: number; fills: Array<{ fill: number; direction: CardinalDirection }> }
+>();
 const cardinalMaskCache = new Map<string, { gen: number; mask: number }>();
 
-export function clearCornerFillCache(): void { cornerFillCache.clear(); }
-export function clearCardinalMaskCache(): void { cardinalMaskCache.clear(); }
+export function clearCornerFillCache(): void {
+  cornerFillCache.clear();
+}
+export function clearCardinalMaskCache(): void {
+  cardinalMaskCache.clear();
+}
 
 /**
  * Calculate cardinal direction bitmask for CardinalFlags mode.
  * N=1, S=2, E=4, W=8 (matching SS14's CardinalConnectDirs enum).
  */
 export function calculateCardinalMask(
-  ex: number, ey: number,
+  ex: number,
+  ey: number,
   smoothKey: string,
   registry: IPrototypeRegistry,
   smoothGrid?: Map<number, string>,
@@ -350,15 +366,15 @@ export function calculateCardinalMask(
 
   let mask = 0;
   if (smoothGrid) {
-    if (smoothGrid.get(tileKey(ex, ey + 1)) === smoothKey) mask |= 1;  // North
-    if (smoothGrid.get(tileKey(ex, ey - 1)) === smoothKey) mask |= 2;  // South
-    if (smoothGrid.get(tileKey(ex + 1, ey)) === smoothKey) mask |= 4;  // East
-    if (smoothGrid.get(tileKey(ex - 1, ey)) === smoothKey) mask |= 8;  // West
+    if (smoothGrid.get(tileKey(ex, ey + 1)) === smoothKey) mask |= 1; // North
+    if (smoothGrid.get(tileKey(ex, ey - 1)) === smoothKey) mask |= 2; // South
+    if (smoothGrid.get(tileKey(ex + 1, ey)) === smoothKey) mask |= 4; // East
+    if (smoothGrid.get(tileKey(ex - 1, ey)) === smoothKey) mask |= 8; // West
   } else {
-    if (hasSmoothKeyAt(ex, ey + 1, smoothKey, registry)) mask |= 1;  // North
-    if (hasSmoothKeyAt(ex, ey - 1, smoothKey, registry)) mask |= 2;  // South
-    if (hasSmoothKeyAt(ex + 1, ey, smoothKey, registry)) mask |= 4;  // East
-    if (hasSmoothKeyAt(ex - 1, ey, smoothKey, registry)) mask |= 8;  // West
+    if (hasSmoothKeyAt(ex, ey + 1, smoothKey, registry)) mask |= 1; // North
+    if (hasSmoothKeyAt(ex, ey - 1, smoothKey, registry)) mask |= 2; // South
+    if (hasSmoothKeyAt(ex + 1, ey, smoothKey, registry)) mask |= 4; // East
+    if (hasSmoothKeyAt(ex - 1, ey, smoothKey, registry)) mask |= 8; // West
   }
 
   cardinalMaskCache.set(cacheKey, { gen, mask });
@@ -384,7 +400,8 @@ export function calculateCardinalMask(
  *   NW: W=CCW(1), N=CW(4), NW=Diag(2)
  */
 export function calculateCornerFills(
-  ex: number, ey: number,
+  ex: number,
+  ey: number,
   smoothKey: string,
   registry: IPrototypeRegistry,
   smoothGrid?: Map<number, string>,
@@ -471,9 +488,9 @@ export function clearEntitySpriteCache(): void {
 function rotationToDirection(rotation: number): CardinalDirection {
   const TWO_PI = 2 * Math.PI;
   const norm = ((rotation % TWO_PI) + TWO_PI) % TWO_PI;
-  if (norm < Math.PI / 4 || norm >= 7 * Math.PI / 4) return 'south';
-  if (norm < 3 * Math.PI / 4) return 'east';
-  if (norm < 5 * Math.PI / 4) return 'north';
+  if (norm < Math.PI / 4 || norm >= (7 * Math.PI) / 4) return 'south';
+  if (norm < (3 * Math.PI) / 4) return 'east';
+  if (norm < (5 * Math.PI) / 4) return 'north';
   return 'west';
 }
 
@@ -485,9 +502,7 @@ export function getEntitySprite(
   registry: IPrototypeRegistry,
   stateOverride?: string,
 ): SpriteDrawInfo | null | undefined {
-  const cacheKey = stateOverride
-    ? `${prototype}:${direction}:${stateOverride}`
-    : `${prototype}:${direction}`;
+  const cacheKey = stateOverride ? `${prototype}:${direction}:${stateOverride}` : `${prototype}:${direction}`;
 
   if (entitySpriteCache.has(cacheKey)) {
     return entitySpriteCache.get(cacheKey)!;
@@ -566,13 +581,15 @@ function getExtraLayers(
     };
 
     const layerScale = layer.scale;
-    layerPromises.push(loadSprite(layerSpriteInfo, direction, 0).then(d =>
-      d && layerScale ? { ...d, layerScaleX: layerScale.x, layerScaleY: layerScale.y } : d,
-    ));
+    layerPromises.push(
+      loadSprite(layerSpriteInfo, direction, 0).then((d) =>
+        d && layerScale ? { ...d, layerScaleX: layerScale.x, layerScaleY: layerScale.y } : d,
+      ),
+    );
   }
 
   Promise.all(layerPromises)
-    .then(results => {
+    .then((results) => {
       const validLayers = results.filter((r): r is ExtraLayerDrawInfo => r !== null);
       extraLayerCache.set(cacheKey, validLayers.length > 0 ? validLayers : null);
       markSceneDirty();
@@ -734,7 +751,10 @@ function getTintedSprite(sprite: SpriteDrawInfo, color: string): HTMLCanvasEleme
     const oldest = tintedSpriteCache.keys().next().value;
     if (oldest !== undefined) {
       const evicted = tintedSpriteCache.get(oldest);
-      if (evicted) { evicted.width = 0; evicted.height = 0; } // release GPU backing store
+      if (evicted) {
+        evicted.width = 0;
+        evicted.height = 0;
+      } // release GPU backing store
       tintedSpriteCache.delete(oldest);
     }
   }
@@ -809,8 +829,12 @@ export function renderEntities(
   const subFloorMode = showSubFloor ?? true;
 
   // Check if we can reuse the cached visible list and indexes
-  const cameraChanged = camera.x !== prevCameraX || camera.y !== prevCameraY ||
-    camera.zoom !== prevCameraZoom || canvasW !== prevCanvasW || canvasH !== prevCanvasH;
+  const cameraChanged =
+    camera.x !== prevCameraX ||
+    camera.y !== prevCameraY ||
+    camera.zoom !== prevCameraZoom ||
+    canvasW !== prevCanvasW ||
+    canvasH !== prevCanvasH;
   const entitiesChanged = entities !== prevEntitiesRef;
   const curSpatialGen = spatialGeneration();
   const spatialChanged = curSpatialGen !== prevSpatialGen;
@@ -885,13 +909,17 @@ export function renderEntities(
     statsSetLodActive(true);
     let draws = 0;
     for (const { entity, dimmed } of visible) {
-      if (dimmed) { ctx.globalAlpha = SUBFLOOR_DIM_OPACITY; }
+      if (dimmed) {
+        ctx.globalAlpha = SUBFLOOR_DIM_OPACITY;
+      }
       const tileX = Math.floor(entity.position.x);
       const tileY = Math.floor(entity.position.y);
       const screenX = camera.worldToScreenX(tileX, canvasW);
       const screenY = camera.worldToScreenY(tileY, canvasH);
       drawPlaceholder(ctx, screenX, screenY, tileScreenSize, entity.prototype, true);
-      if (dimmed) { ctx.globalAlpha = 1; }
+      if (dimmed) {
+        ctx.globalAlpha = 1;
+      }
       draws++;
     }
     statsAddDrawCalls(draws);
@@ -905,7 +933,9 @@ export function renderEntities(
     const { position, rotation, prototype } = entity;
 
     // Dim subfloor entities when T-Ray is off
-    if (dimmed) { ctx.globalAlpha = SUBFLOOR_DIM_OPACITY; }
+    if (dimmed) {
+      ctx.globalAlpha = SUBFLOOR_DIM_OPACITY;
+    }
 
     // Entity position is the center; subtract 0.5 to get top-left draw origin
     const screenX = camera.worldToScreenX(position.x - 0.5, canvasW);
@@ -946,8 +976,14 @@ export function renderEntities(
           } else {
             ctx.drawImage(
               cardinalSprite.image,
-              cardinalSprite.sx, cardinalSprite.sy, cardinalSprite.sw, cardinalSprite.sh,
-              screenX, screenY, tileScreenSize, tileScreenSize,
+              cardinalSprite.sx,
+              cardinalSprite.sy,
+              cardinalSprite.sw,
+              cardinalSprite.sh,
+              screenX,
+              screenY,
+              tileScreenSize,
+              tileScreenSize,
             );
           }
         }
@@ -971,8 +1007,14 @@ export function renderEntities(
           } else {
             ctx.drawImage(
               cornerSprite.image,
-              cornerSprite.sx, cornerSprite.sy, cornerSprite.sw, cornerSprite.sh,
-              screenX, screenY, tileScreenSize, tileScreenSize,
+              cornerSprite.sx,
+              cornerSprite.sy,
+              cornerSprite.sw,
+              cornerSprite.sh,
+              screenX,
+              screenY,
+              tileScreenSize,
+              tileScreenSize,
             );
           }
         }
@@ -1061,11 +1103,7 @@ export function renderEntities(
     if (tinted) {
       ctx.drawImage(tinted, dx, dy, dw, dh);
     } else {
-      ctx.drawImage(
-        sprite.image,
-        sprite.sx, sprite.sy, sprite.sw, sprite.sh,
-        dx, dy, dw, dh,
-      );
+      ctx.drawImage(sprite.image, sprite.sx, sprite.sy, sprite.sw, sprite.sh, dx, dy, dw, dh);
     }
 
     if (hasAlpha) {
@@ -1078,12 +1116,20 @@ export function renderEntities(
       const extraLayers = getExtraLayers(prototype, direction, registry);
       if (extraLayers) {
         for (const layerSprite of extraLayers) {
-          const lw = tileScreenSize * (layerSprite.sw / TILE_SIZE) * Math.abs(scaleX) * Math.abs(layerSprite.layerScaleX ?? 1);
-          const lh = tileScreenSize * (layerSprite.sh / TILE_SIZE) * Math.abs(scaleY) * Math.abs(layerSprite.layerScaleY ?? 1);
+          const lw =
+            tileScreenSize * (layerSprite.sw / TILE_SIZE) * Math.abs(scaleX) * Math.abs(layerSprite.layerScaleX ?? 1);
+          const lh =
+            tileScreenSize * (layerSprite.sh / TILE_SIZE) * Math.abs(scaleY) * Math.abs(layerSprite.layerScaleY ?? 1);
           ctx.drawImage(
             layerSprite.image,
-            layerSprite.sx, layerSprite.sy, layerSprite.sw, layerSprite.sh,
-            screenX + (tileScreenSize - lw) / 2, screenY + (tileScreenSize - lh) / 2, lw, lh,
+            layerSprite.sx,
+            layerSprite.sy,
+            layerSprite.sw,
+            layerSprite.sh,
+            screenX + (tileScreenSize - lw) / 2,
+            screenY + (tileScreenSize - lh) / 2,
+            lw,
+            lh,
           );
         }
       }
@@ -1095,7 +1141,9 @@ export function renderEntities(
     if (needsCanvasRotation) {
       ctx.restore();
     }
-    if (dimmed) { ctx.globalAlpha = 1; }
+    if (dimmed) {
+      ctx.globalAlpha = 1;
+    }
     drawCalls++;
   }
   statsAddDrawCalls(drawCalls);
@@ -1124,5 +1172,5 @@ export function getEntitiesAtTile(
 
   // Sort topmost first (highest DrawDepth)
   results.sort((a, b) => b.depth - a.depth || b.entity.uid - a.entity.uid);
-  return results.map(r => r.entity);
+  return results.map((r) => r.entity);
 }

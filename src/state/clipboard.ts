@@ -26,7 +26,7 @@ export interface ClipboardDecal {
 export interface ClipboardData {
   width: number;
   height: number;
-  tiles: (TileCell | null)[];  // row-major, null = empty/space
+  tiles: (TileCell | null)[]; // row-major, null = empty/space
   entities: ClipboardEntity[];
   decals?: ClipboardDecal[];
   originX: number; // world coords of top-left when copied

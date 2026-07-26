@@ -103,8 +103,8 @@ Entities are parented to their grid via the Transform component:
 
 ```yaml
 - type: Transform
-  pos: 5.5,3.5     # Local to grid coordinate space
-  parent: 2         # Grid UID
+  pos: 5.5,3.5 # Local to grid coordinate space
+  parent: 2 # Grid UID
 ```
 
 An entity's `pos` is relative to its parent grid's coordinate system. If the grid moves, all its entities move with it.
@@ -125,6 +125,7 @@ internal sealed class MapChunk
 ```
 
 When an entity is anchored:
+
 1. Added to chunk's SnapGrid cell
 2. Body type set to Static
 3. Position snapped to tile center
@@ -136,12 +137,12 @@ When a grid splits, anchored entities on affected tiles are re-anchored to the n
 
 Station maps commonly have multiple grids:
 
-| Map | Grids | Purpose |
-|-----|-------|---------|
-| Hotel.yml | 1 | Main station only |
-| Bagel.yml | 1 | Main station only |
-| Box.yml | 2 | Main station + secondary |
-| Cork.yml | 4 | Main station + cargo shuttle + ERT shuttle + other |
+| Map       | Grids | Purpose                                            |
+| --------- | ----- | -------------------------------------------------- |
+| Hotel.yml | 1     | Main station only                                  |
+| Bagel.yml | 1     | Main station only                                  |
+| Box.yml   | 2     | Main station + secondary                           |
+| Cork.yml  | 4     | Main station + cargo shuttle + ERT shuttle + other |
 
 Secondary grids (shuttles, etc.) are positioned far from the main station via their Transform. For example, Cork's ERT Shuttle is at world position `(9999.484, -0.46875)`.
 
@@ -155,73 +156,73 @@ meta:
   entityCount: 29399
 
 maps:
-- 1                            # Map entity UIDs
+  - 1 # Map entity UIDs
 
 grids:
-- 2                            # Grid entity UIDs
-- 8812
-- 10258
+  - 2 # Grid entity UIDs
+  - 8812
+  - 10258
 
-orphans: []                    # grid uids saved without a map (grid documents)
-nullspace: []                  # Entities in null-space
+orphans: [] # grid uids saved without a map (grid documents)
+nullspace: [] # Entities in null-space
 
 # The above is a Map document (category: Map). A Grid document (category: Grid,
 # the shape of a saved ship/POI) has no map entity: maps is empty and the grid
 # uid appears under both grids and orphans. See docs/import-export.md.
 
 tilemap:
-  0: Space                     # Numeric tile ID → tile definition name
+  0: Space # Numeric tile ID → tile definition name
   7: FloorSteel
   121: Plating
 
 entities:
-- proto: ""                    # Map/Grid system entities (no prototype)
-  entities:
-  - uid: 1                     # Map entity
-    components:
-    - type: MetaData
-    - type: Transform
-    - type: Map
-      mapPaused: True
-    - type: GridTree
-    - type: Broadphase
-    - type: OccluderTree
+  - proto: '' # Map/Grid system entities (no prototype)
+    entities:
+      - uid: 1 # Map entity
+        components:
+          - type: MetaData
+          - type: Transform
+          - type: Map
+            mapPaused: True
+          - type: GridTree
+          - type: Broadphase
+          - type: OccluderTree
 
-  - uid: 2                     # Grid entity
-    components:
-    - type: MetaData
-    - type: Transform
-      pos: 0.50032806,0.50115013
-      parent: 1                # Parented to map
-    - type: MapGrid
-      chunks:
-        -1,-1:
-          ind: -1,-1
-          tiles: WQAAAAACAHk...  # Base64-encoded tile data
-          version: 7
-        0,0:
-          ind: 0,0
-          tiles: WQAAAAACAFk...
-          version: 7
+      - uid: 2 # Grid entity
+        components:
+          - type: MetaData
+          - type: Transform
+            pos: 0.50032806,0.50115013
+            parent: 1 # Parented to map
+          - type: MapGrid
+            chunks:
+              -1,-1:
+                ind: -1,-1
+                tiles: WQAAAAACAHk... # Base64-encoded tile data
+                version: 7
+              0,0:
+                ind: 0,0
+                tiles: WQAAAAACAFk...
+                version: 7
 
-- proto: WallSolid              # Regular entities grouped by prototype
-  entities:
-  - uid: 3
-    components:
-    - type: Transform
-      pos: 5.5,3.5
-      parent: 2                # Parented to grid
+  - proto: WallSolid # Regular entities grouped by prototype
+    entities:
+      - uid: 3
+        components:
+          - type: Transform
+            pos: 5.5,3.5
+            parent: 2 # Parented to grid
 ```
 
 ### Tile Encoding
 
 Each tile in a chunk is encoded as binary data, Base64-serialized:
 
-| Format | Bytes/Tile | Layout |
-|--------|-----------|--------|
-| v7 | 7 | int32 tileId + uint8 flags + uint8 variant + uint8 rotation |
-| v6 | 4-6 | int32 tileId + uint8 flags + uint8 variant |
-| v5 | 3-4 | uint16 tileId + uint8 flags + uint8 variant |
+| Format | Bytes/Tile | Layout                                                      |
+| ------ | ---------- | ----------------------------------------------------------- |
+| v7     | 7          | int32 tileId + uint8 flags + uint8 variant + uint8 rotation |
+| v6     | 4-6        | int32 tileId + uint8 flags + uint8 variant                  |
+| v5     | 3-4        | uint16 tileId + uint8 flags + uint8 variant                 |
 
 Tile data stored row-by-row: y from 0 to ChunkSize-1 (outer), x from 0 to ChunkSize-1 (inner).
 
@@ -240,19 +241,19 @@ Tile data stored row-by-row: y from 0 to ChunkSize-1 (outer), x from 0 to ChunkS
 
 SS14 has 11 placement modes affecting entity snap behavior:
 
-| Mode | Snap Result | Used By |
-|------|------------|---------|
-| SnapgridCenter | (X.5, Y.5) tile center | Default, ~147 prototypes |
-| SnapgridBorder | (X.0, Y.0) tile edge | Some infrastructure |
-| AlignTileAny | (X.5, Y.5) | ~24 prototypes |
-| AlignWall | Wall-mounted offsets | Wall fixtures |
-| PlaceFree | Any coordinate | ~8 prototypes (markers, spawners) |
-| PlaceNearby | Any coordinate, range-limited | Spawners |
-| AlignTileDense | (X.5, Y.5) on occupied tiles | Specific items |
-| AlignTileEmpty | (X.5, Y.5) on empty tiles | Specific items |
-| AlignTileNonDense | (X.5, Y.5) on non-dense tiles | Specific items |
-| AlignWallProper | Edge-snapped wall positions | Wall entities |
-| AlignSimilar | Match nearest similar entity | Niche use |
+| Mode              | Snap Result                   | Used By                           |
+| ----------------- | ----------------------------- | --------------------------------- |
+| SnapgridCenter    | (X.5, Y.5) tile center        | Default, ~147 prototypes          |
+| SnapgridBorder    | (X.0, Y.0) tile edge          | Some infrastructure               |
+| AlignTileAny      | (X.5, Y.5)                    | ~24 prototypes                    |
+| AlignWall         | Wall-mounted offsets          | Wall fixtures                     |
+| PlaceFree         | Any coordinate                | ~8 prototypes (markers, spawners) |
+| PlaceNearby       | Any coordinate, range-limited | Spawners                          |
+| AlignTileDense    | (X.5, Y.5) on occupied tiles  | Specific items                    |
+| AlignTileEmpty    | (X.5, Y.5) on empty tiles     | Specific items                    |
+| AlignTileNonDense | (X.5, Y.5) on non-dense tiles | Specific items                    |
+| AlignWallProper   | Edge-snapped wall positions   | Wall entities                     |
+| AlignSimilar      | Match nearest similar entity  | Niche use                         |
 
 **Source:** `RobustToolbox/Robust.Client/Placement/Modes/`
 
@@ -287,33 +288,33 @@ Vector2i chunkRelative = new Vector2i(
 
 ## Key Events
 
-| Event | When | Subscribers |
-|-------|------|-------------|
-| `GridInitializeEvent` | Grid entity initialized | GridFixtureSystem, content |
-| `TileChangedEvent` | Tiles modified (batched) | Lighting, rendering, content |
-| `AnchorStateChangedEvent` | Entity anchored/unanchored | Physics, content |
-| `ReAnchorEvent` | Entity moved between grids | Content |
-| `GridSplitEvent` | Grid split into multiple | Content |
-| `PostGridSplitEvent` | Per new grid after split | Content |
+| Event                     | When                       | Subscribers                  |
+| ------------------------- | -------------------------- | ---------------------------- |
+| `GridInitializeEvent`     | Grid entity initialized    | GridFixtureSystem, content   |
+| `TileChangedEvent`        | Tiles modified (batched)   | Lighting, rendering, content |
+| `AnchorStateChangedEvent` | Entity anchored/unanchored | Physics, content             |
+| `ReAnchorEvent`           | Entity moved between grids | Content                      |
+| `GridSplitEvent`          | Grid split into multiple   | Content                      |
+| `PostGridSplitEvent`      | Per new grid after split   | Content                      |
 
 ## Key Source Files
 
-| File | Purpose |
-|------|---------|
-| `RobustToolbox/Robust.Shared/GameObjects/Systems/SharedMapSystem.Map.cs` | CreateMap |
-| `RobustToolbox/Robust.Shared/GameObjects/Systems/SharedMapSystem.Grid.cs` | SetTile, tile API |
-| `RobustToolbox/Robust.Shared/Map/MapManager.GridCollection.cs` | CreateGridEntity |
-| `RobustToolbox/Robust.Shared/Map/Components/MapGridComponent.cs` | Grid data structure |
-| `RobustToolbox/Robust.Shared/Map/MapChunk.cs` | Chunk + SnapGrid |
-| `RobustToolbox/Robust.Server/Physics/GridFixtureSystem.cs` | Splitting |
-| `RobustToolbox/Robust.Server/Physics/GridFixtureSystem.Merging.cs` | Merging |
-| `RobustToolbox/Robust.Server/Placement/PlacementManager.cs` | Tile placement |
-| `RobustToolbox/Robust.Shared/EntitySerialization/Systems/MapLoaderSystem.*.cs` | Load/save |
-| `RobustToolbox/Robust.Shared/EntitySerialization/MapChunkSerializer.cs` | Tile encoding |
-| `RobustToolbox/Robust.Shared/GameObjects/Systems/SharedGridFixtureSystem.cs` | Physics fixtures |
-| `RobustToolbox/Robust.Shared/GameObjects/Systems/SharedTransformSystem.Component.cs` | Anchoring |
-| `Content.Server/Mapping/MappingCommand.cs` | /mapping command |
-| `Content.Client/Mapping/MappingState.cs` | Editor UI |
+| File                                                                                 | Purpose             |
+| ------------------------------------------------------------------------------------ | ------------------- |
+| `RobustToolbox/Robust.Shared/GameObjects/Systems/SharedMapSystem.Map.cs`             | CreateMap           |
+| `RobustToolbox/Robust.Shared/GameObjects/Systems/SharedMapSystem.Grid.cs`            | SetTile, tile API   |
+| `RobustToolbox/Robust.Shared/Map/MapManager.GridCollection.cs`                       | CreateGridEntity    |
+| `RobustToolbox/Robust.Shared/Map/Components/MapGridComponent.cs`                     | Grid data structure |
+| `RobustToolbox/Robust.Shared/Map/MapChunk.cs`                                        | Chunk + SnapGrid    |
+| `RobustToolbox/Robust.Server/Physics/GridFixtureSystem.cs`                           | Splitting           |
+| `RobustToolbox/Robust.Server/Physics/GridFixtureSystem.Merging.cs`                   | Merging             |
+| `RobustToolbox/Robust.Server/Placement/PlacementManager.cs`                          | Tile placement      |
+| `RobustToolbox/Robust.Shared/EntitySerialization/Systems/MapLoaderSystem.*.cs`       | Load/save           |
+| `RobustToolbox/Robust.Shared/EntitySerialization/MapChunkSerializer.cs`              | Tile encoding       |
+| `RobustToolbox/Robust.Shared/GameObjects/Systems/SharedGridFixtureSystem.cs`         | Physics fixtures    |
+| `RobustToolbox/Robust.Shared/GameObjects/Systems/SharedTransformSystem.Component.cs` | Anchoring           |
+| `Content.Server/Mapping/MappingCommand.cs`                                           | /mapping command    |
+| `Content.Client/Mapping/MappingState.cs`                                             | Editor UI           |
 
 ## Our Editor's Current Limitations
 

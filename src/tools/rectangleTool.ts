@@ -50,7 +50,11 @@ export class RectangleTool implements ITool {
 
     if (paletteItem.type === 'entity') {
       const { entityChanges } = createEntitiesAtPositions(
-        positions, paletteItem.id, state.entities, state.nextEntityId, state.gridUid,
+        positions,
+        paletteItem.id,
+        state.entities,
+        state.nextEntityId,
+        state.gridUid,
       );
       if (entityChanges.length > 0) {
         ctx.dispatch({
@@ -64,7 +68,11 @@ export class RectangleTool implements ITool {
     if (paletteItem.type === 'decal' && ctx.decalSettings) {
       const activeGrid = state.grids[state.activeGridIndex];
       const { decalChanges } = createDecalsAtPositions(
-        positions, paletteItem.id, activeGrid.decals.decals, activeGrid.decals.nextDecalId, ctx.decalSettings,
+        positions,
+        paletteItem.id,
+        activeGrid.decals.decals,
+        activeGrid.decals.nextDecalId,
+        ctx.decalSettings,
       );
       if (decalChanges.length > 0) {
         ctx.dispatch({
@@ -101,12 +109,7 @@ export class RectangleTool implements ITool {
     }
   }
 
-  renderPreview(
-    canvasCtx: CanvasRenderingContext2D,
-    toolCtx: ToolContext,
-    cursorTileX: number,
-    cursorTileY: number,
-  ) {
+  renderPreview(canvasCtx: CanvasRenderingContext2D, toolCtx: ToolContext, cursorTileX: number, cursorTileY: number) {
     const { camera, canvasW, canvasH } = toolCtx;
     const tileScreenSize = camera.tileScreenSize;
 

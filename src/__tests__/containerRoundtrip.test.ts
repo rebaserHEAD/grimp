@@ -72,7 +72,7 @@ entities:
 
     const map = importMap(original);
     // Verify import separated correctly
-    expect(map.entities.find(e => e.uid === 100)).toBeDefined();
+    expect(map.entities.find((e) => e.uid === 100)).toBeDefined();
     expect(map.containedEntities?.[100]).toHaveLength(1);
 
     const exported = exportMap(map);

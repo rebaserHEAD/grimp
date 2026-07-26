@@ -115,15 +115,15 @@ Click to set center, drag to set radius. Draws a filled circle. Shows radius lab
 
 Click and drag to select tiles and entities. Supports non-rectangular selections via modifier keys.
 
-| Action | Effect |
-|--------|--------|
-| Drag | Replace selection with box contents (blue marquee) |
-| Shift+Drag | Add box to existing selection (green marquee) |
-| Ctrl+Drag | Remove box from existing selection (red marquee) |
-| Ctrl+C | Copy selection |
-| Ctrl+X | Cut (copy + erase to Space) |
-| Ctrl+V | Paste, click to place the ghost preview |
-| Delete / Backspace | Clear selection to Space |
+| Action             | Effect                                             |
+| ------------------ | -------------------------------------------------- |
+| Drag               | Replace selection with box contents (blue marquee) |
+| Shift+Drag         | Add box to existing selection (green marquee)      |
+| Ctrl+Drag          | Remove box from existing selection (red marquee)   |
+| Ctrl+C             | Copy selection                                     |
+| Ctrl+X             | Cut (copy + erase to Space)                        |
+| Ctrl+V             | Paste, click to place the ghost preview            |
+| Delete / Backspace | Clear selection to Space                           |
 
 Build complex shapes by combining multiple shift+drag additions. Carve out unwanted areas with ctrl+drag.
 
@@ -137,19 +137,19 @@ These tools work with entities (objects, machines, walls, doors, etc.).
 
 Click to select entities. The info panel on the right shows details and lets you edit component properties. Selected entities show a pulsing gold outline that traces the exact sprite shape.
 
-| Action | Effect |
-|--------|--------|
-| Left-click | Select topmost entity at tile |
-| Click same tile again | Cycle through stacked entities |
-| Scroll wheel (selected tile, 2+ entities) | Open stack picker, scroll to select, then drag immediately |
-| Shift+click | Toggle entity in/out of selection |
-| Drag on empty space | Box select, captures all entities in the rectangle |
-| Shift+Drag | Add entities in box to current selection (green marquee) |
-| Ctrl+Drag | Remove entities in box from current selection (red marquee) |
-| Drag selected entity | Move all selected entities |
-| R | Rotate all selected entities 90° clockwise |
-| Delete / Backspace | Delete all selected entities |
-| Right-click | Deselect all |
+| Action                                    | Effect                                                      |
+| ----------------------------------------- | ----------------------------------------------------------- |
+| Left-click                                | Select topmost entity at tile                               |
+| Click same tile again                     | Cycle through stacked entities                              |
+| Scroll wheel (selected tile, 2+ entities) | Open stack picker, scroll to select, then drag immediately  |
+| Shift+click                               | Toggle entity in/out of selection                           |
+| Drag on empty space                       | Box select, captures all entities in the rectangle          |
+| Shift+Drag                                | Add entities in box to current selection (green marquee)    |
+| Ctrl+Drag                                 | Remove entities in box from current selection (red marquee) |
+| Drag selected entity                      | Move all selected entities                                  |
+| R                                         | Rotate all selected entities 90° clockwise                  |
+| Delete / Backspace                        | Delete all selected entities                                |
+| Right-click                               | Deselect all                                                |
 
 **Stack picker:** When you've selected an entity on a tile with multiple stacked entities, scroll the mouse wheel to open a picker popup. Scrolling immediately switches which entity is selected, no extra click needed. You can then click and drag to move the picked entity right away.
 
@@ -159,10 +159,10 @@ All operations are undoable with Ctrl+Z.
 
 Place new entities on the map. First select an entity type from the **Entities** tab in the left palette.
 
-| Action | Effect |
-|--------|--------|
-| Left-click | Place entity at cursor position |
-| R | Cycle rotation (0°, 90°, 180°, 270°) before placing |
+| Action     | Effect                                              |
+| ---------- | --------------------------------------------------- |
+| Left-click | Place entity at cursor position                     |
+| R          | Cycle rotation (0°, 90°, 180°, 270°) before placing |
 
 Entities are placed at tile center (x+0.5, y+0.5). Selecting an entity in the palette auto-switches to this tool.
 
@@ -179,6 +179,7 @@ Decals are lightweight floor decorations (warning lines, arrows, department colo
 **Editing:** With a decal selected, the Decal Info Panel appears in the sidebar. Edit color, angle, z-index, and cleanable. All changes are undoable. With multiple decals selected, any property change applies to all selected decals. Mixed values show a dash placeholder.
 
 **Bulk recoloring:** When a decal has a color, the info panel shows:
+
 - **Select All (N)**, select all decals in the grid with the same color (useful for selecting an entire department's decals)
 - **Recolor All**, change every decal with the matching color to a new color in one operation (great for rebranding a department)
 
@@ -192,14 +193,15 @@ Decals are lightweight floor decorations (warning lines, arrows, department colo
 
 Wire up device connections (air alarm → vents, fire alarm → firelocks, buttons → doors).
 
-| Action | Effect |
-|--------|--------|
-| Left-click a source entity | Start linking mode (entity must have DeviceList or DeviceLinkSource component) |
-| Left-click a target entity | Add link from source to target |
-| Right-click a linked target | Remove the link |
-| Click empty space / Escape | Cancel linking mode |
+| Action                      | Effect                                                                         |
+| --------------------------- | ------------------------------------------------------------------------------ |
+| Left-click a source entity  | Start linking mode (entity must have DeviceList or DeviceLinkSource component) |
+| Left-click a target entity  | Add link from source to target                                                 |
+| Right-click a linked target | Remove the link                                                                |
+| Click empty space / Escape  | Cancel linking mode                                                            |
 
 **Tips:**
+
 - Valid source entities are highlighted with green outlines when the tool is active
 - Already-linked targets show cyan/orange outlines during linking
 - Enable **View > Show Connections** to see all device links as colored lines
@@ -218,11 +220,11 @@ These tools draw cables and pipes for power and atmospheric systems.
 
 Drag to lay cable entities. Select cable type from the Infrastructure Panel that appears on the right.
 
-| Cable Type | Color | Purpose |
-|-----------|-------|---------|
-| CableHV | Orange | High voltage (generator → SMES → substations) |
-| CableMV | Yellow | Medium voltage (substations → APCs) |
-| CableApcExtension | Green | Low voltage (APC → room coverage) |
+| Cable Type        | Color  | Purpose                                       |
+| ----------------- | ------ | --------------------------------------------- |
+| CableHV           | Orange | High voltage (generator → SMES → substations) |
+| CableMV           | Yellow | Medium voltage (substations → APCs)           |
+| CableApcExtension | Green  | Low voltage (APC → room coverage)             |
 
 - Left-drag to lay cables (one per tile)
 - Right-click to erase cable at cursor
@@ -232,11 +234,11 @@ Drag to lay cable entities. Select cable type from the Infrastructure Panel that
 
 Drag to lay pipe paths. Select pipe type from the Infrastructure Panel.
 
-| Pipe Type | Color | Purpose |
-|----------|-------|---------|
-| Supply | Blue | Atmosphere supply (connects to vents) |
-| Return | Red | Atmosphere return (connects to scrubbers) |
-| Disposal | Brown | Disposal network (connects to disposal units) |
+| Pipe Type | Color | Purpose                                       |
+| --------- | ----- | --------------------------------------------- |
+| Supply    | Blue  | Atmosphere supply (connects to vents)         |
+| Return    | Red   | Atmosphere return (connects to scrubbers)     |
+| Disposal  | Brown | Disposal network (connects to disposal units) |
 
 - Left-drag to lay a pipe path
 - On release, the auto-fitting algorithm determines the correct pipe prototype (Straight, Bend, T-Junction, Fourway) and rotation for each tile
@@ -271,6 +273,7 @@ The prefab captures all non-Space tiles, entities (with their raw YAML data for 
 ### Conflict Handling
 
 Stamping a prefab overwrites everything in the footprint:
+
 - Existing tiles are replaced with prefab tiles
 - Existing entities in the footprint are removed
 - Prefab entities are placed with fresh UIDs
@@ -281,11 +284,11 @@ Each stamp is a single undoable command, **Ctrl+Z** reverts the entire stamp.
 
 Right-click on the canvas to open a context menu. Available items depend on the active tool:
 
-| Tool | Context Menu Items |
-|------|--------------------|
+| Tool                    | Context Menu Items                   |
+| ----------------------- | ------------------------------------ |
 | Select (with selection) | Copy, Cut, Delete, Save as Prefab... |
-| Select (with clipboard) | Paste |
-| Other tools | No context menu |
+| Select (with clipboard) | Paste                                |
+| Other tools             | No context menu                      |
 
 ---
 
@@ -313,6 +316,7 @@ Browse and place saved prefab templates.
 Appears when entities are selected. Shows:
 
 **Single entity:**
+
 - Name, prototype, UID, position, rotation, category
 - **Sprite State** dropdown (when the entity's RSI has multiple states)
 - Rotate and Delete buttons
@@ -320,6 +324,7 @@ Appears when entities are selected. Shows:
 - "Auto-link Room" button for entities with DeviceList (air alarms, fire alarms)
 
 **Multiple entities:**
+
 - Selection count and prototype summary
 - Rotate All and Delete All buttons
 
@@ -327,15 +332,15 @@ Appears when entities are selected. Shows:
 
 When you expand a component in the Entity Info panel, you get a type-specific editor:
 
-| Component | Editor |
-|-----------|--------|
-| MetaData | Text input for entity name |
-| Battery | Number inputs for maxCharge, startingCharge |
-| SurveillanceCamera | Text inputs for camera ID and network |
-| AtmosPipeColor | Color presets (Supply Blue, Return Red) or custom hex |
-| DeviceList | List of linked device UIDs with add/remove |
-| DeviceLinkSource | Port mapping table (target UID, source port, sink port) |
-| Other | Generic JSON editor with validation |
+| Component          | Editor                                                  |
+| ------------------ | ------------------------------------------------------- |
+| MetaData           | Text input for entity name                              |
+| Battery            | Number inputs for maxCharge, startingCharge             |
+| SurveillanceCamera | Text inputs for camera ID and network                   |
+| AtmosPipeColor     | Color presets (Supply Blue, Return Red) or custom hex   |
+| DeviceList         | List of linked device UIDs with add/remove              |
+| DeviceLinkSource   | Port mapping table (target UID, source port, sink port) |
+| Other              | Generic JSON editor with validation                     |
 
 You can also add new components (+ Add Component) or remove existing ones (x button).
 
@@ -370,40 +375,40 @@ Hidden layers affect both rendering and interaction, entities and decals on hidd
 
 ### Tools
 
-| Key | Tool |
-|-----|------|
-| B | Paint |
-| E | Erase |
-| I | Eyedropper |
-| H | Pan |
-| G | Fill |
-| R | Rectangle |
-| L | Line |
-| C | Circle |
-| S | Select (tiles) |
-| V | Entity Select |
-| P | Entity Place |
-| D | Device Link |
-| K | Cable Draw |
-| J | Pipe Draw |
+| Key | Tool           |
+| --- | -------------- |
+| B   | Paint          |
+| E   | Erase          |
+| I   | Eyedropper     |
+| H   | Pan            |
+| G   | Fill           |
+| R   | Rectangle      |
+| L   | Line           |
+| C   | Circle         |
+| S   | Select (tiles) |
+| V   | Entity Select  |
+| P   | Entity Place   |
+| D   | Device Link    |
+| K   | Cable Draw     |
+| J   | Pipe Draw      |
 
 ### Actions
 
-| Shortcut | Action |
-|----------|--------|
-| Ctrl+Z | Undo |
-| Ctrl+Y / Ctrl+Shift+Z | Redo |
-| Ctrl+C | Copy tile selection |
-| Ctrl+X | Cut tile selection |
-| Ctrl+V | Paste tile selection |
-| Delete / Backspace | Delete selection (tiles or entities) |
-| R | Rotate entity (when Entity Select or Entity Place active) |
-| Shift+click | Toggle entity in multi-selection |
-| Escape | Cancel device linking / exit prefab placement |
-| Right-click | Context menu (Select tool) / deselect (Entity Select) |
-| Space (hold) | Temporary pan from any tool |
-| Middle mouse | Pan |
-| Scroll wheel | Zoom |
+| Shortcut              | Action                                                    |
+| --------------------- | --------------------------------------------------------- |
+| Ctrl+Z                | Undo                                                      |
+| Ctrl+Y / Ctrl+Shift+Z | Redo                                                      |
+| Ctrl+C                | Copy tile selection                                       |
+| Ctrl+X                | Cut tile selection                                        |
+| Ctrl+V                | Paste tile selection                                      |
+| Delete / Backspace    | Delete selection (tiles or entities)                      |
+| R                     | Rotate entity (when Entity Select or Entity Place active) |
+| Shift+click           | Toggle entity in multi-selection                          |
+| Escape                | Cancel device linking / exit prefab placement             |
+| Right-click           | Context menu (Select tool) / deselect (Entity Select)     |
+| Space (hold)          | Temporary pan from any tool                               |
+| Middle mouse          | Pan                                                       |
+| Scroll wheel          | Zoom                                                      |
 
 ---
 
@@ -412,6 +417,7 @@ Hidden layers affect both rendering and interaction, entities and decals on hidd
 Click the warning triangle icon in the grid tab bar (left of the search bar) to scan the active grid for common mapping mistakes.
 
 The validator checks for:
+
 - **Floor tiles under walls** -- Walls should be on Plating, not FloorSteel or other floor tiles. Floor tiles block cable placement under walls, making it difficult to add new APCs or route power.
 - **Doors without floor tiles** -- Airlocks and firelocks need a walkable floor tile underneath to function properly.
 - **Dangling device references** -- DeviceList, DeviceLinkSource, or DeviceNetwork components referencing entities that no longer exist in the map.

@@ -37,11 +37,7 @@ function getThumbnail(prototypeId: string, registry: IPrototypeRegistry): string
     return null;
   }
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(
-    sprite.image,
-    sprite.sx, sprite.sy, sprite.sw, sprite.sh,
-    0, 0, THUMB_SIZE, THUMB_SIZE,
-  );
+  ctx.drawImage(sprite.image, sprite.sx, sprite.sy, sprite.sw, sprite.sh, 0, 0, THUMB_SIZE, THUMB_SIZE);
   const dataUrl = canvas.toDataURL();
   thumbnailCache.set(prototypeId, dataUrl);
   return dataUrl;
@@ -64,11 +60,7 @@ function getPreview(prototypeId: string, registry: IPrototypeRegistry): string |
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(
-    sprite.image,
-    sprite.sx, sprite.sy, sprite.sw, sprite.sh,
-    0, 0, PREVIEW_SIZE, PREVIEW_SIZE,
-  );
+  ctx.drawImage(sprite.image, sprite.sx, sprite.sy, sprite.sw, sprite.sh, 0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
   const dataUrl = canvas.toDataURL();
   thumbnailCache.set(cacheKey, dataUrl);
   return dataUrl;
@@ -137,19 +129,16 @@ export const EntityThumbnail: React.FC<EntityThumbnailProps> = ({ prototypeId, r
     };
     poll();
 
-    return () => { cancelled = true; pendingSet.delete(prototypeId); };
+    return () => {
+      cancelled = true;
+      pendingSet.delete(prototypeId);
+    };
   }, [visible, prototypeId, registry]);
 
   return (
     <div ref={ref} className="w-6 h-6 shrink-0 flex items-center justify-center">
       {thumbUrl ? (
-        <img
-          src={thumbUrl}
-          alt=""
-          className="w-6 h-6"
-          style={{ imageRendering: 'pixelated' }}
-          draggable={false}
-        />
+        <img src={thumbUrl} alt="" className="w-6 h-6" style={{ imageRendering: 'pixelated' }} draggable={false} />
       ) : (
         <div className="w-5 h-5 bg-surface rounded-sm" />
       )}
@@ -169,7 +158,10 @@ interface SpritePreviewPopupProps {
  * Positioned to the left of the anchor element.
  */
 export const SpritePreviewPopup: React.FC<SpritePreviewPopupProps> = ({
-  prototypeId, entityName, registry, anchorRect,
+  prototypeId,
+  entityName,
+  registry,
+  anchorRect,
 }) => {
   const previewUrl = getPreview(prototypeId, registry);
 
@@ -221,15 +213,18 @@ export function useHoverPreview(delay = 300) {
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
   const currentRef = useRef<string | null>(null);
 
-  const onMouseEnter = useCallback((prototypeId: string, entityName: string, el: HTMLElement) => {
-    currentRef.current = prototypeId;
-    clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      if (currentRef.current === prototypeId) {
-        setHovered({ prototypeId, entityName, rect: el.getBoundingClientRect() });
-      }
-    }, delay);
-  }, [delay]);
+  const onMouseEnter = useCallback(
+    (prototypeId: string, entityName: string, el: HTMLElement) => {
+      currentRef.current = prototypeId;
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        if (currentRef.current === prototypeId) {
+          setHovered({ prototypeId, entityName, rect: el.getBoundingClientRect() });
+        }
+      }, delay);
+    },
+    [delay],
+  );
 
   const onMouseLeave = useCallback(() => {
     currentRef.current = null;

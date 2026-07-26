@@ -48,7 +48,7 @@ export default defineConfig({
         server.middlewares.use('/resources', (req, res, next) => {
           if (!req.url) return next();
           const filePath = path.join(resourcesPath, decodeURIComponent(req.url));
-          import('fs').then(fs => {
+          import('fs').then((fs) => {
             if (fs.existsSync(filePath)) {
               const ext = path.extname(filePath).toLowerCase();
               const mimeTypes: Record<string, string> = {
@@ -69,7 +69,7 @@ export default defineConfig({
         // Prefab directory listing: returns { path, folder }[] for all .prefab.json files
         const prefabsPath = path.resolve(__dirname, 'public/prefabs');
         server.middlewares.use('/__api/prefabs', (_req, res) => {
-          import('fs').then(fs => {
+          import('fs').then((fs) => {
             if (!fs.existsSync(prefabsPath)) {
               res.setHeader('Content-Type', 'application/json');
               res.end('[]');
@@ -102,7 +102,7 @@ export default defineConfig({
           const ext = url.searchParams.get('ext') || '.yml';
           const targetDir = path.join(resourcesPath, dir);
 
-          import('fs').then(fs => {
+          import('fs').then((fs) => {
             if (!fs.existsSync(targetDir)) {
               res.statusCode = 404;
               res.setHeader('Content-Type', 'application/json');
@@ -135,10 +135,7 @@ export default defineConfig({
   server: {
     port: 5174,
     fs: {
-      allow: [
-        path.resolve(__dirname, '../../Resources'),
-        path.resolve(__dirname),
-      ],
+      allow: [path.resolve(__dirname, '../../Resources'), path.resolve(__dirname)],
     },
   },
 });

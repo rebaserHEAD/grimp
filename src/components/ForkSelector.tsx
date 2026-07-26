@@ -1,9 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import {
-  HttpResourceProvider,
-  FileSystemResourceProvider,
-  setActiveProvider,
-} from '../loaders/resourceProvider';
+import { HttpResourceProvider, FileSystemResourceProvider, setActiveProvider } from '../loaders/resourceProvider';
 import type { ResourceProvider } from '../loaders/resourceProvider';
 import { ElectronResourceProvider } from '../loaders/electronResourceProvider';
 import {
@@ -45,11 +41,7 @@ const supportsWebkitDirectory = (() => {
 })();
 const canPickFolder = supportsDirectoryPicker || supportsWebkitDirectory || isElectron;
 
-export const ForkSelector: React.FC<ForkSelectorProps> = ({
-  onReady,
-  builtInAvailable,
-  builtInForkName,
-}) => {
+export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvailable, builtInForkName }) => {
   const [phase, setPhase] = useState<SelectorState>('idle');
   const [scanProgress, setScanProgress] = useState(0);
   const [scanTotal, setScanTotal] = useState(0);
@@ -197,7 +189,9 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({
       if (!validateKeys(result.keys).valid) return;
       onReady(new ElectronResourceProvider(result.keys, result.name), result.name);
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [onReady]);
 
   const handleUseBuiltIn = useCallback(() => {
@@ -232,7 +226,14 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({
     let clownImg: HTMLImageElement | null = null;
 
     // Clown state
-    let cx = 0, cy = 0, cvx = 0, cvy = 0, crot = 0, cspin = 0, cscale = 1, cage = 0;
+    let cx = 0,
+      cy = 0,
+      cvx = 0,
+      cvy = 0,
+      crot = 0,
+      cspin = 0,
+      cscale = 1,
+      cage = 0;
     let clownSpawned = false;
 
     function spawnClown(w: number, h: number) {
@@ -240,10 +241,19 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({
       const speed = 40 + Math.random() * 30;
       const perim = 2 * (w + h);
       const p = Math.random() * perim;
-      if (p < w) { cx = p; cy = -size; }
-      else if (p < w + h) { cx = w + size; cy = p - w; }
-      else if (p < 2 * w + h) { cx = p - w - h; cy = h + size; }
-      else { cx = -size; cy = p - 2 * w - h; }
+      if (p < w) {
+        cx = p;
+        cy = -size;
+      } else if (p < w + h) {
+        cx = w + size;
+        cy = p - w;
+      } else if (p < 2 * w + h) {
+        cx = p - w - h;
+        cy = h + size;
+      } else {
+        cx = -size;
+        cy = p - 2 * w - h;
+      }
       const angle = Math.atan2(h / 2 - cy, w / 2 - cx) + (Math.random() - 0.5) * 0.8;
       cvx = Math.cos(angle) * speed;
       cvy = Math.sin(angle) * speed;
@@ -267,9 +277,15 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({
     let lastT = 0;
 
     Promise.all([
-      loadImg('/images/space-bg.png').then(i => { dustImg = i; }),
-      loadImg('/images/space-stars.png').then(i => { starsImg = i; }),
-      loadImg('/images/clown.png').then(i => { clownImg = i; }),
+      loadImg('/images/space-bg.png').then((i) => {
+        dustImg = i;
+      }),
+      loadImg('/images/space-stars.png').then((i) => {
+        starsImg = i;
+      }),
+      loadImg('/images/clown.png').then((i) => {
+        clownImg = i;
+      }),
     ]).then(() => {
       if (!running) return;
       lastT = performance.now();
@@ -355,11 +371,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({
   return (
     <div className="fixed inset-0 flex items-center justify-center font-['Segoe_UI',sans-serif]">
       {/* Space background canvas */}
-      <canvas
-        ref={bgCanvasRef}
-        className="absolute inset-0 w-full h-full"
-        style={{ zIndex: 0 }}
-      />
+      <canvas ref={bgCanvasRef} className="absolute inset-0 w-full h-full" style={{ zIndex: 0 }} />
 
       {/* Hidden file input fallback for browsers without showDirectoryPicker */}
       <input
@@ -373,15 +385,9 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({
 
       <div className="relative z-10 w-full max-w-[500px] mx-4 bg-surface/95 backdrop-blur-sm border border-subtle rounded-xl p-8 shadow-2xl">
         {/* Title.always visible */}
-        <h1 className="text-2xl font-bold text-accent text-center mb-1">
-          GRIMP
-        </h1>
-        <p className="text-xs text-muted text-center mb-1">
-          Generally Reliable Interactive Mapping Program
-        </p>
-        <p className="text-sm text-muted text-center mb-8">
-          Select a fork to get started
-        </p>
+        <h1 className="text-2xl font-bold text-accent text-center mb-1">GRIMP</h1>
+        <p className="text-xs text-muted text-center mb-1">Generally Reliable Interactive Mapping Program</p>
+        <p className="text-sm text-muted text-center mb-8">Select a fork to get started</p>
 
         {/* ---- IDLE ---- */}
         {phase === 'idle' && (
@@ -408,17 +414,40 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({
                   {!isElectron && (
                     <p>
                       <span className="text-primary font-medium">Browser note:</span>{' '}
-                      {supportsDirectoryPicker
-                        ? 'Chrome and Edge use a native folder picker that reads files on demand. Your browser may ask you to confirm read access. This is standard and safe.'
-                        : <>Firefox and Safari do not support the <a href="https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API" target="_blank" rel="noopener noreferrer" className="text-accent underline hover:brightness-125">File System Access API</a>, so the editor uses a <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/webkitdirectory" target="_blank" rel="noopener noreferrer" className="text-accent underline hover:brightness-125">folder upload input</a> instead. Your browser may show an &quot;upload&quot; prompt. This is misleading; files stay on your machine and are never sent anywhere.</>}
+                      {supportsDirectoryPicker ? (
+                        'Chrome and Edge use a native folder picker that reads files on demand. Your browser may ask you to confirm read access. This is standard and safe.'
+                      ) : (
+                        <>
+                          Firefox and Safari do not support the{' '}
+                          <a
+                            href="https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-accent underline hover:brightness-125"
+                          >
+                            File System Access API
+                          </a>
+                          , so the editor uses a{' '}
+                          <a
+                            href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/webkitdirectory"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-accent underline hover:brightness-125"
+                          >
+                            folder upload input
+                          </a>{' '}
+                          instead. Your browser may show an &quot;upload&quot; prompt. This is misleading; files stay on
+                          your machine and are never sent anywhere.
+                        </>
+                      )}
                     </p>
                   )}
                 </div>
               </>
             ) : (
               <div className="text-center text-warning text-sm py-3 px-4 rounded-lg bg-hover border border-subtle">
-                Your browser does not support folder selection.
-                Please use Chrome, Edge, or Firefox for local fork loading.
+                Your browser does not support folder selection. Please use Chrome, Edge, or Firefox for local fork
+                loading.
               </div>
             )}
 
@@ -490,32 +519,20 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({
         {phase === 'summary' && summary && (
           <div className="flex flex-col gap-5">
             <div className="text-center">
-              <div className="text-sm font-semibold text-success mb-1">
-                Repository scanned successfully
-              </div>
-              <div className="text-xs text-muted">
-                {forkName}
-              </div>
+              <div className="text-sm font-semibold text-success mb-1">Repository scanned successfully</div>
+              <div className="text-xs text-muted">{forkName}</div>
             </div>
 
             <div className="bg-panel rounded-lg p-4 border border-subtle">
               <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-sm">
                 <span className="text-muted">Entity files</span>
-                <span className="text-primary text-right font-mono">
-                  {formatNumber(summary.entityFiles)}
-                </span>
+                <span className="text-primary text-right font-mono">{formatNumber(summary.entityFiles)}</span>
                 <span className="text-muted">Tile files</span>
-                <span className="text-primary text-right font-mono">
-                  {formatNumber(summary.tileFiles)}
-                </span>
+                <span className="text-primary text-right font-mono">{formatNumber(summary.tileFiles)}</span>
                 <span className="text-muted">Decal files</span>
-                <span className="text-primary text-right font-mono">
-                  {formatNumber(summary.decalFiles)}
-                </span>
+                <span className="text-primary text-right font-mono">{formatNumber(summary.decalFiles)}</span>
                 <span className="text-muted">Catalog files</span>
-                <span className="text-primary text-right font-mono">
-                  {formatNumber(summary.catalogFiles)}
-                </span>
+                <span className="text-primary text-right font-mono">{formatNumber(summary.catalogFiles)}</span>
               </div>
 
               <div className="border-t border-subtle mt-3 pt-3 flex justify-between text-sm">
@@ -527,9 +544,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({
 
               <div className="border-t border-subtle mt-3 pt-3 flex justify-between text-sm font-semibold">
                 <span className="text-muted">Total files</span>
-                <span className="text-accent font-mono">
-                  {formatNumber(summary.totalFiles)}
-                </span>
+                <span className="text-accent font-mono">{formatNumber(summary.totalFiles)}</span>
               </div>
             </div>
 
@@ -553,8 +568,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({
             </div>
 
             <p className="text-xs text-muted text-center leading-relaxed">
-              All files are processed locally in your browser.
-              Nothing is uploaded or sent to any server.
+              All files are processed locally in your browser. Nothing is uploaded or sent to any server.
             </p>
           </div>
         )}
@@ -562,9 +576,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({
         {/* ---- ERROR ---- */}
         {phase === 'error' && (
           <div className="flex flex-col items-center gap-4">
-            <div className="text-sm text-danger text-center leading-relaxed px-2">
-              {errorMessage}
-            </div>
+            <div className="text-sm text-danger text-center leading-relaxed px-2">{errorMessage}</div>
             <button
               onClick={handleReset}
               className="py-2.5 px-6 rounded-lg bg-elevated text-primary font-medium text-sm

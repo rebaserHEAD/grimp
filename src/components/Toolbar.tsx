@@ -55,7 +55,15 @@ const INFRA_TOOLS: ToolDef[] = [
   { id: 'pipeDraw', label: 'Pipes', shortcut: 'J', icon: faWater },
 ];
 
-function ToolButton({ tool, active, onSelect }: { tool: ToolDef; active: boolean; onSelect: (tool: ToolType) => void }) {
+function ToolButton({
+  tool,
+  active,
+  onSelect,
+}: {
+  tool: ToolDef;
+  active: boolean;
+  onSelect: (tool: ToolType) => void;
+}) {
   return (
     <button
       onClick={() => onSelect(tool.id)}
@@ -74,24 +82,26 @@ export const Toolbar: React.FC<Props> = ({ activeTool, onSelectTool }) => {
   return (
     <div className="flex flex-col w-[76px] bg-panel border-r border-subtle py-1 overflow-y-auto">
       <div className="text-[9px] text-muted uppercase text-center tracking-wider py-0.5">Tiles</div>
-      {TILE_TOOLS.map(tool => (
+      {TILE_TOOLS.map((tool) => (
         <ToolButton key={tool.id} tool={tool} active={activeTool === tool.id} onSelect={onSelectTool} />
       ))}
 
       <div className="h-px bg-subtle mx-2 my-1" />
       <div className="text-[9px] text-muted uppercase text-center tracking-wider py-0.5">Entities</div>
-      {ENTITY_TOOLS.map(tool => (
+      {ENTITY_TOOLS.map((tool) => (
         <ToolButton key={tool.id} tool={tool} active={activeTool === tool.id} onSelect={onSelectTool} />
       ))}
 
       <div className="h-px bg-subtle mx-2 my-1" />
       <div className="text-[9px] text-muted uppercase text-center tracking-wider py-0.5">Infra</div>
-      {INFRA_TOOLS.map(tool => (
+      {INFRA_TOOLS.map((tool) => (
         <ToolButton key={tool.id} tool={tool} active={activeTool === tool.id} onSelect={onSelectTool} />
       ))}
 
       <div className="text-[8px] text-muted text-center mt-2 leading-tight opacity-60">
-        Space+Drag<br />to pan
+        Space+Drag
+        <br />
+        to pan
       </div>
 
       <div className="mt-auto pb-2">

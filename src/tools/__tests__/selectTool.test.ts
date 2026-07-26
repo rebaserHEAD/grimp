@@ -20,9 +20,7 @@ function makeGrid(width: number, height: number, offsetX = 0, offsetY = 0) {
   return { width, height, offsetX, offsetY, cells };
 }
 
-function makeToolContext(
-  overrides: Partial<EditorState> = {},
-): { ctx: ToolContext; dispatched: any[] } {
+function makeToolContext(overrides: Partial<EditorState> = {}): { ctx: ToolContext; dispatched: any[] } {
   const dispatched: any[] = [];
   const state: EditorState = {
     ...createInitialState(),
@@ -91,10 +89,10 @@ describe('SelectTool', () => {
 
       // Should have 2 entities (Wall at 3,4 and Door at 5,5), not the APC at 10,10
       expect(clip!.entities).toHaveLength(2);
-      expect(clip!.entities.map(e => e.prototype).sort()).toEqual(['Door', 'Wall']);
+      expect(clip!.entities.map((e) => e.prototype).sort()).toEqual(['Door', 'Wall']);
 
       // Entity offsets should be relative to origin (3,3)
-      const wall = clip!.entities.find(e => e.prototype === 'Wall')!;
+      const wall = clip!.entities.find((e) => e.prototype === 'Wall')!;
       expect(wall.dx).toBeCloseTo(0.5); // 3.5 - 3 = 0.5
       expect(wall.dy).toBeCloseTo(1.5); // 4.5 - 3 = 1.5
     });
@@ -135,17 +133,25 @@ describe('SelectTool', () => {
       const { ctx, dispatched } = makeToolContext({ nextEntityId: 100 });
 
       setClipboard({
-        width: 3, height: 3,
+        width: 3,
+        height: 3,
         tiles: [
-          { tileId: 'Plating' }, { tileId: 'Space' }, { tileId: 'Space' },
-          { tileId: 'Space' }, { tileId: 'FloorSteel' }, { tileId: 'Space' },
-          { tileId: 'Space' }, { tileId: 'Space' }, { tileId: 'Space' },
+          { tileId: 'Plating' },
+          { tileId: 'Space' },
+          { tileId: 'Space' },
+          { tileId: 'Space' },
+          { tileId: 'FloorSteel' },
+          { tileId: 'Space' },
+          { tileId: 'Space' },
+          { tileId: 'Space' },
+          { tileId: 'Space' },
         ],
         entities: [
           { dx: 0.5, dy: 0.5, prototype: 'Wall', rotation: 0, components: [] },
           { dx: 1.5, dy: 1.5, prototype: 'Door', rotation: 1.57, components: [] },
         ],
-        originX: 5, originY: 5,
+        originX: 5,
+        originY: 5,
       });
 
       tool.paste(ctx);
@@ -275,7 +281,7 @@ describe('SelectTool', () => {
       tool.onMouseMove(ctx, 5, 6);
       tool.onMouseUp(ctx);
       const items = tool.getContextMenuItems(ctx, 3, 4);
-      const labels = items.map(i => i.label);
+      const labels = items.map((i) => i.label);
       expect(labels).toContain('Copy');
       expect(labels).toContain('Cut');
       expect(labels).toContain('Delete');
@@ -286,7 +292,7 @@ describe('SelectTool', () => {
       const { ctx } = makeToolContext();
       setClipboard({ width: 1, height: 1, tiles: [], entities: [], originX: 0, originY: 0 });
       const items = tool.getContextMenuItems(ctx, 0, 0);
-      expect(items.map(i => i.label)).toContain('Paste');
+      expect(items.map((i) => i.label)).toContain('Paste');
     });
 
     it('returns empty array when idle and no clipboard', () => {
@@ -343,9 +349,7 @@ describe('SelectTool', () => {
       const cmd = dispatched[0].command;
 
       // All placed tiles should be within 4x6 bounds
-      const placedTiles = cmd.tileChanges.filter(
-        (tc: TileChange) => tc.after.tileId !== 'Space',
-      );
+      const placedTiles = cmd.tileChanges.filter((tc: TileChange) => tc.after.tileId !== 'Space');
       for (const tc of placedTiles) {
         expect(tc.x).toBeGreaterThanOrEqual(-1); // centered around original center
         expect(tc.x).toBeLessThanOrEqual(6);
@@ -425,9 +429,7 @@ describe('SelectTool', () => {
       tool.rotateSelection(ctx, 'cw');
 
       const cmd = dispatched[0].command;
-      const placed = cmd.tileChanges.filter(
-        (tc: TileChange) => tc.after.tileId !== 'Space',
-      );
+      const placed = cmd.tileChanges.filter((tc: TileChange) => tc.after.tileId !== 'Space');
 
       // Get the tool's internal selection bounds
       const toolAny = tool as any;
@@ -455,16 +457,15 @@ describe('SelectTool', () => {
       expect(placed).toHaveLength(24); // 6*4 = 24
       for (let x = selMinX; x <= selMaxX; x++) {
         for (let y = selMinY; y <= selMaxY; y++) {
-          expect(placed.some((tc: TileChange) => tc.x === x && tc.y === y))
-            .toBe(true);
+          expect(placed.some((tc: TileChange) => tc.x === x && tc.y === y)).toBe(true);
         }
       }
     });
 
     it('rotates entity positions CW to correct tile centers', () => {
       const entities = [
-        makeEntity(10, 'Wall', 0, 0),  // position (0.5, 0.5), bottom-left
-        makeEntity(11, 'Door', 2, 0),  // position (2.5, 0.5), bottom-right
+        makeEntity(10, 'Wall', 0, 0), // position (0.5, 0.5), bottom-left
+        makeEntity(11, 'Door', 2, 0), // position (2.5, 0.5), bottom-right
       ];
       rebuildSpatialIndex(entities);
       const { ctx, dispatched } = makeToolContext({ entities, nextEntityId: 100 });
@@ -485,7 +486,7 @@ describe('SelectTool', () => {
 
       // Entity rotations should have -π/2 added (normalized to 3π/2)
       for (const add of adds) {
-        expect(add.entity.rotation).toBeCloseTo(3 * Math.PI / 2);
+        expect(add.entity.rotation).toBeCloseTo((3 * Math.PI) / 2);
       }
 
       // Verify entity positions land on correct tile centers.
@@ -555,8 +556,8 @@ describe('SelectTool', () => {
 
     it('rotates entity positions CCW to correct tile centers', () => {
       const entities = [
-        makeEntity(10, 'Wall', 0, 0),  // position (0.5, 0.5)
-        makeEntity(11, 'Door', 2, 1),  // position (2.5, 1.5)
+        makeEntity(10, 'Wall', 0, 0), // position (0.5, 0.5)
+        makeEntity(11, 'Door', 2, 1), // position (2.5, 1.5)
       ];
       rebuildSpatialIndex(entities);
       const { ctx, dispatched } = makeToolContext({ entities, nextEntityId: 100 });
@@ -634,8 +635,8 @@ describe('SelectTool', () => {
 
     it('entities remain within selection bounds after 4 CW rotations', () => {
       const entities = [
-        makeEntity(10, 'APC', 5, 5),   // corner entity
-        makeEntity(11, 'Door', 7, 6),  // off-center entity
+        makeEntity(10, 'APC', 5, 5), // corner entity
+        makeEntity(11, 'Door', 7, 6), // off-center entity
       ];
       rebuildSpatialIndex(entities);
       const { ctx, dispatched } = makeToolContext({ entities, nextEntityId: 100 });
@@ -660,13 +661,12 @@ describe('SelectTool', () => {
         // Apply entity changes to state so next rotation picks them up
         for (const ec of cmd.entityChanges) {
           if (ec.action === 'remove') {
-            ctx.state.entities = ctx.state.entities.filter(e => e.uid !== ec.entity.uid);
+            ctx.state.entities = ctx.state.entities.filter((e) => e.uid !== ec.entity.uid);
           } else {
             ctx.state.entities.push(ec.entity);
           }
         }
-        ctx.state.nextEntityId = Math.max(ctx.state.nextEntityId,
-          ...ctx.state.entities.map(e => e.uid + 1));
+        ctx.state.nextEntityId = Math.max(ctx.state.nextEntityId, ...ctx.state.entities.map((e) => e.uid + 1));
         rebuildSpatialIndex(ctx.state.entities);
 
         // After each rotation, all entities must be within selection bounds
@@ -684,8 +684,10 @@ describe('SelectTool', () => {
 
     it('preserves spriteStateOverride through rotation', () => {
       const entity: ImportedEntity = {
-        uid: 10, prototype: 'ClosetBase',
-        position: { x: 3.5, y: 3.5 }, rotation: 0,
+        uid: 10,
+        prototype: 'ClosetBase',
+        position: { x: 3.5, y: 3.5 },
+        rotation: 0,
         components: [],
         spriteStateOverride: 'generic_open',
       };
@@ -725,10 +727,12 @@ describe('SelectTool', () => {
       const { ctx } = makeToolContext({ nextEntityId: 100 });
 
       setClipboard({
-        width: 3, height: 2,
+        width: 3,
+        height: 2,
         tiles: new Array(6).fill({ tileId: 'FloorSteel' }),
         entities: [],
-        originX: 0, originY: 0,
+        originX: 0,
+        originY: 0,
       });
 
       tool.paste(ctx);
@@ -742,13 +746,15 @@ describe('SelectTool', () => {
       const { ctx } = makeToolContext({ nextEntityId: 100 });
 
       setClipboard({
-        width: 3, height: 2,
+        width: 3,
+        height: 2,
         tiles: new Array(6).fill({ tileId: 'FloorSteel' }),
         entities: [
           { dx: 0.5, dy: 0.5, prototype: 'Wall', rotation: 0, components: [] },
           { dx: 2.5, dy: 0.5, prototype: 'Door', rotation: 0, components: [] },
         ],
-        originX: 0, originY: 0,
+        originX: 0,
+        originY: 0,
       });
 
       tool.paste(ctx);
@@ -764,9 +770,7 @@ describe('SelectTool', () => {
       tool.onMouseDown(ctx2, 5, 5, 0);
 
       expect(dispatched).toHaveLength(1);
-      const adds = dispatched[0].command.entityChanges.filter(
-        (ec: EntityChange) => ec.action === 'add',
-      );
+      const adds = dispatched[0].command.entityChanges.filter((ec: EntityChange) => ec.action === 'add');
       expect(adds).toHaveLength(2);
 
       // CW entity mapping: (dx,dy) → (dy, W-dx) with W=3
@@ -782,7 +786,7 @@ describe('SelectTool', () => {
 
       // Entity rotations: 0 + (-π/2) normalized = 3π/2
       for (const add of adds) {
-        expect(add.entity.rotation).toBeCloseTo(3 * Math.PI / 2);
+        expect(add.entity.rotation).toBeCloseTo((3 * Math.PI) / 2);
       }
 
       // Verify entities are within the paste region (pasteX to pasteX+width-1, etc.)
@@ -801,10 +805,12 @@ describe('SelectTool', () => {
       const { ctx } = makeToolContext({ nextEntityId: 100 });
 
       setClipboard({
-        width: 6, height: 4,
+        width: 6,
+        height: 4,
         tiles: new Array(24).fill({ tileId: 'FloorSteel' }),
         entities: [],
-        originX: 0, originY: 0,
+        originX: 0,
+        originY: 0,
       });
 
       tool.paste(ctx);
@@ -827,17 +833,15 @@ describe('SelectTool', () => {
       tool.onMouseDown(ctx2, 0, 0, 0);
 
       expect(dispatched).toHaveLength(1);
-      const placed = dispatched[0].command.tileChanges.filter(
-        (tc: TileChange) => tc.after.tileId === 'FloorSteel',
-      );
+      const placed = dispatched[0].command.tileChanges.filter((tc: TileChange) => tc.after.tileId === 'FloorSteel');
       // 6x4 = 24 tiles should still be placed after rotation
       expect(placed).toHaveLength(24);
 
       // Verify the placed tiles span exactly 4 columns and 6 rows
       const xs = [...new Set(placed.map((tc: TileChange) => tc.x))].sort((a, b) => (a as number) - (b as number));
       const ys = [...new Set(placed.map((tc: TileChange) => tc.y))].sort((a, b) => (a as number) - (b as number));
-      expect(xs).toHaveLength(4);  // 4 wide after rotation
-      expect(ys).toHaveLength(6);  // 6 tall after rotation
+      expect(xs).toHaveLength(4); // 4 wide after rotation
+      expect(ys).toHaveLength(6); // 6 tall after rotation
     });
   });
 
@@ -922,8 +926,10 @@ describe('SelectTool', () => {
   describe('spriteStateOverride preservation', () => {
     it('preserves spriteStateOverride through copy and paste', () => {
       const entity: ImportedEntity = {
-        uid: 10, prototype: 'ClosetBase',
-        position: { x: 3.5, y: 3.5 }, rotation: 0,
+        uid: 10,
+        prototype: 'ClosetBase',
+        position: { x: 3.5, y: 3.5 },
+        rotation: 0,
         components: [{ type: 'Transform', pos: '3.5,3.5', parent: 1 }],
         spriteStateOverride: 'generic_open',
       };
@@ -946,9 +952,7 @@ describe('SelectTool', () => {
       tool.onMouseDown(ctx, 8, 8, 0);
 
       expect(dispatched).toHaveLength(1);
-      const adds = dispatched[0].command.entityChanges.filter(
-        (ec: EntityChange) => ec.action === 'add',
-      );
+      const adds = dispatched[0].command.entityChanges.filter((ec: EntityChange) => ec.action === 'add');
       expect(adds[0].entity.spriteStateOverride).toBe('generic_open');
     });
   });

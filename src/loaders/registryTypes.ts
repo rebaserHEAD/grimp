@@ -3,7 +3,7 @@ export interface RawTilePrototype {
   type: 'tile';
   id: string;
   name?: string;
-  sprite?: string;       // e.g., "/Textures/Tiles/steel.png"
+  sprite?: string; // e.g., "/Textures/Tiles/steel.png"
   variants?: number;
   placementVariants?: number[];
   baseTurf?: string;
@@ -39,13 +39,13 @@ export interface RawComponent {
 
 /** Sprite info extracted from a resolved entity's Sprite component */
 export interface SpriteInfo {
-  rsiPath: string;         // e.g., "Structures/Power/apc.rsi"
-  baseState: string;       // e.g., "base"
+  rsiPath: string; // e.g., "Structures/Power/apc.rsi"
+  baseState: string; // e.g., "base"
   drawDepth?: string;
-  noRot?: boolean;         // true = don't apply canvas rotation (direction frame still selected by entity rotation)
-  color?: string;          // component-level color (e.g., "#FFFFFF80" for semi-transparent puddles)
+  noRot?: boolean; // true = don't apply canvas rotation (direction frame still selected by entity rotation)
+  color?: string; // component-level color (e.g., "#FFFFFF80" for semi-transparent puddles)
   scale?: { x: number; y: number }; // component-level draw scale; negative components mirror (e.g., "-1, 1")
-  iconSmoothKey?: string;  // IconSmooth key for neighbor matching (entities with same key connect)
+  iconSmoothKey?: string; // IconSmooth key for neighbor matching (entities with same key connect)
   iconSmoothBase?: string; // IconSmooth state prefix (e.g., "state_" for tables, "swindow" for shuttle windows)
   iconSmoothMode?: 'Corners' | 'CardinalFlags' | 'Diagonal'; // Smoothing mode (default: Corners)
   layers: SpriteLayerInfo[];
@@ -53,7 +53,7 @@ export interface SpriteInfo {
 
 export interface SpriteLayerInfo {
   state: string;
-  sprite?: string;   // per-layer RSI path override (e.g., spawners use a different RSI for the entity preview)
+  sprite?: string; // per-layer RSI path override (e.g., spawners use a different RSI for the entity preview)
   map?: string[];
   visible?: boolean;
   shader?: string;
@@ -65,12 +65,12 @@ export interface SpriteLayerInfo {
 export interface ResolvedTile {
   id: string;
   name: string;
-  sprite: string | null;   // null for Space
+  sprite: string | null; // null for Space
   variants: number;
   isSubfloor: boolean;
   isSpace: boolean;
   baseTurf: string | null;
-  raw: RawTilePrototype;   // preserve original for export
+  raw: RawTilePrototype; // preserve original for export
 }
 
 /** Resolved entity (fully merged with parents) */
@@ -84,7 +84,7 @@ export interface ResolvedEntity {
   placement: { mode?: string };
   components: RawComponent[];
   spriteInfo: SpriteInfo | null;
-  sourceCategory: string;  // derived from file path, e.g. "Structures/Doors"
+  sourceCategory: string; // derived from file path, e.g. "Structures/Doors"
   raw: RawEntityPrototype; // preserve original for export
 }
 
@@ -105,8 +105,8 @@ export interface RawDecalPrototype {
 /** Resolved decal prototype info for rendering */
 export interface DecalPrototypeInfo {
   id: string;
-  rsiPath: string;    // e.g., "Decals/markings.rsi"
-  state: string;      // e.g., "arrows_greyscale"
+  rsiPath: string; // e.g., "Decals/markings.rsi"
+  state: string; // e.g., "arrows_greyscale"
   tags: string[];
   snapCardinals: boolean;
   defaultCustomColor: boolean;

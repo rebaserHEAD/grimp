@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  GridData,
-  createEmptyGridData,
-  getActiveGrid,
-  getGridByUid,
-} from '../gridData';
+import { GridData, createEmptyGridData, getActiveGrid, getGridByUid } from '../gridData';
 
 describe('gridData helpers', () => {
   it('createEmptyGridData returns valid empty grid with given uid and name', () => {
@@ -21,10 +16,7 @@ describe('gridData helpers', () => {
   });
 
   it('getActiveGrid returns the grid at activeGridIndex', () => {
-    const grids: GridData[] = [
-      createEmptyGridData(2, 'A'),
-      createEmptyGridData(5, 'B'),
-    ];
+    const grids: GridData[] = [createEmptyGridData(2, 'A'), createEmptyGridData(5, 'B')];
     expect(getActiveGrid(grids, 0).gridUid).toBe(2);
     expect(getActiveGrid(grids, 1).gridUid).toBe(5);
   });
@@ -35,10 +27,7 @@ describe('gridData helpers', () => {
   });
 
   it('getGridByUid finds grid by UID', () => {
-    const grids = [
-      createEmptyGridData(2, 'A'),
-      createEmptyGridData(8812, 'B'),
-    ];
+    const grids = [createEmptyGridData(2, 'A'), createEmptyGridData(8812, 'B')];
     expect(getGridByUid(grids, 8812)?.name).toBe('B');
     expect(getGridByUid(grids, 999)).toBeUndefined();
   });

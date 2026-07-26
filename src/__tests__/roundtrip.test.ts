@@ -23,11 +23,11 @@ function makeChunkBase64(tileAssignments: Record<number, number>): string {
 // Chunk (0,0): FloorSteel at positions 0-5, Plating at 6-10, rest Space
 // Chunk (1,0): FloorDark at positions 0-3, rest Space
 const chunk00Assignments: Record<number, number> = {};
-for (let i = 0; i <= 5; i++) chunk00Assignments[i] = 2;  // FloorSteel
+for (let i = 0; i <= 5; i++) chunk00Assignments[i] = 2; // FloorSteel
 for (let i = 6; i <= 10; i++) chunk00Assignments[i] = 3; // Plating
 
 const chunk10Assignments: Record<number, number> = {};
-for (let i = 0; i <= 3; i++) chunk10Assignments[i] = 1;  // FloorDark
+for (let i = 0; i <= 3; i++) chunk10Assignments[i] = 1; // FloorDark
 
 const CHUNK_00 = makeChunkBase64(chunk00Assignments);
 const CHUNK_10 = makeChunkBase64(chunk10Assignments);
@@ -163,7 +163,7 @@ describe('map roundtrip', () => {
     expect(reimported.entities.length).toBe(original.entities.length);
 
     for (const origEntity of original.entities) {
-      const match = reimported.entities.find(e => e.uid === origEntity.uid);
+      const match = reimported.entities.find((e) => e.uid === origEntity.uid);
       expect(match).toBeDefined();
       expect(match!.prototype).toBe(origEntity.prototype);
     }
@@ -172,10 +172,10 @@ describe('map roundtrip', () => {
   it('preserves multiple entities of the same prototype', () => {
     const { reimported } = roundtrip();
 
-    const apcs = reimported.entities.filter(e => e.prototype === 'APCBasic');
+    const apcs = reimported.entities.filter((e) => e.prototype === 'APCBasic');
     expect(apcs.length).toBe(2);
 
-    const uids = apcs.map(e => e.uid).sort((a, b) => a - b);
+    const uids = apcs.map((e) => e.uid).sort((a, b) => a - b);
     expect(uids).toEqual([100, 103]);
   });
 
@@ -183,7 +183,7 @@ describe('map roundtrip', () => {
     const { original, reimported } = roundtrip();
 
     for (const origEntity of original.entities) {
-      const match = reimported.entities.find(e => e.uid === origEntity.uid);
+      const match = reimported.entities.find((e) => e.uid === origEntity.uid);
       expect(match).toBeDefined();
       expect(match!.position.x).toBeCloseTo(origEntity.position.x, 1);
       expect(match!.position.y).toBeCloseTo(origEntity.position.y, 1);
@@ -194,7 +194,7 @@ describe('map roundtrip', () => {
     const { original, reimported } = roundtrip();
 
     for (const origEntity of original.entities) {
-      const match = reimported.entities.find(e => e.uid === origEntity.uid);
+      const match = reimported.entities.find((e) => e.uid === origEntity.uid);
       expect(match).toBeDefined();
       expect(match!.rotation).toBeCloseTo(origEntity.rotation, 4);
     }
@@ -203,7 +203,7 @@ describe('map roundtrip', () => {
   it('preserves non-zero rotation specifically', () => {
     const { reimported } = roundtrip();
 
-    const airlock = reimported.entities.find(e => e.uid === 101);
+    const airlock = reimported.entities.find((e) => e.uid === 101);
     expect(airlock).toBeDefined();
     expect(airlock!.rotation).toBeCloseTo(1.5707963267948966, 4);
   });
@@ -211,8 +211,8 @@ describe('map roundtrip', () => {
   it('preserves component data (Battery)', () => {
     const { original, reimported } = roundtrip();
 
-    const origApc = original.entities.find(e => e.uid === 100);
-    const reimApc = reimported.entities.find(e => e.uid === 100);
+    const origApc = original.entities.find((e) => e.uid === 100);
+    const reimApc = reimported.entities.find((e) => e.uid === 100);
     expect(reimApc).toBeDefined();
 
     const origBattery = origApc!.components.find((c: any) => c.type === 'Battery') as any;
@@ -225,7 +225,7 @@ describe('map roundtrip', () => {
   it('preserves component data (AtmosDevice)', () => {
     const { reimported } = roundtrip();
 
-    const vent = reimported.entities.find(e => e.uid === 102);
+    const vent = reimported.entities.find((e) => e.uid === 102);
     expect(vent).toBeDefined();
 
     const atmosDevice = vent!.components.find((c: any) => c.type === 'AtmosDevice') as any;
@@ -264,7 +264,7 @@ describe('map roundtrip', () => {
     }
 
     for (const entity of reimported.entities) {
-      const match = reimported2.entities.find(e => e.uid === entity.uid);
+      const match = reimported2.entities.find((e) => e.uid === entity.uid);
       expect(match).toBeDefined();
       expect(match!.prototype).toBe(entity.prototype);
       expect(match!.position.x).toBeCloseTo(entity.position.x, 1);

@@ -30,10 +30,10 @@ describe('computeVisibilityPolygon', () => {
   it('light inside a room sees only the room interior', () => {
     // Box room: walls at x=0, x=10, y=0, y=10
     const segments: WallSegment[] = [
-      { x1: 0, y1: 0, x2: 0, y2: 10 },   // left
-      { x1: 10, y1: 0, x2: 10, y2: 10 },  // right
-      { x1: 0, y1: 0, x2: 10, y2: 0 },    // bottom
-      { x1: 0, y1: 10, x2: 10, y2: 10 },  // top
+      { x1: 0, y1: 0, x2: 0, y2: 10 }, // left
+      { x1: 10, y1: 0, x2: 10, y2: 10 }, // right
+      { x1: 0, y1: 0, x2: 10, y2: 0 }, // bottom
+      { x1: 0, y1: 10, x2: 10, y2: 10 }, // top
     ];
     const poly = computeVisibilityPolygon(5, 5, 20, segments);
 
@@ -70,7 +70,7 @@ describe('computeVisibilityPolygon', () => {
     const poly = computeVisibilityPolygon(0, 5, 10, segments);
 
     // Some points should be beyond x=3 (visible above the wall)
-    const beyondWall = poly.filter(p => p.x > 3.1);
+    const beyondWall = poly.filter((p) => p.x > 3.1);
     expect(beyondWall.length).toBeGreaterThan(0);
   });
 

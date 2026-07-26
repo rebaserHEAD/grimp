@@ -31,10 +31,7 @@ export function clearDecalSpriteCache(): void {
   tintCache.clear();
 }
 
-export function getDecalSprite(
-  prototypeId: string,
-  registry: IPrototypeRegistry,
-): HTMLImageElement | null {
+export function getDecalSprite(prototypeId: string, registry: IPrototypeRegistry): HTMLImageElement | null {
   if (cache.has(prototypeId)) return cache.get(prototypeId)!;
   if (loading.has(prototypeId)) return null;
 
@@ -133,8 +130,7 @@ export function renderDecals(
     if (!img) continue;
 
     // Determine what to draw (original or tinted)
-    const drawable: HTMLImageElement | HTMLCanvasElement =
-      color != null ? getTintedDecal(img, color) : img;
+    const drawable: HTMLImageElement | HTMLCanvasElement = color != null ? getTintedDecal(img, color) : img;
 
     // Apply alpha from color (#RRGGBBAA, last 2 hex chars)
     const hasAlpha = color != null && color.length === 9;

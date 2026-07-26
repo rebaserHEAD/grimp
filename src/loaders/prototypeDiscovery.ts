@@ -67,7 +67,11 @@ async function discoverForkPrefixes(provider: ResourceProvider): Promise<string[
 export async function discoverPrototypes(
   provider: ResourceProvider,
   onProgress?: (loaded: number, total: number) => void,
-): Promise<{ tiles: RawTilePrototype[]; entities: { proto: RawEntityPrototype; category: string }[]; decals: RawDecalPrototype[] }> {
+): Promise<{
+  tiles: RawTilePrototype[];
+  entities: { proto: RawEntityPrototype; category: string }[];
+  decals: RawDecalPrototype[];
+}> {
   // Scan base directories
   const tileFiles = await provider.listFiles('Prototypes/Tiles', '.yml');
   const entityFiles = await provider.listFiles('Prototypes/Entities', '.yml');
@@ -77,13 +81,17 @@ export async function discoverPrototypes(
   try {
     const catalogFiles = await provider.listFiles('Prototypes/Catalog', '.yml');
     entityFiles.push(...catalogFiles);
-  } catch { /* Catalog dir may not exist */ }
+  } catch {
+    /* Catalog dir may not exist */
+  }
 
   // Scan Decals directory
   try {
     const baseDecalFiles = await provider.listFiles('Prototypes/Decals', '.yml');
     decalFiles.push(...baseDecalFiles);
-  } catch { /* Decals dir may not exist */ }
+  } catch {
+    /* Decals dir may not exist */
+  }
 
   // Discover and scan fork directories (any leading-underscore directory)
   const forkDirs = await discoverForkPrefixes(provider);
@@ -91,19 +99,27 @@ export async function discoverPrototypes(
     try {
       const forkTiles = await provider.listFiles(`Prototypes/${fork}/Tiles`, '.yml');
       tileFiles.push(...forkTiles);
-    } catch { /* fork may not have Tiles/ */ }
+    } catch {
+      /* fork may not have Tiles/ */
+    }
     try {
       const forkEntities = await provider.listFiles(`Prototypes/${fork}/Entities`, '.yml');
       entityFiles.push(...forkEntities);
-    } catch { /* fork may not have Entities/ */ }
+    } catch {
+      /* fork may not have Entities/ */
+    }
     try {
       const forkCatalog = await provider.listFiles(`Prototypes/${fork}/Catalog`, '.yml');
       entityFiles.push(...forkCatalog);
-    } catch { /* fork may not have Catalog/ */ }
+    } catch {
+      /* fork may not have Catalog/ */
+    }
     try {
       const forkDecals = await provider.listFiles(`Prototypes/${fork}/Decals`, '.yml');
       decalFiles.push(...forkDecals);
-    } catch { /* fork may not have Decals/ */ }
+    } catch {
+      /* fork may not have Decals/ */
+    }
   }
 
   const allFiles = [...tileFiles, ...entityFiles, ...decalFiles];

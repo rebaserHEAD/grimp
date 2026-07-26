@@ -54,12 +54,12 @@ export class CableDrawTool implements ITool {
       }
     }
 
-    const newTiles = this.visitedTiles.filter(t => !existingPositions.has(`${t.x},${t.y}`));
+    const newTiles = this.visitedTiles.filter((t) => !existingPositions.has(`${t.x},${t.y}`));
     if (newTiles.length === 0) return;
 
     let nextUid = ctx.state.nextEntityId;
     const gridUid = ctx.state.gridUid;
-    const entities: ImportedEntity[] = newTiles.map(t => {
+    const entities: ImportedEntity[] = newTiles.map((t) => {
       const pos = { x: t.x + 0.5, y: t.y + 0.5 };
       return {
         uid: nextUid++,
@@ -75,7 +75,7 @@ export class CableDrawTool implements ITool {
       command: {
         label: `Draw ${CABLE_DISPLAY[this.cableType].label}`,
         tileChanges: [],
-        entityChanges: entities.map(e => ({ action: 'add' as const, entity: e })),
+        entityChanges: entities.map((e) => ({ action: 'add' as const, entity: e })),
       },
     });
 
@@ -83,12 +83,7 @@ export class CableDrawTool implements ITool {
     this.visitedSet.clear();
   }
 
-  renderPreview(
-    canvasCtx: CanvasRenderingContext2D,
-    toolCtx: ToolContext,
-    cursorTileX: number,
-    cursorTileY: number,
-  ) {
+  renderPreview(canvasCtx: CanvasRenderingContext2D, toolCtx: ToolContext, cursorTileX: number, cursorTileY: number) {
     const { camera, canvasW, canvasH } = toolCtx;
     const tileScreenSize = camera.tileScreenSize;
     const color = CABLE_DISPLAY[this.cableType].color;
@@ -154,18 +149,22 @@ export class CableDrawTool implements ITool {
 
     while (x0 !== toX || y0 !== toY) {
       const e2 = 2 * err;
-      if (e2 > -dy) { err -= dy; x0 += sx; }
-      if (e2 < dx) { err += dx; y0 += sy; }
+      if (e2 > -dy) {
+        err -= dy;
+        x0 += sx;
+      }
+      if (e2 < dx) {
+        err += dx;
+        y0 += sy;
+      }
       if (x0 === toX && y0 === toY) break;
       this.addSingleTile(x0, y0);
     }
   }
 
   private eraseCableAt(ctx: ToolContext, tileX: number, tileY: number) {
-    const toRemove = ctx.state.entities.filter(e =>
-      e.prototype === this.cableType &&
-      Math.floor(e.position.x) === tileX &&
-      Math.floor(e.position.y) === tileY,
+    const toRemove = ctx.state.entities.filter(
+      (e) => e.prototype === this.cableType && Math.floor(e.position.x) === tileX && Math.floor(e.position.y) === tileY,
     );
     if (toRemove.length === 0) return;
 
@@ -174,7 +173,7 @@ export class CableDrawTool implements ITool {
       command: {
         label: `Erase ${CABLE_DISPLAY[this.cableType].label}`,
         tileChanges: [],
-        entityChanges: toRemove.map(e => ({ action: 'remove' as const, entity: e })),
+        entityChanges: toRemove.map((e) => ({ action: 'remove' as const, entity: e })),
       },
     });
   }

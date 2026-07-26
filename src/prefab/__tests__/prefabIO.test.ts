@@ -8,12 +8,8 @@ function makePrefab(): PrefabData {
     width: 3,
     height: 2,
     tiles: [{ dx: 0, dy: 0, tileId: 'FloorSteel' }],
-    entities: [
-      { dx: 1, dy: 0, prototype: 'APCBasic', rotation: 0, components: [{ type: 'Transform' }] },
-    ],
-    deviceLinks: [
-      { sourceIdx: 0, targetIdx: 0, port: 'Pressed', sink: 'Toggle' },
-    ],
+    entities: [{ dx: 1, dy: 0, prototype: 'APCBasic', rotation: 0, components: [{ type: 'Transform' }] }],
+    deviceLinks: [{ sourceIdx: 0, targetIdx: 0, port: 'Pressed', sink: 'Toggle' }],
   };
 }
 

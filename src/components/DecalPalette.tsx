@@ -4,8 +4,8 @@ import type { IPrototypeRegistry, DecalPrototypeInfo } from '../loaders/registry
 import { getActiveProvider } from '../loaders/resourceProvider';
 
 export interface DecalPlacementSettings {
-  color: string | null;  // "#RRGGBBAA" or null
-  angle: number;         // radians
+  color: string | null; // "#RRGGBBAA" or null
+  angle: number; // radians
   zIndex: number;
   snap: boolean;
   cleanable: boolean;
@@ -171,8 +171,8 @@ export const DecalPalette: React.FC<Props> = ({ registry, selectedItem, onSelect
     // Order: priority tags first, then alphabetical
     const allTags = Array.from(map.keys());
     const prioritySet = new Set(PRIORITY_TAGS);
-    const priority = PRIORITY_TAGS.filter(t => allTags.includes(t));
-    const rest = allTags.filter(t => !prioritySet.has(t)).sort();
+    const priority = PRIORITY_TAGS.filter((t) => allTags.includes(t));
+    const rest = allTags.filter((t) => !prioritySet.has(t)).sort();
 
     return { groups: map, groupOrder: [...priority, ...rest], allDecals: decals };
   }, [registry]);
@@ -180,13 +180,13 @@ export const DecalPalette: React.FC<Props> = ({ registry, selectedItem, onSelect
   const filteredDecals = useMemo(() => {
     if (!search) return null;
     const lower = search.toLowerCase();
-    const results = allDecals.filter(d => String(d.id).toLowerCase().includes(lower));
+    const results = allDecals.filter((d) => String(d.id).toLowerCase().includes(lower));
     results.sort((a, b) => String(a.id).localeCompare(String(b.id)));
     return results.slice(0, 200);
   }, [search, allDecals]);
 
   const toggleGroup = useCallback((tag: string) => {
-    setExpandedGroups(prev => {
+    setExpandedGroups((prev) => {
       const next = new Set(prev);
       if (next.has(tag)) next.delete(tag);
       else next.add(tag);
@@ -194,8 +194,7 @@ export const DecalPalette: React.FC<Props> = ({ registry, selectedItem, onSelect
     });
   }, []);
 
-  const isSelected = (id: string) =>
-    selectedItem?.type === 'decal' && selectedItem.id === id;
+  const isSelected = (id: string) => selectedItem?.type === 'decal' && selectedItem.id === id;
 
   // Check if selected decal supports custom color
   const selectedDecal = useMemo(() => {
@@ -220,7 +219,7 @@ export const DecalPalette: React.FC<Props> = ({ registry, selectedItem, onSelect
         <input
           type="text"
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="Search decals..."
           className="w-full px-2 py-1 bg-surface border border-subtle rounded-sm text-primary text-xs outline-none focus:border-accent"
         />
@@ -229,10 +228,8 @@ export const DecalPalette: React.FC<Props> = ({ registry, selectedItem, onSelect
       <div className="flex-1 overflow-y-auto py-1">
         {filteredDecals ? (
           <div className="px-2">
-            {filteredDecals.length === 0 && (
-              <div className="text-muted text-xs p-3 italic text-center">No results</div>
-            )}
-            {filteredDecals.map(d => (
+            {filteredDecals.length === 0 && <div className="text-muted text-xs p-3 italic text-center">No results</div>}
+            {filteredDecals.map((d) => (
               <DecalRow
                 key={d.id}
                 decal={d}
@@ -244,7 +241,7 @@ export const DecalPalette: React.FC<Props> = ({ registry, selectedItem, onSelect
             ))}
           </div>
         ) : (
-          groupOrder.map(tag => {
+          groupOrder.map((tag) => {
             const decals = groups.get(tag);
             if (!decals) return null;
             const expanded = expandedGroups.has(tag);
@@ -261,7 +258,7 @@ export const DecalPalette: React.FC<Props> = ({ registry, selectedItem, onSelect
                 </button>
                 {expanded && (
                   <div className="pl-2 pr-2">
-                    {decals.map(d => (
+                    {decals.map((d) => (
                       <DecalRow
                         key={d.id}
                         decal={d}
@@ -289,7 +286,7 @@ export const DecalPalette: React.FC<Props> = ({ registry, selectedItem, onSelect
             <input
               type="color"
               value={colorHex}
-              onChange={e => setColorHex(e.target.value)}
+              onChange={(e) => setColorHex(e.target.value)}
               className="w-6 h-6 border border-subtle rounded-sm cursor-pointer bg-transparent p-0"
             />
             <label className="text-[10px] text-muted">A</label>
@@ -298,7 +295,7 @@ export const DecalPalette: React.FC<Props> = ({ registry, selectedItem, onSelect
               min={0}
               max={255}
               value={colorAlpha}
-              onChange={e => setColorAlpha(Number(e.target.value))}
+              onChange={(e) => setColorAlpha(Number(e.target.value))}
               className="flex-1 h-3"
             />
             <span className="text-[10px] text-muted w-6 text-right">{colorAlpha}</span>
@@ -312,7 +309,7 @@ export const DecalPalette: React.FC<Props> = ({ registry, selectedItem, onSelect
             min={0}
             max={360}
             value={angleDeg}
-            onChange={e => setAngleDeg(Number(e.target.value))}
+            onChange={(e) => setAngleDeg(Number(e.target.value))}
             className="flex-1 px-1 py-0.5 bg-surface border border-subtle rounded-sm text-primary text-[11px] outline-none focus:border-accent w-16"
           />
           <span className="text-[10px] text-muted">deg</span>
@@ -323,7 +320,7 @@ export const DecalPalette: React.FC<Props> = ({ registry, selectedItem, onSelect
           <input
             type="number"
             value={zIndex}
-            onChange={e => setZIndex(Number(e.target.value))}
+            onChange={(e) => setZIndex(Number(e.target.value))}
             className="flex-1 px-1 py-0.5 bg-surface border border-subtle rounded-sm text-primary text-[11px] outline-none focus:border-accent w-16"
           />
         </div>
@@ -333,7 +330,7 @@ export const DecalPalette: React.FC<Props> = ({ registry, selectedItem, onSelect
             <input
               type="checkbox"
               checked={snap}
-              onChange={e => setSnap(e.target.checked)}
+              onChange={(e) => setSnap(e.target.checked)}
               className="accent-accent"
             />
             Snap
@@ -342,7 +339,7 @@ export const DecalPalette: React.FC<Props> = ({ registry, selectedItem, onSelect
             <input
               type="checkbox"
               checked={cleanable}
-              onChange={e => setCleanable(e.target.checked)}
+              onChange={(e) => setCleanable(e.target.checked)}
               className="accent-accent"
             />
             Cleanable
@@ -350,18 +347,10 @@ export const DecalPalette: React.FC<Props> = ({ registry, selectedItem, onSelect
         </div>
       </div>
 
-      <div className="px-2 py-1 text-[10px] text-muted border-t border-subtle">
-        {registry?.decalCount ?? 0} decals
-      </div>
+      <div className="px-2 py-1 text-[10px] text-muted border-t border-subtle">{registry?.decalCount ?? 0} decals</div>
 
       {/* Hover preview popup */}
-      {hovered && registry && (
-        <DecalPreviewPopup
-          decalId={hovered.id}
-          registry={registry}
-          anchorRect={hovered.rect}
-        />
-      )}
+      {hovered && registry && <DecalPreviewPopup decalId={hovered.id} registry={registry} anchorRect={hovered.rect} />}
     </div>
   );
 };
@@ -380,8 +369,11 @@ const DecalRow: React.FC<{
       onClick={onSelect}
       onMouseEnter={() => ref.current && onHoverEnter(String(decal.id), ref.current)}
       onMouseLeave={onHoverLeave}
-      className={`flex items-center gap-1.5 px-2 py-0.5 text-xs cursor-pointer w-full text-left border-none rounded-sm mb-px ${selected ? 'bg-active text-accent border border-accent' : 'text-primary hover:bg-hover bg-transparent border border-transparent'
-        }`}
+      className={`flex items-center gap-1.5 px-2 py-0.5 text-xs cursor-pointer w-full text-left border-none rounded-sm mb-px ${
+        selected
+          ? 'bg-active text-accent border border-accent'
+          : 'text-primary hover:bg-hover bg-transparent border border-transparent'
+      }`}
       title={`${decal.id}\nTags: ${decal.tags.join(', ')}`}
     >
       <DecalThumbnail decal={decal} />
@@ -396,15 +388,18 @@ function useDecalHoverPreview(delay = 300) {
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
   const currentRef = useRef<string | null>(null);
 
-  const onMouseEnter = useCallback((id: string, el: HTMLElement) => {
-    currentRef.current = id;
-    clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      if (currentRef.current === id) {
-        setHovered({ id, rect: el.getBoundingClientRect() });
-      }
-    }, delay);
-  }, [delay]);
+  const onMouseEnter = useCallback(
+    (id: string, el: HTMLElement) => {
+      currentRef.current = id;
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        if (currentRef.current === id) {
+          setHovered({ id, rect: el.getBoundingClientRect() });
+        }
+      }, delay);
+    },
+    [delay],
+  );
 
   const onMouseLeave = useCallback(() => {
     currentRef.current = null;
@@ -426,7 +421,11 @@ const DecalPreviewPopup: React.FC<{
     if (!proto || !proto.state) return null;
     const rsi = proto.rsiPath;
     const path = rsi.startsWith('Textures/') ? `/${rsi}/${proto.state}.png` : `/Textures/${rsi}/${proto.state}.png`;
-    try { return getActiveProvider().getImageUrl(path); } catch { return null; }
+    try {
+      return getActiveProvider().getImageUrl(path);
+    } catch {
+      return null;
+    }
   })();
 
   const left = anchorRect.left - PREVIEW_SIZE - 20;

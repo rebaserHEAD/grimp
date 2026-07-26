@@ -13,8 +13,13 @@ function makeEntity(uid: number, proto: string, x: number, y: number): ImportedE
 
 function syncGrids(state: EditorState): EditorState {
   const activeGrid = state.grids[state.activeGridIndex];
-  const updated: GridData = { ...activeGrid, grid: state.grid, entities: state.entities, containedEntities: state.containedEntities };
-  return { ...state, grids: state.grids.map((g, i) => i === state.activeGridIndex ? updated : g) };
+  const updated: GridData = {
+    ...activeGrid,
+    grid: state.grid,
+    entities: state.entities,
+    containedEntities: state.containedEntities,
+  };
+  return { ...state, grids: state.grids.map((g, i) => (i === state.activeGridIndex ? updated : g)) };
 }
 
 describe('Reducer batch entity removal', () => {
@@ -31,7 +36,7 @@ describe('Reducer batch entity removal', () => {
     });
 
     // Remove entities 1-50
-    const removals = entities.slice(0, 50).map(e => ({ action: 'remove' as const, entity: e }));
+    const removals = entities.slice(0, 50).map((e) => ({ action: 'remove' as const, entity: e }));
     const command: Command = { label: 'Bulk delete', tileChanges: [], entityChanges: removals };
 
     state = editorReducer(state, { type: 'APPLY_COMMAND', command });
@@ -39,11 +44,11 @@ describe('Reducer batch entity removal', () => {
     expect(state.entities).toHaveLength(50);
     // Remaining should be entities 51-100
     for (let i = 51; i <= 100; i++) {
-      expect(state.entities.find(e => e.uid === i)).toBeDefined();
+      expect(state.entities.find((e) => e.uid === i)).toBeDefined();
     }
     // Removed should be gone
     for (let i = 1; i <= 50; i++) {
-      expect(state.entities.find(e => e.uid === i)).toBeUndefined();
+      expect(state.entities.find((e) => e.uid === i)).toBeUndefined();
     }
     expect(spatialSize()).toBe(50);
   });
@@ -74,10 +79,10 @@ describe('Reducer batch entity removal', () => {
     state = editorReducer(state, { type: 'APPLY_COMMAND', command });
 
     expect(state.entities).toHaveLength(2);
-    expect(state.entities.find(e => e.uid === 3)).toBeDefined();
-    expect(state.entities.find(e => e.uid === 4)).toBeDefined();
-    expect(state.entities.find(e => e.uid === 1)).toBeUndefined();
-    expect(state.entities.find(e => e.uid === 2)).toBeUndefined();
+    expect(state.entities.find((e) => e.uid === 3)).toBeDefined();
+    expect(state.entities.find((e) => e.uid === 4)).toBeDefined();
+    expect(state.entities.find((e) => e.uid === 1)).toBeUndefined();
+    expect(state.entities.find((e) => e.uid === 2)).toBeUndefined();
     expect(spatialSize()).toBe(2);
     expect(spatialGetByUid(3)).toBeDefined();
     expect(spatialGetByUid(4)).toBeDefined();
@@ -95,7 +100,7 @@ describe('Reducer batch entity removal', () => {
     const command: Command = {
       label: 'Delete all',
       tileChanges: [],
-      entityChanges: entities.map(e => ({ action: 'remove' as const, entity: e })),
+      entityChanges: entities.map((e) => ({ action: 'remove' as const, entity: e })),
     };
 
     state = editorReducer(state, { type: 'APPLY_COMMAND', command });
@@ -103,7 +108,7 @@ describe('Reducer batch entity removal', () => {
 
     state = editorReducer(state, { type: 'UNDO' });
     expect(state.entities).toHaveLength(3);
-    expect(state.entities.map(e => e.uid).sort()).toEqual([1, 2, 3]);
+    expect(state.entities.map((e) => e.uid).sort()).toEqual([1, 2, 3]);
     expect(spatialSize()).toBe(3);
   });
 
@@ -132,7 +137,7 @@ describe('Reducer batch entity removal', () => {
     state = editorReducer(state, { type: 'APPLY_COMMAND', command });
 
     // e1, e3 retained in original order, e4 appended
-    expect(state.entities.map(e => e.uid)).toEqual([1, 3, 4]);
+    expect(state.entities.map((e) => e.uid)).toEqual([1, 3, 4]);
   });
 
   it('cascade delete of container contents still works', () => {

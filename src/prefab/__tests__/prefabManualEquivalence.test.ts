@@ -21,7 +21,10 @@ function makeGrid(w: number, h: number): TileGrid {
 function makeEntity(uid: number, proto: string, x: number, y: number, rot = 0): ImportedEntity {
   const pos = { x: x + 0.5, y: y + 0.5 };
   return {
-    uid, prototype: proto, position: pos, rotation: rot,
+    uid,
+    prototype: proto,
+    position: pos,
+    rotation: rot,
     components: buildTransformComponent(pos, rot, 1),
   };
 }
@@ -44,7 +47,10 @@ describe('prefab placement equivalence with manual tools', () => {
     // Serialize to prefab
     const prefab = serializePrefab({
       name: 'test',
-      minX: 3, minY: 5, maxX: 4, maxY: 5,
+      minX: 3,
+      minY: 5,
+      maxX: 4,
+      maxY: 5,
       grid,
       entities: manualEntities,
       entityRawComponents: {},
@@ -55,13 +61,14 @@ describe('prefab placement equivalence with manual tools', () => {
     const placeY = 20;
     const result = placePrefab({
       prefab,
-      placeX, placeY,
+      placeX,
+      placeY,
       grid: makeGrid(30, 30),
       entities: [],
       nextEntityId: 100,
     });
 
-    const adds = result.command.entityChanges.filter(ec => ec.action === 'add');
+    const adds = result.command.entityChanges.filter((ec) => ec.action === 'add');
 
     for (const ec of adds) {
       const entity = ec.entity;
@@ -90,28 +97,39 @@ describe('prefab placement equivalence with manual tools', () => {
     setCell(grid, 0, 0, { tileId: 'FloorSteel' });
     setCell(grid, 1, 0, { tileId: 'FloorSteel' });
 
-    const entities = [
-      makeEntity(1, 'Window', 0, 0),
-      makeEntity(2, 'Window', 1, 0),
-    ];
+    const entities = [makeEntity(1, 'Window', 0, 0), makeEntity(2, 'Window', 1, 0)];
 
     const prefab = serializePrefab({
-      name: 'test', minX: 0, minY: 0, maxX: 1, maxY: 0,
-      grid, entities, entityRawComponents: {},
+      name: 'test',
+      minX: 0,
+      minY: 0,
+      maxX: 1,
+      maxY: 0,
+      grid,
+      entities,
+      entityRawComponents: {},
     });
 
     // Stamp twice at different locations
     const result1 = placePrefab({
-      prefab, placeX: 5, placeY: 5,
-      grid: makeGrid(20, 20), entities: [], nextEntityId: 100,
+      prefab,
+      placeX: 5,
+      placeY: 5,
+      grid: makeGrid(20, 20),
+      entities: [],
+      nextEntityId: 100,
     });
     const result2 = placePrefab({
-      prefab, placeX: 10, placeY: 10,
-      grid: makeGrid(20, 20), entities: [], nextEntityId: 200,
+      prefab,
+      placeX: 10,
+      placeY: 10,
+      grid: makeGrid(20, 20),
+      entities: [],
+      nextEntityId: 200,
     });
 
-    const adds1 = result1.command.entityChanges.filter(ec => ec.action === 'add');
-    const adds2 = result2.command.entityChanges.filter(ec => ec.action === 'add');
+    const adds1 = result1.command.entityChanges.filter((ec) => ec.action === 'add');
+    const adds2 = result2.command.entityChanges.filter((ec) => ec.action === 'add');
 
     // Components from stamp 1 and stamp 2 must be independent objects
     for (let i = 0; i < adds1.length; i++) {
@@ -131,16 +149,22 @@ describe('prefab placement equivalence with manual tools', () => {
     const entities = [makeEntity(1, 'Window', 0, 0)];
 
     const prefab = serializePrefab({
-      name: 'test', minX: 0, minY: 0, maxX: 0, maxY: 0,
-      grid, entities, entityRawComponents: {},
+      name: 'test',
+      minX: 0,
+      minY: 0,
+      maxX: 0,
+      maxY: 0,
+      grid,
+      entities,
+      entityRawComponents: {},
     });
 
     // Stamp at two different locations
     const r1 = placePrefab({ prefab, placeX: 5, placeY: 5, grid: makeGrid(20, 20), entities: [], nextEntityId: 1 });
     const r2 = placePrefab({ prefab, placeX: 15, placeY: 25, grid: makeGrid(30, 30), entities: [], nextEntityId: 1 });
 
-    const e1 = r1.command.entityChanges.find(ec => ec.action === 'add')!.entity;
-    const e2 = r2.command.entityChanges.find(ec => ec.action === 'add')!.entity;
+    const e1 = r1.command.entityChanges.find((ec) => ec.action === 'add')!.entity;
+    const e2 = r2.command.entityChanges.find((ec) => ec.action === 'add')!.entity;
 
     // Positions must differ
     expect(e1.position).not.toEqual(e2.position);
@@ -160,24 +184,34 @@ describe('prefab placement equivalence with manual tools', () => {
     setCell(grid, 3, 3, { tileId: 'Plating' });
 
     const prefab = serializePrefab({
-      name: 'test', minX: 2, minY: 3, maxX: 3, maxY: 3,
-      grid, entities: [], entityRawComponents: {},
+      name: 'test',
+      minX: 2,
+      minY: 3,
+      maxX: 3,
+      maxY: 3,
+      grid,
+      entities: [],
+      entityRawComponents: {},
     });
 
     // Place at offset (10, 20)
     const result = placePrefab({
-      prefab, placeX: 10, placeY: 20,
-      grid: makeGrid(30, 30), entities: [], nextEntityId: 1,
+      prefab,
+      placeX: 10,
+      placeY: 20,
+      grid: makeGrid(30, 30),
+      entities: [],
+      nextEntityId: 1,
     });
 
     const tileChanges = result.command.tileChanges;
     expect(tileChanges).toHaveLength(2);
 
-    const steel = tileChanges.find(tc => tc.after.tileId === 'FloorSteel')!;
+    const steel = tileChanges.find((tc) => tc.after.tileId === 'FloorSteel')!;
     expect(steel.x).toBe(10); // placeX + dx(0)
     expect(steel.y).toBe(20); // placeY + dy(0)
 
-    const plating = tileChanges.find(tc => tc.after.tileId === 'Plating')!;
+    const plating = tileChanges.find((tc) => tc.after.tileId === 'Plating')!;
     expect(plating.x).toBe(11); // placeX + dx(1)
     expect(plating.y).toBe(20); // placeY + dy(0)
   });
@@ -190,16 +224,26 @@ describe('prefab placement equivalence with manual tools', () => {
     const entities = [makeEntity(1, 'APC', 0, 0, rot)];
 
     const prefab = serializePrefab({
-      name: 'test', minX: 0, minY: 0, maxX: 0, maxY: 0,
-      grid, entities, entityRawComponents: {},
+      name: 'test',
+      minX: 0,
+      minY: 0,
+      maxX: 0,
+      maxY: 0,
+      grid,
+      entities,
+      entityRawComponents: {},
     });
 
     const result = placePrefab({
-      prefab, placeX: 8, placeY: 8,
-      grid: makeGrid(20, 20), entities: [], nextEntityId: 1,
+      prefab,
+      placeX: 8,
+      placeY: 8,
+      grid: makeGrid(20, 20),
+      entities: [],
+      nextEntityId: 1,
     });
 
-    const entity = result.command.entityChanges.find(ec => ec.action === 'add')!.entity;
+    const entity = result.command.entityChanges.find((ec) => ec.action === 'add')!.entity;
     const transform = entity.components.find((c: any) => c.type === 'Transform') as any;
 
     expect(entity.rotation).toBe(rot);
@@ -211,15 +255,24 @@ describe('prefab placement equivalence with manual tools', () => {
     const grid = makeGrid(10, 10);
     setCell(grid, 0, 0, { tileId: 'FloorSteel' });
 
-    const entities: ImportedEntity[] = [{
-      uid: 1, prototype: 'Window',
-      position: { x: 0.5, y: 0.5 }, rotation: 0,
-      components: [{ type: 'Transform', pos: '0.5,0.5', parent: 1 }],
-    }];
+    const entities: ImportedEntity[] = [
+      {
+        uid: 1,
+        prototype: 'Window',
+        position: { x: 0.5, y: 0.5 },
+        rotation: 0,
+        components: [{ type: 'Transform', pos: '0.5,0.5', parent: 1 }],
+      },
+    ];
 
     const prefab = serializePrefab({
-      name: 'test', minX: 0, minY: 0, maxX: 0, maxY: 0,
-      grid, entities,
+      name: 'test',
+      minX: 0,
+      minY: 0,
+      maxX: 0,
+      maxY: 0,
+      grid,
+      entities,
       entityRawComponents: { 1: ['  - type: Transform', '    pos: 0.5,0.5', '    parent: 1'] },
     });
 
@@ -228,8 +281,12 @@ describe('prefab placement equivalence with manual tools', () => {
 
     // But after placement at a new location, rawComponentsMap must be empty
     const result = placePrefab({
-      prefab, placeX: 10, placeY: 10,
-      grid: makeGrid(20, 20), entities: [], nextEntityId: 1,
+      prefab,
+      placeX: 10,
+      placeY: 10,
+      grid: makeGrid(20, 20),
+      entities: [],
+      nextEntityId: 1,
     });
 
     expect(Object.keys(result.rawComponentsMap)).toHaveLength(0);

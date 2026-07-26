@@ -38,8 +38,10 @@ export class PrefabPlaceTool implements ITool {
     // Expand grid to contain the prefab footprint
     const expanded = ensureGridContainsBounds(
       ctx.state.grid,
-      tileX, tileY,
-      tileX + prefab.width - 1, tileY + prefab.height - 1,
+      tileX,
+      tileY,
+      tileX + prefab.width - 1,
+      tileY + prefab.height - 1,
       0,
     );
     if (expanded !== ctx.state.grid) {
@@ -137,11 +139,7 @@ export class PrefabPlaceTool implements ITool {
     canvasCtx.fillStyle = '#ffffff';
     canvasCtx.font = '11px monospace';
     canvasCtx.textAlign = 'center';
-    canvasCtx.fillText(
-      `${prefab.name} (${prefab.width}x${prefab.height})`,
-      screenX + w / 2,
-      screenY - 4,
-    );
+    canvasCtx.fillText(`${prefab.name} (${prefab.width}x${prefab.height})`, screenX + w / 2, screenY - 4);
   }
 
   deactivate(): void {

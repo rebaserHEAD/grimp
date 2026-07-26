@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
-  rebuildSpatialIndex, spatialInsert, spatialRemove,
-  spatialGetAt, spatialGetInRect, clearSpatialIndex, spatialSize,
+  rebuildSpatialIndex,
+  spatialInsert,
+  spatialRemove,
+  spatialGetAt,
+  spatialGetInRect,
+  clearSpatialIndex,
+  spatialSize,
   spatialGetByUid,
 } from '../spatialIndex';
 import type { ImportedEntity } from '../../import/mapImporter';
@@ -21,11 +26,7 @@ describe('SpatialIndex', () => {
   });
 
   it('rebuild populates index from entity array', () => {
-    const entities = [
-      makeEntity(1, 'Wall', 5, 5),
-      makeEntity(2, 'APC', 5, 5),
-      makeEntity(3, 'Table', 10, 10),
-    ];
+    const entities = [makeEntity(1, 'Wall', 5, 5), makeEntity(2, 'APC', 5, 5), makeEntity(3, 'Table', 10, 10)];
     rebuildSpatialIndex(entities);
 
     expect(spatialSize()).toBe(3);
@@ -76,15 +77,12 @@ describe('SpatialIndex', () => {
     ]);
 
     const result = spatialGetInRect(0, 0, 5, 5);
-    const uids = result.map(e => e.uid).sort();
+    const uids = result.map((e) => e.uid).sort();
     expect(uids).toEqual([1, 2, 3]);
   });
 
   it('getInRect with single cell returns only that cell', () => {
-    rebuildSpatialIndex([
-      makeEntity(1, 'Wall', 3, 3),
-      makeEntity(2, 'APC', 3, 4),
-    ]);
+    rebuildSpatialIndex([makeEntity(1, 'Wall', 3, 3), makeEntity(2, 'APC', 3, 4)]);
 
     const result = spatialGetInRect(3, 3, 3, 3);
     expect(result).toHaveLength(1);

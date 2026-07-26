@@ -43,11 +43,8 @@ export function buildTransformComponent(
  * Update the Transform component's `rot` field in a components array.
  * Returns a new array with the Transform updated (or unchanged if none exists).
  */
-export function updateTransformRot(
-  components: Record<string, unknown>[],
-  newRot: number,
-): Record<string, unknown>[] {
-  return components.map(c => {
+export function updateTransformRot(components: Record<string, unknown>[], newRot: number): Record<string, unknown>[] {
+  return components.map((c) => {
     if (c.type === 'Transform') {
       const updated = { ...c };
       if (newRot !== 0) {
@@ -69,7 +66,7 @@ export function updateTransformPos(
   components: Record<string, unknown>[],
   newPos: { x: number; y: number },
 ): Record<string, unknown>[] {
-  return components.map(c => {
+  return components.map((c) => {
     if (c.type === 'Transform') {
       return { ...c, pos: `${newPos.x},${newPos.y}` };
     }
@@ -85,7 +82,7 @@ export function cloneComponentsWithPos(
   components: Record<string, unknown>[],
   newPos: { x: number; y: number },
 ): Record<string, unknown>[] {
-  return components.map(c => {
+  return components.map((c) => {
     if (c.type === 'Transform') {
       return { ...c, pos: `${newPos.x},${newPos.y}` };
     }
@@ -101,7 +98,7 @@ export function cloneComponentsWithPosRot(
   newPos: { x: number; y: number },
   newRot: number,
 ): Record<string, unknown>[] {
-  return components.map(c => {
+  return components.map((c) => {
     if (c.type === 'Transform') {
       const updated: Record<string, unknown> = { ...c, pos: `${newPos.x},${newPos.y}` };
       if (newRot !== 0) {

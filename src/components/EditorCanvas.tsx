@@ -18,12 +18,26 @@ import { buildWallSegmentCache } from '../rendering/wallSegments';
 import type { WallSegmentCache } from '../rendering/wallSegments';
 import { LayerCompositor } from '../rendering/layerCompositor';
 import { useAnimationFrame } from '../hooks/useAnimationFrame';
-import { needsRedraw, markClean, markOverlayDirty, markAllDirty, markSceneDirty, isSceneDirty, isConnectionsDirty as isConnDirty } from '../rendering/dirtyFlags';
+import {
+  needsRedraw,
+  markClean,
+  markOverlayDirty,
+  markAllDirty,
+  markSceneDirty,
+  isSceneDirty,
+  isConnectionsDirty as isConnDirty,
+} from '../rendering/dirtyFlags';
 import { spatialGeneration } from '../rendering/spatialIndex';
 import {
-  statsFrameTick, statsFrameSkipped, statsFrameStart, statsFrameEnd,
-  statsSetTotalEntities, statsSetSelectedCount, statsSetCamera,
-  statsSetLayerRedraws, statsSetZoomDeferred,
+  statsFrameTick,
+  statsFrameSkipped,
+  statsFrameStart,
+  statsFrameEnd,
+  statsSetTotalEntities,
+  statsSetSelectedCount,
+  statsSetCamera,
+  statsSetLayerRedraws,
+  statsSetZoomDeferred,
 } from '../rendering/renderStats';
 import { benchmarkSample } from '../rendering/benchmarkCapture';
 import type { DecalInstance } from '../import/decalParser';
@@ -51,8 +65,21 @@ interface Props {
 const TILE_SIZE = 32;
 
 export const EditorCanvas: React.FC<Props> = ({
-  state, dispatch, camera, activeTool, showEntities, showGrid, showSpaceBackground, isSpaceHeld, isRHeld,
-  showSubFloor, layerVisibility, showConnections, lightingEnabled, decalPlacementSettingsRef, highlightTile,
+  state,
+  dispatch,
+  camera,
+  activeTool,
+  showEntities,
+  showGrid,
+  showSpaceBackground,
+  isSpaceHeld,
+  isRHeld,
+  showSubFloor,
+  layerVisibility,
+  showConnections,
+  lightingEnabled,
+  decalPlacementSettingsRef,
+  highlightTile,
   requestPrompt,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -119,21 +146,24 @@ export const EditorCanvas: React.FC<Props> = ({
   }, []);
 
   // Returns world tile coordinates (not grid-local)
-  const screenToWorld = useCallback((screenX: number, screenY: number, precise = false) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
-    const rect = canvas.getBoundingClientRect();
-    const cx = screenX - rect.left;
-    const cy = screenY - rect.top;
-    const tile = camera.screenToTile(cx, cy, canvas.clientWidth, canvas.clientHeight);
-    if (precise) {
-      return { x: tile.x, y: tile.y };
-    }
-    return {
-      x: Math.floor(tile.x),
-      y: Math.floor(tile.y),
-    };
-  }, [camera]);
+  const screenToWorld = useCallback(
+    (screenX: number, screenY: number, precise = false) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return { x: 0, y: 0 };
+      const rect = canvas.getBoundingClientRect();
+      const cx = screenX - rect.left;
+      const cy = screenY - rect.top;
+      const tile = camera.screenToTile(cx, cy, canvas.clientWidth, canvas.clientHeight);
+      if (precise) {
+        return { x: tile.x, y: tile.y };
+      }
+      return {
+        x: Math.floor(tile.x),
+        y: Math.floor(tile.y),
+      };
+    },
+    [camera],
+  );
 
   const getToolContext = useCallback((): ToolContext => {
     const canvas = canvasRef.current;
@@ -165,7 +195,9 @@ export const EditorCanvas: React.FC<Props> = ({
   // would otherwise leave isPanning stuck on. Pan-only; tool drags are ended by
   // the canvas handlers.
   useEffect(() => {
-    const endPan = () => { isPanning.current = false; };
+    const endPan = () => {
+      isPanning.current = false;
+    };
     window.addEventListener('mouseup', endPan);
     window.addEventListener('blur', endPan);
     return () => {
@@ -174,191 +206,206 @@ export const EditorCanvas: React.FC<Props> = ({
     };
   }, []);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    setContextMenu(null);
-    if (shouldPan(e.button)) {
-      // Middle-button mousedown otherwise triggers the browser's autoscroll,
-      // which captures the pointer and swallows the matching mouseup, leaving
-      // the pan stuck on (view drifts, clicks stop selecting).
-      e.preventDefault();
-      isPanning.current = true;
-      lastMouse.current = { x: e.clientX, y: e.clientY };
-      return;
-    }
-
-    isShiftHeldRef.current = e.shiftKey;
-    isCtrlHeldRef.current = e.ctrlKey || e.metaKey;
-    markOverlayDirty();
-    const tool = toolRef.current;
-
-    // Snapped decal placement is handled by tools (paintTool, lineTool, etc.) via decalBrushHelper.
-    // Free (non-snapped) decal placement is handled here since tools only receive integer coords.
-    const s = stateRef.current;
-    const decalSettings = decalPlacementSettingsRef.current;
-    const decalFreePlace = !decalSettings.snap || e.shiftKey;
-    if (s.selectedPaletteItem?.type === 'decal' && e.button === 0 && decalFreePlace) {
-      const toolName = tool?.name ?? '';
-      const canPlace = !['entitySelect', 'select', 'pan', 'pipeDraw', 'cableDraw', 'deviceLink'].includes(toolName);
-      if (canPlace) {
-        const world = screenToWorld(e.clientX, e.clientY, true);
-        const activeGrid = s.grids[s.activeGridIndex];
-        const decal: DecalInstance = {
-          id: activeGrid.decals.nextDecalId,
-          prototypeId: s.selectedPaletteItem.id,
-          position: { x: world.x, y: world.y },
-          color: decalSettings.color,
-          angle: decalSettings.angle,
-          zIndex: decalSettings.zIndex,
-          cleanable: decalSettings.cleanable,
-        };
-        dispatch({
-          type: 'APPLY_COMMAND',
-          command: {
-            label: `Place ${s.selectedPaletteItem.id}`,
-            tileChanges: [],
-            entityChanges: [],
-            decalChanges: [{ action: 'add', decal }],
-          },
-        });
-        markSceneDirty();
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      setContextMenu(null);
+      if (shouldPan(e.button)) {
+        // Middle-button mousedown otherwise triggers the browser's autoscroll,
+        // which captures the pointer and swallows the matching mouseup, leaving
+        // the pan stuck on (view drifts, clicks stop selecting).
+        e.preventDefault();
+        isPanning.current = true;
+        lastMouse.current = { x: e.clientX, y: e.clientY };
         return;
       }
-    }
 
-    // Free placement: fractional coords when Shift held + placement-compatible tool
-    const usePrecise = e.shiftKey && (tool?.name === 'entityPlace' || tool?.name === 'entitySelect');
-    const tile = screenToWorld(e.clientX, e.clientY, usePrecise);
-
-    if (tool && tool instanceof EntitySelectTool) {
-      if (e.shiftKey) {
-        tool.onMouseDownWithShift(getToolContext(), tile.x, tile.y, e.button);
-      } else if (e.ctrlKey || e.metaKey) {
-        tool.onMouseDownWithCtrl(getToolContext(), tile.x, tile.y, e.button);
-      } else {
-        tool.onMouseDown(getToolContext(), tile.x, tile.y, e.button);
-      }
-    } else {
-      tool?.onMouseDown(getToolContext(), tile.x, tile.y, e.button);
-    }
-  }, [screenToWorld, getToolContext, shouldPan]);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    isShiftHeldRef.current = e.shiftKey;
-    isCtrlHeldRef.current = e.ctrlKey || e.metaKey;
-    const tile = screenToWorld(e.clientX, e.clientY);
-    const world = screenToWorld(e.clientX, e.clientY, true);
-    cursorTile.current = tile;
-    cursorWorld.current = world;
-    markOverlayDirty();
-
-    if (isPanning.current) {
-      const dx = e.clientX - lastMouse.current.x;
-      const dy = e.clientY - lastMouse.current.y;
-      camera.pan(dx, dy); // also marks cameraDirty
-      lastMouse.current = { x: e.clientX, y: e.clientY };
-      return;
-    }
-
-    const moveTool = toolRef.current;
-    const usePrecise = e.shiftKey && (moveTool?.name === 'entityPlace' || moveTool?.name === 'entitySelect');
-    const moveCoord = usePrecise ? world : tile;
-    moveTool?.onMouseMove(getToolContext(), moveCoord.x, moveCoord.y);
-  }, [camera, screenToWorld, getToolContext]);
-
-  const handleMouseUp = useCallback((e: React.MouseEvent) => {
-    isShiftHeldRef.current = e.shiftKey;
-    if (isPanning.current) {
-      isPanning.current = false;
-      return;
-    }
-    markOverlayDirty();
-    const tool = toolRef.current;
-    const usePrecise = e.shiftKey && (tool?.name === 'entityPlace' || tool?.name === 'entitySelect');
-    const tile = screenToWorld(e.clientX, e.clientY, usePrecise);
-    tool?.onMouseUp(getToolContext(), tile.x, tile.y);
-  }, [screenToWorld, getToolContext]);
-
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    // R + scroll: smooth fractional rotation
-    if (isRHeldRef.current) {
+      isShiftHeldRef.current = e.shiftKey;
+      isCtrlHeldRef.current = e.ctrlKey || e.metaKey;
+      markOverlayDirty();
       const tool = toolRef.current;
+
+      // Snapped decal placement is handled by tools (paintTool, lineTool, etc.) via decalBrushHelper.
+      // Free (non-snapped) decal placement is handled here since tools only receive integer coords.
       const s = stateRef.current;
-      // 5° per scroll notch (π/36), proportional for trackpads
-      const deltaRadians = -(e.deltaY / 100) * (Math.PI / 36);
-
-      // Rotate selected entities
-      if (tool instanceof EntitySelectTool && s.selectedEntityUids.length > 0) {
-        tool.smoothRotateSelected(getToolContext(), deltaRadians);
-        markOverlayDirty();
-        return;
-      }
-
-      // Rotate selected decals
-      if (tool instanceof EntitySelectTool && s.selectedDecalIds.length > 0) {
-        const activeGrid = s.grids[s.activeGridIndex];
-        const selectedSet = new Set(s.selectedDecalIds);
-        const decalChanges = activeGrid.decals.decals
-          .filter(d => selectedSet.has(d.id))
-          .map(d => ({
-            action: 'update' as const,
-            decal: { ...d, angle: d.angle + deltaRadians },
-            previousDecal: d,
-          }));
-        if (decalChanges.length > 0) {
+      const decalSettings = decalPlacementSettingsRef.current;
+      const decalFreePlace = !decalSettings.snap || e.shiftKey;
+      if (s.selectedPaletteItem?.type === 'decal' && e.button === 0 && decalFreePlace) {
+        const toolName = tool?.name ?? '';
+        const canPlace = !['entitySelect', 'select', 'pan', 'pipeDraw', 'cableDraw', 'deviceLink'].includes(toolName);
+        if (canPlace) {
+          const world = screenToWorld(e.clientX, e.clientY, true);
+          const activeGrid = s.grids[s.activeGridIndex];
+          const decal: DecalInstance = {
+            id: activeGrid.decals.nextDecalId,
+            prototypeId: s.selectedPaletteItem.id,
+            position: { x: world.x, y: world.y },
+            color: decalSettings.color,
+            angle: decalSettings.angle,
+            zIndex: decalSettings.zIndex,
+            cleanable: decalSettings.cleanable,
+          };
           dispatch({
             type: 'APPLY_COMMAND',
-            command: { label: 'Rotate decals', tileChanges: [], entityChanges: [], decalChanges },
+            command: {
+              label: `Place ${s.selectedPaletteItem.id}`,
+              tileChanges: [],
+              entityChanges: [],
+              decalChanges: [{ action: 'add', decal }],
+            },
           });
+          markSceneDirty();
+          return;
         }
-        markOverlayDirty();
-        return;
       }
 
-      // Rotate entity placement preview
-      if (tool instanceof EntityPlaceTool) {
-        tool.smoothRotate(deltaRadians);
-        markOverlayDirty();
-        return;
-      }
+      // Free placement: fractional coords when Shift held + placement-compatible tool
+      const usePrecise = e.shiftKey && (tool?.name === 'entityPlace' || tool?.name === 'entitySelect');
+      const tile = screenToWorld(e.clientX, e.clientY, usePrecise);
 
-      // Rotate decal placement angle
-      if (s.selectedPaletteItem?.type === 'decal') {
-        const settings = decalPlacementSettingsRef.current;
-        decalPlacementSettingsRef.current = { ...settings, angle: settings.angle + deltaRadians };
-        markOverlayDirty();
-        return;
+      if (tool && tool instanceof EntitySelectTool) {
+        if (e.shiftKey) {
+          tool.onMouseDownWithShift(getToolContext(), tile.x, tile.y, e.button);
+        } else if (e.ctrlKey || e.metaKey) {
+          tool.onMouseDownWithCtrl(getToolContext(), tile.x, tile.y, e.button);
+        } else {
+          tool.onMouseDown(getToolContext(), tile.x, tile.y, e.button);
+        }
+      } else {
+        tool?.onMouseDown(getToolContext(), tile.x, tile.y, e.button);
       }
-    }
+    },
+    [screenToWorld, getToolContext, shouldPan],
+  );
 
-    // Let the active tool handle the wheel event first
-    const tool = toolRef.current;
-    if (tool?.onWheel) {
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      isShiftHeldRef.current = e.shiftKey;
+      isCtrlHeldRef.current = e.ctrlKey || e.metaKey;
       const tile = screenToWorld(e.clientX, e.clientY);
-      const handled = tool.onWheel(getToolContext(), tile.x, tile.y, e.deltaY);
-      if (handled) return;
-    }
+      const world = screenToWorld(e.clientX, e.clientY, true);
+      cursorTile.current = tile;
+      cursorWorld.current = world;
+      markOverlayDirty();
 
-    const factor = e.deltaY > 0 ? 0.9 : 1.1;
-    camera.zoomAt(factor, e.clientX - rect.left, e.clientY - rect.top, rect.width, rect.height);
-  }, [camera, screenToWorld, getToolContext]);
-
-  const handleContextMenu = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    const tile = screenToWorld(e.clientX, e.clientY);
-    const tool = toolRef.current;
-    if (tool?.getContextMenuItems) {
-      const items = tool.getContextMenuItems(getToolContext(), tile.x, tile.y);
-      if (items.length > 0) {
-        setContextMenu({ x: e.clientX, y: e.clientY, items });
+      if (isPanning.current) {
+        const dx = e.clientX - lastMouse.current.x;
+        const dy = e.clientY - lastMouse.current.y;
+        camera.pan(dx, dy); // also marks cameraDirty
+        lastMouse.current = { x: e.clientX, y: e.clientY };
         return;
       }
-    }
-    setContextMenu(null);
-  }, [screenToWorld, getToolContext]);
+
+      const moveTool = toolRef.current;
+      const usePrecise = e.shiftKey && (moveTool?.name === 'entityPlace' || moveTool?.name === 'entitySelect');
+      const moveCoord = usePrecise ? world : tile;
+      moveTool?.onMouseMove(getToolContext(), moveCoord.x, moveCoord.y);
+    },
+    [camera, screenToWorld, getToolContext],
+  );
+
+  const handleMouseUp = useCallback(
+    (e: React.MouseEvent) => {
+      isShiftHeldRef.current = e.shiftKey;
+      if (isPanning.current) {
+        isPanning.current = false;
+        return;
+      }
+      markOverlayDirty();
+      const tool = toolRef.current;
+      const usePrecise = e.shiftKey && (tool?.name === 'entityPlace' || tool?.name === 'entitySelect');
+      const tile = screenToWorld(e.clientX, e.clientY, usePrecise);
+      tool?.onMouseUp(getToolContext(), tile.x, tile.y);
+    },
+    [screenToWorld, getToolContext],
+  );
+
+  const handleWheel = useCallback(
+    (e: React.WheelEvent) => {
+      e.preventDefault();
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      // R + scroll: smooth fractional rotation
+      if (isRHeldRef.current) {
+        const tool = toolRef.current;
+        const s = stateRef.current;
+        // 5° per scroll notch (π/36), proportional for trackpads
+        const deltaRadians = -(e.deltaY / 100) * (Math.PI / 36);
+
+        // Rotate selected entities
+        if (tool instanceof EntitySelectTool && s.selectedEntityUids.length > 0) {
+          tool.smoothRotateSelected(getToolContext(), deltaRadians);
+          markOverlayDirty();
+          return;
+        }
+
+        // Rotate selected decals
+        if (tool instanceof EntitySelectTool && s.selectedDecalIds.length > 0) {
+          const activeGrid = s.grids[s.activeGridIndex];
+          const selectedSet = new Set(s.selectedDecalIds);
+          const decalChanges = activeGrid.decals.decals
+            .filter((d) => selectedSet.has(d.id))
+            .map((d) => ({
+              action: 'update' as const,
+              decal: { ...d, angle: d.angle + deltaRadians },
+              previousDecal: d,
+            }));
+          if (decalChanges.length > 0) {
+            dispatch({
+              type: 'APPLY_COMMAND',
+              command: { label: 'Rotate decals', tileChanges: [], entityChanges: [], decalChanges },
+            });
+          }
+          markOverlayDirty();
+          return;
+        }
+
+        // Rotate entity placement preview
+        if (tool instanceof EntityPlaceTool) {
+          tool.smoothRotate(deltaRadians);
+          markOverlayDirty();
+          return;
+        }
+
+        // Rotate decal placement angle
+        if (s.selectedPaletteItem?.type === 'decal') {
+          const settings = decalPlacementSettingsRef.current;
+          decalPlacementSettingsRef.current = { ...settings, angle: settings.angle + deltaRadians };
+          markOverlayDirty();
+          return;
+        }
+      }
+
+      // Let the active tool handle the wheel event first
+      const tool = toolRef.current;
+      if (tool?.onWheel) {
+        const tile = screenToWorld(e.clientX, e.clientY);
+        const handled = tool.onWheel(getToolContext(), tile.x, tile.y, e.deltaY);
+        if (handled) return;
+      }
+
+      const factor = e.deltaY > 0 ? 0.9 : 1.1;
+      camera.zoomAt(factor, e.clientX - rect.left, e.clientY - rect.top, rect.width, rect.height);
+    },
+    [camera, screenToWorld, getToolContext],
+  );
+
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      const tile = screenToWorld(e.clientX, e.clientY);
+      const tool = toolRef.current;
+      if (tool?.getContextMenuItems) {
+        const items = tool.getContextMenuItems(getToolContext(), tile.x, tile.y);
+        if (items.length > 0) {
+          setContextMenu({ x: e.clientX, y: e.clientY, items });
+          return;
+        }
+      }
+      setContextMenu(null);
+    },
+    [screenToWorld, getToolContext],
+  );
 
   // Determine cursor style
   const getCursor = () => {
@@ -459,7 +506,13 @@ export const EditorCanvas: React.FC<Props> = ({
     // Render dirty layers to offscreen canvases
     let tilesRedrawn = false;
     let entitiesRedrawn = false;
-    if (compositor.isTilesDirty || compositor.isDecalsDirty || compositor.isEntitiesDirty || compositor.isConnectionsDirty || compositor.isLightDirty) {
+    if (
+      compositor.isTilesDirty ||
+      compositor.isDecalsDirty ||
+      compositor.isEntitiesDirty ||
+      compositor.isConnectionsDirty ||
+      compositor.isLightDirty
+    ) {
       // Render at the CURRENT camera position (not the old snapshot).
       // The snapshot only matters for offset compositing of cached (clean) layers.
       // When re-rendering, we paint the world at where the camera IS now.
@@ -507,7 +560,17 @@ export const EditorCanvas: React.FC<Props> = ({
           eCtx.save();
           eCtx.scale(dpr, dpr);
           if (showEntitiesRef.current && s.entities.length > 0) {
-            renderEntities(eCtx, s.entities, bufCam, bw, bh, s.registry, s.grid, showSubFloorRef.current, layerVisibilityRef.current);
+            renderEntities(
+              eCtx,
+              s.entities,
+              bufCam,
+              bw,
+              bh,
+              s.registry,
+              s.grid,
+              showSubFloorRef.current,
+              layerVisibilityRef.current,
+            );
           }
           eCtx.restore();
         }
@@ -584,8 +647,8 @@ export const EditorCanvas: React.FC<Props> = ({
             const oy = (h / 2 + camera.y * tss) * layer.parallax;
             const tileW = bgCache.starCanvases[i].width;
             const tileH = bgCache.starCanvases[i].height;
-            const drawX = ((ox % tileW) + tileW) % tileW - margin;
-            const drawY = ((oy % tileH) + tileH) % tileH - margin;
+            const drawX = (((ox % tileW) + tileW) % tileW) - margin;
+            const drawY = (((oy % tileH) + tileH) % tileH) - margin;
             ctx.globalAlpha = layer.opacity;
             ctx.drawImage(bgCache.starCanvases[i], drawX, drawY);
           }
@@ -633,19 +696,73 @@ export const EditorCanvas: React.FC<Props> = ({
 
     // Composite all cached layers
     const tileCanvas = compositor.getTileCanvas();
-    if (tileCanvas) ctx.drawImage(tileCanvas, 0, 0, compositor.physicalWidth, compositor.physicalHeight, drawX, drawY, compositor.bufferWidth, compositor.bufferHeight);
+    if (tileCanvas)
+      ctx.drawImage(
+        tileCanvas,
+        0,
+        0,
+        compositor.physicalWidth,
+        compositor.physicalHeight,
+        drawX,
+        drawY,
+        compositor.bufferWidth,
+        compositor.bufferHeight,
+      );
     const decalCanvas = compositor.getDecalCanvas();
-    if (decalCanvas) ctx.drawImage(decalCanvas, 0, 0, compositor.physicalWidth, compositor.physicalHeight, drawX, drawY, compositor.bufferWidth, compositor.bufferHeight);
+    if (decalCanvas)
+      ctx.drawImage(
+        decalCanvas,
+        0,
+        0,
+        compositor.physicalWidth,
+        compositor.physicalHeight,
+        drawX,
+        drawY,
+        compositor.bufferWidth,
+        compositor.bufferHeight,
+      );
     const entityCanvas = compositor.getEntityCanvas();
-    if (entityCanvas) ctx.drawImage(entityCanvas, 0, 0, compositor.physicalWidth, compositor.physicalHeight, drawX, drawY, compositor.bufferWidth, compositor.bufferHeight);
+    if (entityCanvas)
+      ctx.drawImage(
+        entityCanvas,
+        0,
+        0,
+        compositor.physicalWidth,
+        compositor.physicalHeight,
+        drawX,
+        drawY,
+        compositor.bufferWidth,
+        compositor.bufferHeight,
+      );
     const connCanvas = compositor.getConnectionCanvas();
-    if (connCanvas) ctx.drawImage(connCanvas, 0, 0, compositor.physicalWidth, compositor.physicalHeight, drawX, drawY, compositor.bufferWidth, compositor.bufferHeight);
+    if (connCanvas)
+      ctx.drawImage(
+        connCanvas,
+        0,
+        0,
+        compositor.physicalWidth,
+        compositor.physicalHeight,
+        drawX,
+        drawY,
+        compositor.bufferWidth,
+        compositor.bufferHeight,
+      );
 
     if (lightingRef.current) {
       const lightCanvas = compositor.getLightCanvas();
       if (lightCanvas) {
         ctx.globalCompositeOperation = 'multiply';
-        ctx.drawImage(lightCanvas, 0, 0, compositor.physicalWidth, compositor.physicalHeight, drawX, drawY, compositor.bufferWidth, compositor.bufferHeight);
+        ctx.drawImage(
+          lightCanvas,
+          0,
+          0,
+          compositor.physicalWidth,
+          compositor.physicalHeight,
+          drawX,
+          drawY,
+          compositor.bufferWidth,
+          compositor.bufferHeight,
+        );
         ctx.globalCompositeOperation = 'source-over';
       }
     }
@@ -675,7 +792,8 @@ export const EditorCanvas: React.FC<Props> = ({
           ctrlHeld: isCtrlHeldRef.current,
           decalSettings: decalPlacementSettingsRef.current,
         };
-        const usePreciseCursor = isShiftHeldRef.current && (tool.name === 'entityPlace' || tool.name === 'entitySelect');
+        const usePreciseCursor =
+          isShiftHeldRef.current && (tool.name === 'entityPlace' || tool.name === 'entitySelect');
         const cx = usePreciseCursor ? cursorWorld.current.x : cursorTile.current.x;
         const cy = usePreciseCursor ? cursorWorld.current.y : cursorTile.current.y;
         tool.renderPreview(ctx, toolCtx, cx, cy);
@@ -685,7 +803,9 @@ export const EditorCanvas: React.FC<Props> = ({
     // Decal ghost preview when a decal palette item is selected
     // Only show when in a placement-compatible tool (paint, erase, fill, rectangle, line, circle, entityPlace)
     const currentToolName = toolRef.current?.name ?? '';
-    const isPlacementTool = !['entitySelect', 'select', 'pan', 'pipeDraw', 'cableDraw', 'deviceLink'].includes(currentToolName);
+    const isPlacementTool = !['entitySelect', 'select', 'pan', 'pipeDraw', 'cableDraw', 'deviceLink'].includes(
+      currentToolName,
+    );
     if (!isSpaceHeldRef.current && isPlacementTool && s.selectedPaletteItem?.type === 'decal' && s.registry) {
       const settings = decalPlacementSettingsRef.current;
       const img = getDecalSprite(s.selectedPaletteItem.id, s.registry);
@@ -726,7 +846,7 @@ export const EditorCanvas: React.FC<Props> = ({
         prevCursorTile.current = { x: cx, y: cy };
         cachedHovered.current = getEntitiesAtTile(cx, cy, s.entities, s.registry);
       }
-      const hovered = cachedHovered.current.filter(e => {
+      const hovered = cachedHovered.current.filter((e) => {
         const depth = getCachedDrawDepth(e.prototype, s.registry!);
         return isLayerVisible(depth, e.prototype, layers, s.registry ?? undefined);
       });
@@ -734,9 +854,9 @@ export const EditorCanvas: React.FC<Props> = ({
       // Count decals at this tile
       const activeGrid = s.grids[s.activeGridIndex];
       const decalsAtTile = layers.decals
-        ? activeGrid?.decals?.decals?.filter(d =>
-          Math.floor(d.position.x) === cx && Math.floor(d.position.y) === cy
-        ) ?? []
+        ? (activeGrid?.decals?.decals?.filter(
+            (d) => Math.floor(d.position.x) === cx && Math.floor(d.position.y) === cy,
+          ) ?? [])
         : [];
 
       const totalCount = hovered.length + decalsAtTile.length;
@@ -759,9 +879,7 @@ export const EditorCanvas: React.FC<Props> = ({
         } else {
           const topDecal = decalsAtTile[0];
           const extraCount = decalsAtTile.length - 1;
-          label = extraCount > 0
-            ? `${topDecal.prototypeId} (+${extraCount} more)`
-            : topDecal.prototypeId;
+          label = extraCount > 0 ? `${topDecal.prototypeId} (+${extraCount} more)` : topDecal.prototypeId;
         }
 
         const fontSize = 12;
@@ -785,7 +903,7 @@ export const EditorCanvas: React.FC<Props> = ({
     if (hl) {
       const elapsed = (performance.now() - hl.startTime) / 1000;
       if (elapsed < 3) {
-        const pulse = 0.3 + 0.6 * (0.5 + 0.5 * Math.sin(elapsed * Math.PI / 0.3));
+        const pulse = 0.3 + 0.6 * (0.5 + 0.5 * Math.sin((elapsed * Math.PI) / 0.3));
         const hx = camera.worldToScreenX(hl.x, w);
         const hy = camera.worldToScreenY(hl.y, h);
         ctx.strokeStyle = '#FF4444';

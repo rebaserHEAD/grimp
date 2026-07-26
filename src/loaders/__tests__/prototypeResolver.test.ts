@@ -33,23 +33,24 @@ describe('resolveTiles', () => {
 describe('resolveEntities', () => {
   it('merges parent chain components', () => {
     const grandparent: RawEntityPrototype = {
-      type: 'entity', id: 'Base', abstract: true,
-      components: [
-        { type: 'Sprite', sprite: 'default.rsi', layers: [{ state: 'icon' }] },
-        { type: 'Physics' },
-      ],
+      type: 'entity',
+      id: 'Base',
+      abstract: true,
+      components: [{ type: 'Sprite', sprite: 'default.rsi', layers: [{ state: 'icon' }] }, { type: 'Physics' }],
     };
     const parent: RawEntityPrototype = {
-      type: 'entity', id: 'Mid', parent: 'Base', abstract: true,
-      components: [
-        { type: 'Sprite', sprite: 'override.rsi', layers: [{ state: 'base' }] },
-      ],
+      type: 'entity',
+      id: 'Mid',
+      parent: 'Base',
+      abstract: true,
+      components: [{ type: 'Sprite', sprite: 'override.rsi', layers: [{ state: 'base' }] }],
     };
     const child: RawEntityPrototype = {
-      type: 'entity', id: 'Concrete', parent: 'Mid', name: 'My Entity',
-      components: [
-        { type: 'Battery', maxCharge: 50000 },
-      ],
+      type: 'entity',
+      id: 'Concrete',
+      parent: 'Mid',
+      name: 'My Entity',
+      components: [{ type: 'Battery', maxCharge: 50000 }],
     };
 
     const entries = [
@@ -64,17 +65,19 @@ describe('resolveEntities', () => {
     // Should have 3 components: Sprite (overridden), Physics (inherited), Battery (own)
     expect(concrete.components).toHaveLength(3);
     // Sprite should be the child-most override
-    const sprite = concrete.components.find(c => c.type === 'Sprite');
+    const sprite = concrete.components.find((c) => c.type === 'Sprite');
     expect(sprite?.sprite).toBe('override.rsi');
     // Physics inherited from grandparent
-    expect(concrete.components.find(c => c.type === 'Physics')).toBeDefined();
+    expect(concrete.components.find((c) => c.type === 'Physics')).toBeDefined();
     // Category from source file
     expect(concrete.sourceCategory).toBe('Structures/Power');
   });
 
   it('handles missing parents gracefully', () => {
     const entity: RawEntityPrototype = {
-      type: 'entity', id: 'Orphan', parent: 'NonExistent',
+      type: 'entity',
+      id: 'Orphan',
+      parent: 'NonExistent',
       components: [{ type: 'Sprite', sprite: 'thing.rsi', layers: [{ state: 'icon' }] }],
     };
     const result = resolveEntities([{ proto: entity, category: 'Other' }]);
@@ -100,10 +103,7 @@ describe('extractSpriteInfo', () => {
         type: 'Sprite',
         sprite: 'Structures/Power/apc.rsi',
         drawdepth: 'WallMountedItems',
-        layers: [
-          { state: 'base' },
-          { state: 'panel', visible: false },
-        ],
+        layers: [{ state: 'base' }, { state: 'panel', visible: false }],
       },
     ];
     const info = extractSpriteInfo(components);
@@ -119,17 +119,13 @@ describe('extractSpriteInfo', () => {
   });
 
   it('uses direct state field when layers is empty', () => {
-    const info = extractSpriteInfo([
-      { type: 'Sprite', sprite: 'Markers/jobs.rsi', state: 'green' },
-    ]);
+    const info = extractSpriteInfo([{ type: 'Sprite', sprite: 'Markers/jobs.rsi', state: 'green' }]);
     expect(info).not.toBeNull();
     expect(info!.baseState).toBe('green');
   });
 
   it('parses component-level scale from the "x,y" string form', () => {
-    const info = extractSpriteInfo([
-      { type: 'Sprite', sprite: 'Tips/tippy.rsi', state: 'left', scale: '4,4' },
-    ]);
+    const info = extractSpriteInfo([{ type: 'Sprite', sprite: 'Tips/tippy.rsi', state: 'left', scale: '4,4' }]);
     expect(info!.scale).toEqual({ x: 4, y: 4 });
   });
 
@@ -145,9 +141,7 @@ describe('extractSpriteInfo', () => {
   });
 
   it('leaves scale undefined when absent', () => {
-    const info = extractSpriteInfo([
-      { type: 'Sprite', sprite: 'Markers/jobs.rsi', state: 'green' },
-    ]);
+    const info = extractSpriteInfo([{ type: 'Sprite', sprite: 'Markers/jobs.rsi', state: 'green' }]);
     expect(info!.scale).toBeUndefined();
   });
 });
@@ -184,7 +178,12 @@ describe('EntityStorageVisuals override', () => {
   it('uses stateBaseClosed from EntityStorageVisuals as baseState', () => {
     const components = [
       { type: 'Sprite', sprite: 'Structures/Storage/closet.rsi', layers: [{ state: 'generic' }] },
-      { type: 'EntityStorageVisuals', stateBaseClosed: 'bssecure', stateDoorOpen: 'bssecure_open', stateDoorClosed: 'bssecure_door' },
+      {
+        type: 'EntityStorageVisuals',
+        stateBaseClosed: 'bssecure',
+        stateDoorOpen: 'bssecure_open',
+        stateDoorClosed: 'bssecure_door',
+      },
     ];
     const info = extractSpriteInfo(components);
     expect(info).not.toBeNull();
@@ -202,9 +201,7 @@ describe('EntityStorageVisuals override', () => {
   });
 
   it('keeps original baseState when no EntityStorageVisuals present', () => {
-    const components = [
-      { type: 'Sprite', sprite: 'Structures/Power/apc.rsi', layers: [{ state: 'base' }] },
-    ];
+    const components = [{ type: 'Sprite', sprite: 'Structures/Power/apc.rsi', layers: [{ state: 'base' }] }];
     const info = extractSpriteInfo(components);
     expect(info!.baseState).toBe('base');
   });
@@ -212,28 +209,47 @@ describe('EntityStorageVisuals override', () => {
   it('resolves locker inheritance with EntityStorageVisuals override', () => {
     // Simulates: LockerBase → LockerBaseSecure → LockerBlueshield
     const lockerBase: RawEntityPrototype = {
-      type: 'entity', id: 'LockerBase', abstract: true,
+      type: 'entity',
+      id: 'LockerBase',
+      abstract: true,
       components: [
         { type: 'Sprite', sprite: 'Structures/Storage/closet.rsi', layers: [{ state: 'generic' }] },
         { type: 'EntityStorageVisuals', stateBaseClosed: 'generic', stateDoorOpen: 'generic_open' },
       ],
     };
     const lockerSecure: RawEntityPrototype = {
-      type: 'entity', id: 'LockerBaseSecure', parent: 'LockerBase', abstract: true,
+      type: 'entity',
+      id: 'LockerBaseSecure',
+      parent: 'LockerBase',
+      abstract: true,
       components: [],
     };
     const lockerBSO: RawEntityPrototype = {
-      type: 'entity', id: 'LockerBlueshield', parent: 'LockerBaseSecure',
+      type: 'entity',
+      id: 'LockerBlueshield',
+      parent: 'LockerBaseSecure',
       name: 'blue shield locker',
       components: [
-        { type: 'EntityStorageVisuals', stateBaseClosed: 'bssecure', stateDoorOpen: 'bssecure_open', stateDoorClosed: 'bssecure_door' },
+        {
+          type: 'EntityStorageVisuals',
+          stateBaseClosed: 'bssecure',
+          stateDoorOpen: 'bssecure_open',
+          stateDoorClosed: 'bssecure_door',
+        },
       ],
     };
     const lockerRep: RawEntityPrototype = {
-      type: 'entity', id: 'LockerRepresentative', parent: 'LockerBaseSecure',
+      type: 'entity',
+      id: 'LockerRepresentative',
+      parent: 'LockerBaseSecure',
       name: 'representative locker',
       components: [
-        { type: 'EntityStorageVisuals', stateBaseClosed: 'hop', stateDoorOpen: 'hop_open', stateDoorClosed: 'representative_door' },
+        {
+          type: 'EntityStorageVisuals',
+          stateBaseClosed: 'hop',
+          stateDoorOpen: 'hop_open',
+          stateDoorClosed: 'representative_door',
+        },
       ],
     };
 
@@ -261,13 +277,15 @@ describe('layer sprite override vs leaked parent sprite', () => {
     // Child: layers mode with per-layer sprite paths (tray)
     // Shallow merge leaks parent sprite/state, extractSpriteInfo should prefer layers
     const soil: RawEntityPrototype = {
-      type: 'entity', id: 'hydroponicsSoil', abstract: true,
-      components: [
-        { type: 'Sprite', sprite: 'Structures/Hydroponics/misc.rsi', state: 'soil', noRot: true },
-      ],
+      type: 'entity',
+      id: 'hydroponicsSoil',
+      abstract: true,
+      components: [{ type: 'Sprite', sprite: 'Structures/Hydroponics/misc.rsi', state: 'soil', noRot: true }],
     };
     const tray: RawEntityPrototype = {
-      type: 'entity', id: 'hydroponicsTray', parent: 'hydroponicsSoil',
+      type: 'entity',
+      id: 'hydroponicsTray',
+      parent: 'hydroponicsSoil',
       name: 'hydroponics tray',
       components: [
         {
@@ -297,10 +315,7 @@ describe('layer sprite override vs leaked parent sprite', () => {
       {
         type: 'Sprite',
         sprite: 'Structures/Piping/Atmospherics/vent.rsi',
-        layers: [
-          { sprite: 'Structures/Piping/pipe.rsi', state: 'pipeUnaryConnectors' },
-          { state: 'vent_off' },
-        ],
+        layers: [{ sprite: 'Structures/Piping/pipe.rsi', state: 'pipeUnaryConnectors' }, { state: 'vent_off' }],
       },
     ]);
     expect(info).not.toBeNull();
@@ -313,21 +328,23 @@ describe('component shallow merge', () => {
   it('preserves parent sprite path when child only adds layers', () => {
     // Simulates GasPipeStraight: parent has sprite path, child overrides with layers only
     const parent: RawEntityPrototype = {
-      type: 'entity', id: 'GasPipeBase', abstract: true,
+      type: 'entity',
+      id: 'GasPipeBase',
+      abstract: true,
       parent: 'GasPipeSansLayers',
       components: [],
     };
     const grandparent: RawEntityPrototype = {
-      type: 'entity', id: 'GasPipeSansLayers', abstract: true,
-      components: [
-        { type: 'Sprite', sprite: 'Structures/Piping/pipe.rsi', drawdepth: 'ThinPipe', visible: false },
-      ],
+      type: 'entity',
+      id: 'GasPipeSansLayers',
+      abstract: true,
+      components: [{ type: 'Sprite', sprite: 'Structures/Piping/pipe.rsi', drawdepth: 'ThinPipe', visible: false }],
     };
     const child: RawEntityPrototype = {
-      type: 'entity', id: 'GasPipeStraight', parent: 'GasPipeBase',
-      components: [
-        { type: 'Sprite', layers: [{ state: 'pipeStraight', map: ['enum.PipeVisualLayers.Pipe'] }] },
-      ],
+      type: 'entity',
+      id: 'GasPipeStraight',
+      parent: 'GasPipeBase',
+      components: [{ type: 'Sprite', layers: [{ state: 'pipeStraight', map: ['enum.PipeVisualLayers.Pipe'] }] }],
     };
 
     const result = resolveEntities([
@@ -348,14 +365,18 @@ describe('component shallow merge', () => {
 describe('IconSmooth Diagonal mode', () => {
   it('returns Diagonal mode for entities with mode: Diagonal', () => {
     const wallBase: RawEntityPrototype = {
-      type: 'entity', id: 'WallDiagonalBase', abstract: true,
+      type: 'entity',
+      id: 'WallDiagonalBase',
+      abstract: true,
       components: [
         { type: 'IconSmooth', key: 'walls', mode: 'Diagonal' },
         { type: 'Sprite', sprite: 'Structures/Walls/solid_diagonal.rsi', state: 'state0' },
       ],
     };
     const wallDiag: RawEntityPrototype = {
-      type: 'entity', id: 'WallSolidDiagonal', parent: 'WallDiagonalBase',
+      type: 'entity',
+      id: 'WallSolidDiagonal',
+      parent: 'WallDiagonalBase',
       name: 'solid wall diagonal',
       components: [],
     };
@@ -374,7 +395,8 @@ describe('IconSmooth Diagonal mode', () => {
 
   it('does not return Diagonal for standard Corners mode walls', () => {
     const wall: RawEntityPrototype = {
-      type: 'entity', id: 'WallSolid',
+      type: 'entity',
+      id: 'WallSolid',
       components: [
         { type: 'IconSmooth', key: 'walls', base: 'solid' },
         { type: 'Sprite', sprite: 'Structures/Walls/solid.rsi', layers: [{ state: 'solid0' }] },

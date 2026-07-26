@@ -197,7 +197,7 @@ describe('importMap', () => {
 
   it('parses entities with preserved components', () => {
     const result = importMap(buildTestMap());
-    const apc = result.entities.find(e => e.prototype === 'APCBasic');
+    const apc = result.entities.find((e) => e.prototype === 'APCBasic');
     expect(apc).toBeDefined();
     expect(apc!.uid).toBe(100);
     // Battery component preserved verbatim
@@ -208,29 +208,29 @@ describe('importMap', () => {
 
   it('extracts entity position from Transform', () => {
     const result = importMap(buildTestMap());
-    const apc = result.entities.find(e => e.prototype === 'APCBasic');
+    const apc = result.entities.find((e) => e.prototype === 'APCBasic');
     expect(apc!.position.x).toBeCloseTo(0.5);
     expect(apc!.position.y).toBeCloseTo(0.5);
   });
 
   it('extracts entity rotation from Transform', () => {
     const result = importMap(buildRotationMap());
-    const vent = result.entities.find(e => e.prototype === 'GasVentPump');
+    const vent = result.entities.find((e) => e.prototype === 'GasVentPump');
     expect(vent).toBeDefined();
     expect(vent!.rotation).toBeCloseTo(Math.PI);
   });
 
   it('defaults rotation to 0 when not specified', () => {
     const result = importMap(buildTestMap());
-    const apc = result.entities.find(e => e.prototype === 'APCBasic');
+    const apc = result.entities.find((e) => e.prototype === 'APCBasic');
     expect(apc!.rotation).toBe(0);
   });
 
   it('does not include structural entities in entity list', () => {
     const result = importMap(buildTestMap());
     // Map entity (uid 0) and grid entity (uid 1) should not be in entities
-    expect(result.entities.find(e => e.uid === 0)).toBeUndefined();
-    expect(result.entities.find(e => e.uid === 1)).toBeUndefined();
+    expect(result.entities.find((e) => e.uid === 0)).toBeUndefined();
+    expect(result.entities.find((e) => e.uid === 1)).toBeUndefined();
   });
 
   describe('contained entities', () => {
@@ -309,15 +309,15 @@ entities:
     it('separates contained entities from grid entities', () => {
       const map = importMap(buildContainerMap());
       expect(map.entities).toHaveLength(2);
-      expect(map.entities.map(e => e.uid).sort()).toEqual([100, 200]);
+      expect(map.entities.map((e) => e.uid).sort()).toEqual([100, 200]);
       expect(map.containedEntities).toBeDefined();
       expect(map.containedEntities![100]).toHaveLength(2);
-      expect(map.containedEntities![100].map(e => e.uid).sort()).toEqual([101, 102]);
+      expect(map.containedEntities![100].map((e) => e.uid).sort()).toEqual([101, 102]);
     });
 
     it('contained entities preserve their components', () => {
       const map = importMap(buildContainerMap());
-      const crowbar = map.containedEntities![100].find(e => e.uid === 101)!;
+      const crowbar = map.containedEntities![100].find((e) => e.uid === 101)!;
       expect(crowbar.prototype).toBe('Crowbar');
       expect(crowbar.components).toHaveLength(2);
       expect(crowbar.components.find((c: any) => c.type === 'Transform')).toBeDefined();
@@ -326,14 +326,14 @@ entities:
 
     it('entities without parent field stay in grid entities', () => {
       const map = importMap(buildContainerMap());
-      const apc = map.entities.find(e => e.uid === 200);
+      const apc = map.entities.find((e) => e.uid === 200);
       expect(apc).toBeDefined();
       expect(apc!.prototype).toBe('APCBasic');
     });
 
     it('entities with parent equal to grid UID stay in grid entities', () => {
       const map = importMap(buildContainerMap());
-      const locker = map.entities.find(e => e.uid === 100);
+      const locker = map.entities.find((e) => e.uid === 100);
       expect(locker).toBeDefined();
       expect(locker!.prototype).toBe('LockerBotanist');
     });
@@ -523,17 +523,17 @@ entities:
       const result = importMap(buildTwoGridMap());
       // WallSolid (uid 3) parented to grid 2
       const grid2Entities = result.gridDataList![0].entities;
-      expect(grid2Entities.find(e => e.uid === 3)).toBeDefined();
-      expect(grid2Entities.find(e => e.prototype === 'WallSolid')).toBeDefined();
+      expect(grid2Entities.find((e) => e.uid === 3)).toBeDefined();
+      expect(grid2Entities.find((e) => e.prototype === 'WallSolid')).toBeDefined();
 
       // APCBasic (uid 4) parented to grid 100
       const grid100Entities = result.gridDataList![1].entities;
-      expect(grid100Entities.find(e => e.uid === 4)).toBeDefined();
-      expect(grid100Entities.find(e => e.prototype === 'APCBasic')).toBeDefined();
+      expect(grid100Entities.find((e) => e.uid === 4)).toBeDefined();
+      expect(grid100Entities.find((e) => e.prototype === 'APCBasic')).toBeDefined();
 
       // Entities don't leak to wrong grids
-      expect(grid2Entities.find(e => e.uid === 4)).toBeUndefined();
-      expect(grid100Entities.find(e => e.uid === 3)).toBeUndefined();
+      expect(grid2Entities.find((e) => e.uid === 4)).toBeUndefined();
+      expect(grid100Entities.find((e) => e.uid === 3)).toBeUndefined();
     });
 
     it('stores per-grid chunkKeyOrder', () => {
@@ -567,7 +567,7 @@ entities:
       expect(result.gridUid).toBe(2);
       expect(result.grid.cells[0].tileId).toBe('FloorSteel');
       // Legacy entities should contain first grid's entities
-      expect(result.entities.find(e => e.uid === 3)).toBeDefined();
+      expect(result.entities.find((e) => e.uid === 3)).toBeDefined();
     });
   });
 });

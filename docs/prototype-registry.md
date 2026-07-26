@@ -28,13 +28,13 @@ Resources/Prototypes/*.yml
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `src/loaders/registryTypes.ts` | All type definitions (raw, resolved, interfaces) |
-| `src/loaders/prototypeDiscovery.ts` | YAML fetching, parsing, and category derivation |
-| `src/loaders/prototypeResolver.ts` | Parent chain resolution and sprite info extraction |
-| `src/loaders/prototypeRegistry.ts` | Registry class with lookup and indexing |
-| `src/loaders/initRegistry.ts` | Top-level orchestrator: discover → resolve → build |
+| File                                | Purpose                                            |
+| ----------------------------------- | -------------------------------------------------- |
+| `src/loaders/registryTypes.ts`      | All type definitions (raw, resolved, interfaces)   |
+| `src/loaders/prototypeDiscovery.ts` | YAML fetching, parsing, and category derivation    |
+| `src/loaders/prototypeResolver.ts`  | Parent chain resolution and sprite info extraction |
+| `src/loaders/prototypeRegistry.ts`  | Registry class with lookup and indexing            |
+| `src/loaders/initRegistry.ts`       | Top-level orchestrator: discover → resolve → build |
 
 ## Public API
 
@@ -73,6 +73,7 @@ Entity prototypes reference parents via the `parent` field (string or string arr
 ### Sprite Info Extraction
 
 During resolution, each entity's `Sprite` component is parsed to extract:
+
 - `rsiPath`, path to the `.rsi` directory (e.g., `Structures/Power/apc.rsi`)
 - `baseState`, the sprite state to render (e.g., `base`)
 - `noRot`, whether to skip canvas rotation (the entity's rotation still selects the correct RSI direction frame)
@@ -87,18 +88,21 @@ This data is used by the RSI loader to fetch and render sprites.
 #### RSI Path Resolution
 
 The `rsiPath` is resolved using a fallback chain:
+
 1. **Top-level `sprite` field** on the Sprite component (most common)
 2. **First visible layer's `sprite` field**, for entities like `Puddle` that only define RSI paths in layers
 
 #### Base State Resolution
 
 The `baseState` is resolved using a fallback chain:
+
 1. **First matching layer state**, the first layer whose `sprite` field is absent or matches the top-level RSI. This prevents cross-RSI mismatches (e.g., GasVentPump's pipe layer referencing a different RSI than the vent RSI).
 2. **Direct `state` field** on the Sprite component
 3. **IconSmooth `base` prefix**, walls/windows use `IconSmooth` with a `base` field (e.g., `solid`). The editor uses `{base}0` as the state (e.g., `solid0`).
 4. **Icon component `state`**, last resort fallback
 
 For entities with IconSmooth, the baseState used for **palette preview** follows a special chain to avoid showing quarter-tile corner pieces:
+
 1. Icon component's `state` (e.g., `'full'` for carpets)
 2. `'full'` (SS14 convention for IconSmooth RSIs)
 3. `{base}0` as last resort
@@ -110,6 +114,7 @@ When IconSmooth has no explicit `base` field (e.g., Puddle), `inferSmoothBase()`
 ### Categorization
 
 Entity categories are derived from their source file path:
+
 - `/Prototypes/Entities/Structures/Doors/airlocks.yml` → `"Structures/Doors"`
 - `/Prototypes/Catalog/Fills/Lockers/representatives.yml` → `"Catalog/Fills/Lockers"`
 
@@ -128,6 +133,7 @@ const registry = await initRegistry('', (msg) => console.log(msg));
 ## Extending
 
 To support a new prototype type (e.g., `reagent`):
+
 1. Add raw and resolved types to `registryTypes.ts`
 2. Add filtering in `parsePrototypeYaml` for the new `type` value
 3. Add resolution logic if inheritance applies
@@ -137,6 +143,7 @@ To support a new prototype type (e.g., `reagent`):
 ## Tests
 
 Tests cover the synchronous parsing and resolution logic:
+
 - `prototypeDiscovery.test.ts`, YAML parsing, category derivation, filtering
 - `prototypeResolver.test.ts`, Tile defaults, parent chain merging, sprite extraction
 - `prototypeRegistry.test.ts`, Lookup, category grouping, listing

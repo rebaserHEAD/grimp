@@ -7,8 +7,8 @@ import { markOverlayDirty } from '../rendering/dirtyFlags';
 /** An item in the eyedropper picker, entity, tile, or decal. */
 export interface PickerItem {
   type: 'entity' | 'tile' | 'decal';
-  id: string;        // prototype ID or tile ID
-  label: string;     // display label
+  id: string; // prototype ID or tile ID
+  label: string; // display label
   /** For decals: the color to apply to the palette placement settings. */
   decalColor?: string | null;
 }
@@ -113,7 +113,7 @@ export class EyedropperTool implements ITool {
     }
   }
 
-  onMouseUp() { }
+  onMouseUp() {}
 
   onWheel(ctx: ToolContext, tileX: number, tileY: number, deltaY: number): boolean {
     const floorX = Math.floor(tileX);
@@ -162,12 +162,7 @@ export class EyedropperTool implements ITool {
     this.closePicker();
   }
 
-  renderPreview(
-    canvasCtx: CanvasRenderingContext2D,
-    toolCtx: ToolContext,
-    cursorTileX: number,
-    cursorTileY: number,
-  ) {
+  renderPreview(canvasCtx: CanvasRenderingContext2D, toolCtx: ToolContext, cursorTileX: number, cursorTileY: number) {
     const { camera, canvasW, canvasH } = toolCtx;
     const tileScreenSize = camera.tileScreenSize;
     const drawX = camera.worldToScreenX(cursorTileX, canvasW);

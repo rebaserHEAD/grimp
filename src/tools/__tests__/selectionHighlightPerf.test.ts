@@ -14,9 +14,17 @@ function makeMockRegistry(): IPrototypeRegistry {
   return {
     getTile: () => null,
     getEntity: (id) => ({
-      id, name: id, description: '', suffix: '', abstract: false,
-      categories: [], placement: {}, components: [], spriteInfo: null,
-      sourceCategory: 'Other', raw: { type: 'entity' as const, id },
+      id,
+      name: id,
+      description: '',
+      suffix: '',
+      abstract: false,
+      categories: [],
+      placement: {},
+      components: [],
+      spriteInfo: null,
+      sourceCategory: 'Other',
+      raw: { type: 'entity' as const, id },
     }),
     getAllTiles: () => [],
     getAllEntities: () => [],
@@ -37,10 +45,14 @@ function makeMockCanvasCtx(): CanvasRenderingContext2D {
     get(_target, prop) {
       if (prop === '_calls') return calls;
       if (typeof prop === 'string') {
-        return (...args: unknown[]) => { calls.push(prop); };
+        return (...args: unknown[]) => {
+          calls.push(prop);
+        };
       }
     },
-    set() { return true; },
+    set() {
+      return true;
+    },
   };
   return new Proxy({} as Record<string, unknown>, handler) as unknown as CanvasRenderingContext2D;
 }
@@ -85,7 +97,7 @@ describe('selection highlight rendering', () => {
 
     const toolCtx: ToolContext = {
       state,
-      dispatch: () => { },
+      dispatch: () => {},
       camera: camera as any,
       canvasW: 800,
       canvasH: 600,
@@ -127,7 +139,7 @@ describe('selection highlight rendering', () => {
 
     const toolCtx: ToolContext = {
       state,
-      dispatch: () => { },
+      dispatch: () => {},
       camera: camera as any,
       canvasW: 800,
       canvasH: 600,
@@ -172,7 +184,7 @@ describe('selection highlight rendering', () => {
 
     const toolCtx: ToolContext = {
       state,
-      dispatch: () => { },
+      dispatch: () => {},
       camera: camera as any,
       canvasW: 800,
       canvasH: 600,

@@ -16,9 +16,11 @@ import { importMap, ImportedMap } from '../../import/mapImporter';
  */
 
 function makeCells(): { tileId: string }[] {
-  return Array(256).fill(null).map((_, i) => ({
-    tileId: i === 0 ? 'FloorSteel' : 'Space',
-  }));
+  return Array(256)
+    .fill(null)
+    .map((_, i) => ({
+      tileId: i === 0 ? 'FloorSteel' : 'Space',
+    }));
 }
 
 /** A from-scratch grid document: no imported structural data, no uid lists. */
@@ -104,7 +106,7 @@ describe('grid document export (from scratch)', () => {
   it('placed entities still parent to the grid', () => {
     const yaml = exportMap(makeNewGridDocument());
     const reimported = importMap(yaml);
-    const apc = reimported.entities.find(e => e.prototype === 'APCBasic');
+    const apc = reimported.entities.find((e) => e.prototype === 'APCBasic');
     expect(apc).toBeDefined();
     const xform = apc!.components.find((c: any) => c.type === 'Transform') as any;
     expect(xform.parent).toBe(1);

@@ -13,14 +13,13 @@ Defined in `src/tools/toolTypes.ts`:
 ```typescript
 interface ITool {
   name: string;
-  cursor: string;  // CSS cursor style
+  cursor: string; // CSS cursor style
 
   onMouseDown(ctx: ToolContext, tileX: number, tileY: number, button: number): void;
   onMouseMove(ctx: ToolContext, tileX: number, tileY: number): void;
   onMouseUp(ctx: ToolContext, tileX: number, tileY: number): void;
 
-  renderPreview?(ctx: CanvasRenderingContext2D, toolCtx: ToolContext,
-    cursorTileX: number, cursorTileY: number): void;
+  renderPreview?(ctx: CanvasRenderingContext2D, toolCtx: ToolContext, cursorTileX: number, cursorTileY: number): void;
   onWheel?(ctx: ToolContext, tileX: number, tileY: number, deltaY: number): boolean;
   getContextMenuItems?(ctx: ToolContext, tileX: number, tileY: number): ContextMenuItem[];
   deactivate?(): void;
@@ -47,17 +46,20 @@ interface ToolContext {
 ### Basic Tools
 
 ### PaintTool (`src/tools/paintTool.ts`)
+
 - **Shortcut**: B
 - **Behavior**: Click or drag to paint the selected tile type. Collects all changes during a drag and dispatches a single `APPLY_COMMAND` on mouseUp.
 - **Grid expansion**: Auto-expands the grid when painting outside bounds.
 - **Preview**: Green outline at cursor position.
 
 ### EraseTool (`src/tools/eraseTool.ts`)
+
 - **Shortcut**: E
 - **Behavior**: Click or drag to set tiles to Space. Only affects tiles within the existing grid.
 - **Preview**: Red outline with X mark at cursor position.
 
 ### EyedropperTool (`src/tools/eyedropperTool.ts`)
+
 - **Shortcut**: I
 - **Behavior**: Click to pick the topmost entity, decal, or tile at the cursor position. Entities take priority over decals, which take priority over tiles.
   - **Entity pick**: Sets the entity prototype as the active palette item and switches to EntityPlace tool.
@@ -68,6 +70,7 @@ interface ToolContext {
 - **Preview**: Yellow dashed outline at cursor position. Popup list when scroll picker is active.
 
 ### PanTool (`src/tools/panTool.ts`)
+
 - **Shortcut**: H (also Space+drag from any tool)
 - **Behavior**: Click and drag to pan the camera. Pan is also available by holding Space with any tool.
 - **Cursor**: `grab` / `grabbing`.
@@ -75,29 +78,34 @@ interface ToolContext {
 ### Shape Tools
 
 ### FillTool (`src/tools/fillTool.ts`)
+
 - **Shortcut**: G
 - **Behavior**: Click to flood-fill a contiguous region of same-type tiles with the selected tile. Uses 4-directional BFS with a 50,000 tile safety limit.
 - **Preview**: Green filled square with outline at cursor.
 
 ### RectangleTool (`src/tools/rectangleTool.ts`)
+
 - **Shortcut**: R
 - **Behavior**: Click and drag to define a rectangle. On release, fills the rectangle with the selected tile. Shows a live preview with dimension label (e.g. "12x8") during drag.
 - **Grid expansion**: Auto-expands grid to fit the rectangle (no padding).
 - **Preview**: Blue dashed rectangle with semi-transparent fill and dimension label.
 
 ### LineTool (`src/tools/lineTool.ts`)
+
 - **Shortcut**: L
 - **Behavior**: Click to set start point, drag to endpoint. On release, fills tiles along the Bresenham line with the selected tile. Shows live preview with length label.
 - **Grid expansion**: Auto-expands grid to fit the line (no padding).
 - **Preview**: Yellow highlighted tiles along line path with length label.
 
 ### CircleTool (`src/tools/circleTool.ts`)
+
 - **Shortcut**: C
 - **Behavior**: Click to set center, drag to set radius. On release, fills a filled circle (Bresenham midpoint algorithm) with the selected tile. Shows live preview with radius label.
 - **Grid expansion**: Auto-expands grid to fit the circle (no padding).
 - **Preview**: Cyan highlighted tiles with radius label.
 
 ### SelectTool (`src/tools/selectTool.ts`)
+
 - **Shortcut**: S
 - **Behavior**: Click and drag to create a selection (marching ants border). Captures both tiles AND entities within selected tiles. Supports:
   - **Ctrl+C**, Copy tiles + entities to clipboard
@@ -116,6 +124,7 @@ interface ToolContext {
 ### Entity Tools
 
 ### EntitySelectTool (`src/tools/entitySelectTool.ts`)
+
 - **Shortcut**: V
 - **Behavior**: Click to select topmost entity at tile. Click same tile again to cycle through stacked entities. Right-click to deselect all.
 - **Layer visibility**: Selection respects the Layer Panel visibility toggles. Entities and decals on hidden layers cannot be clicked, box-selected, or picked via the scroll picker. The hover tooltip also only shows items on visible layers.
@@ -131,6 +140,7 @@ interface ToolContext {
 - **Preview**: Pulsing gold outline on selected entities. Dashed blue ghost during move drag. Box selection rectangle with semi-transparent fill. Yellow outline on picker-highlighted entity with floating popup list.
 
 ### EntityPlaceTool (`src/tools/entityPlaceTool.ts`)
+
 - **Shortcut**: P
 - **Behavior**: When an entity is selected in the Entity Palette, shows a ghost preview at cursor. Left-click places entity with auto-incrementing UID. R cycles through 4 rotations (0°, 90°, 180°, 270°) before placement.
 - **Position**: Entities are placed at tile center (x+0.5, y+0.5).
@@ -140,12 +150,14 @@ interface ToolContext {
 ### Decal Tools
 
 ### Decal Palette (Decals tab in Palette Panel)
+
 - Browse all decal prototypes grouped by tags (markings, overlays, flora, dirty, etc.)
 - Search to filter by prototype ID
 - Sprite thumbnail preview for each decal
 - Selecting a decal sets it as the active palette item for placement
 
 ### Decal Placement
+
 - When a decal is selected in the Decals palette tab, click on the canvas to place it
 - **Placement controls** (in the palette panel below the decal list):
   - **Color**: Color picker with alpha (only for `defaultCustomColor` prototypes)
@@ -157,6 +169,7 @@ interface ToolContext {
 - Each placement is a single undoable command
 
 ### Decal Selection & Editing (via Entity Select tool)
+
 - The Entity Select tool (V) also handles decals:
   - **Click** on a decal to select it (cyan dashed highlight)
   - **Shift+click** to add/toggle decal in selection
@@ -183,12 +196,14 @@ When a single entity is selected via the Entity Select tool, the Entity Info Pan
 ### Infrastructure Tools
 
 ### CableDrawTool (`src/tools/cableDrawTool.ts`)
+
 - **Shortcut**: K
 - **Behavior**: Drag to lay cable entities. One cable entity per tile, no rotation needed (SS14 auto-connects via NodeContainer). Right-click erases cable at tile.
 - **Cable types**: CableHV (orange), CableMV (yellow), CableApcExtension (green), selected via Infrastructure Panel.
 - **Preview**: Semi-transparent colored path during drag, colored outline at cursor.
 
 ### PipeDrawTool (`src/tools/pipeDrawTool.ts`)
+
 - **Shortcut**: J
 - **Behavior**: Drag to lay pipe path. On mouseUp, runs auto-fitting algorithm on new tiles + affected neighbors to determine correct prototypes (Straight/Bend/TJunction/Fourway) and rotations. Right-click erases pipe and refits neighbors.
 - **Pipe types**: Supply (blue), Return (red), Disposal (brown), selected via Infrastructure Panel.
@@ -197,6 +212,7 @@ When a single entity is selected via the Entity Select tool, the Entity Info Pan
 - **Preview**: Semi-transparent colored path during drag.
 
 ### DeviceLinkTool (`src/tools/deviceLinkTool.ts`)
+
 - **Shortcut**: D
 - **Behavior**: Click an entity with DeviceList or DeviceLinkSource component to enter linking mode. Left-click targets to add links, right-click to remove. Click empty space or ESC to cancel.
 - **Link types**: DeviceList adds target UID to `devices` array. DeviceLinkSource adds target to `linkedPorts` with default port mapping `[['Pressed', 'Toggle']]`.
@@ -294,55 +310,55 @@ export class MyTool implements ITool {
 
 ## Keyboard Shortcuts Summary
 
-| Key | Tool |
-|-----|------|
-| B | Paint |
-| E | Erase |
-| I | Eyedropper |
-| H | Pan |
-| G | Fill |
-| R | Rectangle |
-| L | Line |
-| C | Circle |
-| S | Select |
-| V | Entity Select |
-| P | Entity Place |
-| R | Rotate entity (when entity tool active) |
-| D | Device Link |
-| K | Cable Draw |
-| J | Pipe Draw |
-| Escape | Cancel linking (Device Link tool) |
-| Space (hold) | Temporary pan |
-| Ctrl+Z | Undo |
-| Ctrl+Y / Ctrl+Shift+Z | Redo |
-| Ctrl+C | Copy selection |
-| Ctrl+X | Cut selection |
-| Ctrl+V | Paste |
-| Delete / Backspace | Delete selection |
+| Key                   | Tool                                    |
+| --------------------- | --------------------------------------- |
+| B                     | Paint                                   |
+| E                     | Erase                                   |
+| I                     | Eyedropper                              |
+| H                     | Pan                                     |
+| G                     | Fill                                    |
+| R                     | Rectangle                               |
+| L                     | Line                                    |
+| C                     | Circle                                  |
+| S                     | Select                                  |
+| V                     | Entity Select                           |
+| P                     | Entity Place                            |
+| R                     | Rotate entity (when entity tool active) |
+| D                     | Device Link                             |
+| K                     | Cable Draw                              |
+| J                     | Pipe Draw                               |
+| Escape                | Cancel linking (Device Link tool)       |
+| Space (hold)          | Temporary pan                           |
+| Ctrl+Z                | Undo                                    |
+| Ctrl+Y / Ctrl+Shift+Z | Redo                                    |
+| Ctrl+C                | Copy selection                          |
+| Ctrl+X                | Cut selection                           |
+| Ctrl+V                | Paste                                   |
+| Delete / Backspace    | Delete selection                        |
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `src/tools/toolTypes.ts` | `ITool` and `ToolContext` interfaces |
-| `src/tools/paintTool.ts` | Tile painting tool |
-| `src/tools/eraseTool.ts` | Tile erasing tool |
-| `src/tools/eyedropperTool.ts` | Tile picker tool |
-| `src/tools/panTool.ts` | Camera panning tool |
-| `src/tools/fillTool.ts` | Flood-fill tool |
-| `src/tools/rectangleTool.ts` | Rectangle drawing tool |
-| `src/tools/lineTool.ts` | Line drawing tool |
-| `src/tools/circleTool.ts` | Circle drawing tool |
-| `src/tools/selectTool.ts` | Selection + clipboard tool |
-| `src/tools/entitySelectTool.ts` | Entity selection, move, rotate, delete |
-| `src/tools/entityPlaceTool.ts` | Entity placement with ghost preview |
-| `src/tools/cableDrawTool.ts` | Cable drawing tool |
-| `src/tools/pipeDrawTool.ts` | Pipe drawing tool with auto-fitting |
-| `src/tools/deviceLinkTool.ts` | Device link wiring tool |
-| `src/algorithms/pipeFittings.ts` | Pipe auto-fitting algorithm |
-| `src/algorithms/autoLink.ts` | Auto-link nearby compatible devices |
-| `src/components/componentEditors/` | Per-component-type property editors |
-| `src/state/clipboard.ts` | Clipboard data for copy/paste |
-| `src/tools/prefabPlaceTool.ts` | Prefab stamp tool with ghost preview |
-| `src/components/ContextMenu.tsx` | Generic right-click context menu |
-| `src/components/PrefabPanel.tsx` | Prefab library panel |
+| File                               | Purpose                                |
+| ---------------------------------- | -------------------------------------- |
+| `src/tools/toolTypes.ts`           | `ITool` and `ToolContext` interfaces   |
+| `src/tools/paintTool.ts`           | Tile painting tool                     |
+| `src/tools/eraseTool.ts`           | Tile erasing tool                      |
+| `src/tools/eyedropperTool.ts`      | Tile picker tool                       |
+| `src/tools/panTool.ts`             | Camera panning tool                    |
+| `src/tools/fillTool.ts`            | Flood-fill tool                        |
+| `src/tools/rectangleTool.ts`       | Rectangle drawing tool                 |
+| `src/tools/lineTool.ts`            | Line drawing tool                      |
+| `src/tools/circleTool.ts`          | Circle drawing tool                    |
+| `src/tools/selectTool.ts`          | Selection + clipboard tool             |
+| `src/tools/entitySelectTool.ts`    | Entity selection, move, rotate, delete |
+| `src/tools/entityPlaceTool.ts`     | Entity placement with ghost preview    |
+| `src/tools/cableDrawTool.ts`       | Cable drawing tool                     |
+| `src/tools/pipeDrawTool.ts`        | Pipe drawing tool with auto-fitting    |
+| `src/tools/deviceLinkTool.ts`      | Device link wiring tool                |
+| `src/algorithms/pipeFittings.ts`   | Pipe auto-fitting algorithm            |
+| `src/algorithms/autoLink.ts`       | Auto-link nearby compatible devices    |
+| `src/components/componentEditors/` | Per-component-type property editors    |
+| `src/state/clipboard.ts`           | Clipboard data for copy/paste          |
+| `src/tools/prefabPlaceTool.ts`     | Prefab stamp tool with ghost preview   |
+| `src/components/ContextMenu.tsx`   | Generic right-click context menu       |
+| `src/components/PrefabPanel.tsx`   | Prefab library panel                   |

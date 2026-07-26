@@ -51,7 +51,9 @@ describe.skipIf(!MAPS_DIR)('full-corpus parity sweep', () => {
       }
     }
 
-    console.log(`[parity] ${files.length} files: ${identical} byte-identical, ${drifted.length} drifted, ${importFailed.length} import-failed, ${nonIdempotent.length} non-idempotent`);
+    console.log(
+      `[parity] ${files.length} files: ${identical} byte-identical, ${drifted.length} drifted, ${importFailed.length} import-failed, ${nonIdempotent.length} non-idempotent`,
+    );
     for (const f of drifted) console.log(`[parity] drift: ${f}`);
     for (const f of importFailed) console.log(`[parity] FAIL import: ${f}`);
     for (const f of nonIdempotent) console.log(`[parity] FAIL idempotence: ${f}`);

@@ -14,9 +14,17 @@ function makeRegistry(names: Record<string, string>): IPrototypeRegistry {
       const name = names[id];
       if (!name) return null;
       return {
-        id, name, description: '', suffix: '', abstract: false,
-        categories: [], placement: {}, components: [], spriteInfo: null,
-        sourceCategory: '', raw: { type: 'entity' as const, id },
+        id,
+        name,
+        description: '',
+        suffix: '',
+        abstract: false,
+        categories: [],
+        placement: {},
+        components: [],
+        spriteInfo: null,
+        sourceCategory: '',
+        raw: { type: 'entity' as const, id },
       };
     },
     getAllTiles: () => [],

@@ -11,7 +11,7 @@ export const PerformanceHUD: React.FC = () => {
     const tick = (now: number) => {
       if (now - last > 250) {
         last = now;
-        forceUpdate(n => n + 1);
+        forceUpdate((n) => n + 1);
       }
       rafRef.current = requestAnimationFrame(tick);
     };
@@ -25,22 +25,24 @@ export const PerformanceHUD: React.FC = () => {
   const ftColor = s.frameTime <= 8 ? '#4caf50' : s.frameTime <= 16 ? '#ff9800' : '#f44336';
 
   return (
-    <div style={{
-      position: 'absolute',
-      bottom: 8,
-      left: 8,
-      backgroundColor: 'rgba(0, 0, 0, 0.75)',
-      color: '#ccc',
-      padding: '6px 10px',
-      borderRadius: 4,
-      fontSize: 11,
-      fontFamily: 'monospace',
-      lineHeight: 1.6,
-      pointerEvents: 'none',
-      zIndex: 100,
-      minWidth: 140,
-      userSelect: 'none',
-    }}>
+    <div
+      style={{
+        position: 'absolute',
+        bottom: 8,
+        left: 8,
+        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+        color: '#ccc',
+        padding: '6px 10px',
+        borderRadius: 4,
+        fontSize: 11,
+        fontFamily: 'monospace',
+        lineHeight: 1.6,
+        pointerEvents: 'none',
+        zIndex: 100,
+        minWidth: 140,
+        userSelect: 'none',
+      }}
+    >
       <div style={{ color: '#888', fontWeight: 'bold', marginBottom: 2 }}>Performance</div>
       <Row label="FPS" value={String(s.fps)} color={fpsColor} />
       <Row label="Frame" value={s.frameTime > 0 ? `${s.frameTime} ms` : 'skip'} color={ftColor} />
@@ -58,7 +60,11 @@ export const PerformanceHUD: React.FC = () => {
 
       <div style={{ color: '#888', fontWeight: 'bold', marginTop: 4, marginBottom: 2 }}>Layers</div>
       <Row label="Tiles" value={s.tilesRedrawn ? 'redraw' : 'cache'} color={s.tilesRedrawn ? '#ff4' : '#4f4'} />
-      <Row label="Entities" value={s.entitiesRedrawn ? 'redraw' : 'cache'} color={s.entitiesRedrawn ? '#ff4' : '#4f4'} />
+      <Row
+        label="Entities"
+        value={s.entitiesRedrawn ? 'redraw' : 'cache'}
+        color={s.entitiesRedrawn ? '#ff4' : '#4f4'}
+      />
       <Row label="Mode" value={s.zoomDeferred ? 'zoom-defer' : 'composite'} color={s.zoomDeferred ? '#f80' : '#4f4'} />
     </div>
   );

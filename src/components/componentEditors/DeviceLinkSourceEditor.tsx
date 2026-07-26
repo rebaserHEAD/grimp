@@ -38,9 +38,7 @@ export const DeviceLinkSourceEditor: React.FC<ComponentEditorProps> = ({ compone
     const uidStr = String(targetUid);
     const updated = { ...linkedPorts };
     if (updated[uidStr]) {
-      updated[uidStr] = updated[uidStr].filter(
-        ([sp, sk]) => sp !== sourcePort || sk !== sinkPort
-      );
+      updated[uidStr] = updated[uidStr].filter(([sp, sk]) => sp !== sourcePort || sk !== sinkPort);
       if (updated[uidStr].length === 0) {
         delete updated[uidStr];
       }
@@ -79,11 +77,7 @@ export const DeviceLinkSourceEditor: React.FC<ComponentEditorProps> = ({ compone
   return (
     <div className="py-0.5">
       <div className="text-muted text-[10px] mb-0.5">linkedPorts</div>
-      {rows.length === 0 && (
-        <div className="text-[#666] text-[10px] italic mb-0.5">
-          No linked ports
-        </div>
-      )}
+      {rows.length === 0 && <div className="text-[#666] text-[10px] italic mb-0.5">No linked ports</div>}
       {/* Header */}
       {rows.length > 0 && (
         <div className="flex gap-1 mb-px text-[9px] text-[#666]">
@@ -96,13 +90,15 @@ export const DeviceLinkSourceEditor: React.FC<ComponentEditorProps> = ({ compone
       {rows.map((row, i) => (
         <div key={i} className="flex items-center gap-1 mb-px text-[10px]">
           <span className="text-primary text-[10px] flex-[2] min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
-            <span>
-              {resolveUid(row.targetUid)}
-            </span>
+            <span>{resolveUid(row.targetUid)}</span>
             {isMissing(row.targetUid) && <span className="text-[#ff6666] text-[9px]"> (missing)</span>}
           </span>
-          <span className="text-[#c0c0e0] text-[10px] flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{row.sourcePort}</span>
-          <span className="text-[#c0c0e0] text-[10px] flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{row.sinkPort}</span>
+          <span className="text-[#c0c0e0] text-[10px] flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+            {row.sourcePort}
+          </span>
+          <span className="text-[#c0c0e0] text-[10px] flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+            {row.sinkPort}
+          </span>
           <button
             onClick={() => handleRemove(row.targetUid, row.sourcePort, row.sinkPort)}
             className="bg-transparent border-none text-[#ff6666] text-[10px] cursor-pointer px-0.5 py-0 leading-none shrink-0 w-4"
@@ -145,7 +141,10 @@ export const DeviceLinkSourceEditor: React.FC<ComponentEditorProps> = ({ compone
           </div>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} className="bg-transparent border border-subtle rounded-sm text-muted text-[10px] cursor-pointer px-1.5 py-0.5 mt-0.5">
+        <button
+          onClick={() => setAdding(true)}
+          className="bg-transparent border border-subtle rounded-sm text-muted text-[10px] cursor-pointer px-1.5 py-0.5 mt-0.5"
+        >
           + Add Link
         </button>
       )}

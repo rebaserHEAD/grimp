@@ -29,7 +29,7 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
   return (
     <div className={`flex flex-col border-b border-subtle ${className}`}>
       <button
-        onClick={() => setIsOpen(prev => !prev)}
+        onClick={() => setIsOpen((prev) => !prev)}
         className="flex items-center justify-between w-full px-3 py-1.5
                    bg-surface hover:bg-hover text-primary text-xs font-medium
                    cursor-pointer select-none border-none outline-none"
@@ -37,11 +37,7 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
         <span>{title}</span>
         <span className="text-muted text-[10px]">{isOpen ? '▾' : '▸'}</span>
       </button>
-      {isOpen && (
-        <div className="overflow-y-auto">
-          {children}
-        </div>
-      )}
+      {isOpen && <div className="overflow-y-auto">{children}</div>}
     </div>
   );
 };

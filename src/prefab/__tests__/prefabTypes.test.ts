@@ -29,9 +29,7 @@ describe('PrefabData types', () => {
           components: [{ type: 'Transform' }, { type: 'AtmosPipeColor', color: '#0055CCFF' }],
         },
       ],
-      deviceLinks: [
-        { sourceIdx: 0, targetIdx: 1, port: 'Pressed', sink: 'Toggle' },
-      ],
+      deviceLinks: [{ sourceIdx: 0, targetIdx: 1, port: 'Pressed', sink: 'Toggle' }],
     };
 
     const json = JSON.stringify(prefab);
@@ -43,10 +41,7 @@ describe('PrefabData types', () => {
     expect(parsed.tiles).toHaveLength(3);
     expect(parsed.tiles[0]).toEqual({ dx: 0, dy: 0, tileId: 'FloorSteel' });
     expect(parsed.entities).toHaveLength(2);
-    expect(parsed.entities[0].rawYamlLines).toEqual([
-      '  - type: Transform',
-      '    pos: 0.5,0.5',
-    ]);
+    expect(parsed.entities[0].rawYamlLines).toEqual(['  - type: Transform', '    pos: 0.5,0.5']);
     expect(parsed.entities[1].rotation).toBeCloseTo(Math.PI / 2);
     expect(parsed.deviceLinks).toHaveLength(1);
     expect(parsed.deviceLinks[0]).toEqual({

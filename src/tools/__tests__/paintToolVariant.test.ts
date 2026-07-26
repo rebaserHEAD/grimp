@@ -71,7 +71,7 @@ describe('PaintTool variant handling', () => {
     tool.onMouseUp(ctx);
 
     // The dispatched APPLY_COMMAND should have an 'after' cell without stale variant
-    const applyCmd = dispatched.find(a => a.type === 'APPLY_COMMAND');
+    const applyCmd = dispatched.find((a) => a.type === 'APPLY_COMMAND');
     expect(applyCmd).toBeDefined();
     const tileChange = applyCmd.command.tileChanges[0];
     expect(tileChange.after.tileId).toBe('Plating');

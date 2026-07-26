@@ -40,11 +40,7 @@ const DISPOSAL_PROTOTYPES = {
  * @param color - Optional hex color string for AtmosPipeColor (gas pipes only)
  * @returns Array of fitted pipe entities with correct prototypes and rotations
  */
-export function fitPipes(
-  tiles: ReadonlySet<string>,
-  family: PipeFamily = 'gas',
-  color?: string,
-): FittedPipe[] {
+export function fitPipes(tiles: ReadonlySet<string>, family: PipeFamily = 'gas', color?: string): FittedPipe[] {
   const protos = family === 'gas' ? GAS_PROTOTYPES : DISPOSAL_PROTOTYPES;
   const results: FittedPipe[] = [];
 
@@ -71,7 +67,7 @@ export function fitPipes(
       if ((hasN && hasS) || (hasE && hasW)) {
         // Straight pipe
         prototype = protos.straight;
-        rotation = (hasE && hasW) ? Math.PI / 2 : 0;
+        rotation = hasE && hasW ? Math.PI / 2 : 0;
       } else {
         // Bend, both gas and disposal use the same sprite orientation (S+W at rot 0)
         prototype = protos.bend;
@@ -136,13 +132,9 @@ function getBendRotation(hasN: boolean, hasS: boolean, hasE: boolean, hasW: bool
   return 0; // fallback
 }
 
-
 function parseKey(key: string): [number, number] {
   const comma = key.indexOf(',');
-  return [
-    parseInt(key.substring(0, comma), 10),
-    parseInt(key.substring(comma + 1), 10),
-  ];
+  return [parseInt(key.substring(0, comma), 10), parseInt(key.substring(comma + 1), 10)];
 }
 
 /**
@@ -184,7 +176,12 @@ export function computePipeChanges(
     const key = `${t.x},${t.y}`;
     affectedKeys.add(key);
     // Check if any neighbor is an existing pipe that needs refitting
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+    for (const [dx, dy] of [
+      [0, 1],
+      [0, -1],
+      [1, 0],
+      [-1, 0],
+    ]) {
       const nkey = `${t.x + dx},${t.y + dy}`;
       if (existingByKey.has(nkey)) {
         affectedKeys.add(nkey);
@@ -196,7 +193,7 @@ export function computePipeChanges(
   const fitted = fitPipes(allTiles, family, color);
 
   // Filter to only affected tiles
-  const affectedFitted = fitted.filter(p => affectedKeys.has(`${p.x},${p.y}`));
+  const affectedFitted = fitted.filter((p) => affectedKeys.has(`${p.x},${p.y}`));
 
   // Collect UIDs of existing entities that are being replaced
   const removedUids: number[] = [];

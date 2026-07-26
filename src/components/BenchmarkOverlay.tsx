@@ -15,7 +15,9 @@ export const BenchmarkOverlay: React.FC = () => {
 
   // Clean up countdown interval on unmount
   useEffect(() => {
-    return () => { if (countdownRef.current) clearInterval(countdownRef.current); };
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
   }, []);
 
   const finishCapture = useCallback(() => {
@@ -23,7 +25,10 @@ export const BenchmarkOverlay: React.FC = () => {
     setResult(r);
     setCapturing(false);
     setRemaining(0);
-    if (countdownRef.current) { clearInterval(countdownRef.current); countdownRef.current = null; }
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
   }, []);
 
   const handleToggle = useCallback(() => {
@@ -50,17 +55,19 @@ export const BenchmarkOverlay: React.FC = () => {
   }, [result]);
 
   return (
-    <div style={{
-      position: 'absolute',
-      top: 44,
-      right: 8,
-      zIndex: 200,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'flex-end',
-      gap: 6,
-      pointerEvents: 'auto',
-    }}>
+    <div
+      style={{
+        position: 'absolute',
+        top: 44,
+        right: 8,
+        zIndex: 200,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        gap: 6,
+        pointerEvents: 'auto',
+      }}
+    >
       {/* Start / Stop button */}
       <button
         onClick={handleToggle}
@@ -74,9 +81,7 @@ export const BenchmarkOverlay: React.FC = () => {
           cursor: 'pointer',
           color: '#fff',
           backgroundColor: capturing ? '#c62828' : '#2e7d32',
-          boxShadow: capturing
-            ? '0 0 12px rgba(198, 40, 40, 0.6)'
-            : '0 0 8px rgba(46, 125, 50, 0.4)',
+          boxShadow: capturing ? '0 0 12px rgba(198, 40, 40, 0.6)' : '0 0 8px rgba(46, 125, 50, 0.4)',
         }}
       >
         {capturing ? `⏹ Stop (${remaining}s)` : '▶ Benchmark (15s)'}
@@ -84,36 +89,38 @@ export const BenchmarkOverlay: React.FC = () => {
 
       {/* Recording indicator */}
       {capturing && (
-        <div style={{
-          padding: '4px 10px',
-          fontSize: 11,
-          fontFamily: 'monospace',
-          backgroundColor: 'rgba(198, 40, 40, 0.85)',
-          color: '#fff',
-          borderRadius: 4,
-          animation: 'benchPulse 1.5s ease-in-out infinite',
-        }}>
+        <div
+          style={{
+            padding: '4px 10px',
+            fontSize: 11,
+            fontFamily: 'monospace',
+            backgroundColor: 'rgba(198, 40, 40, 0.85)',
+            color: '#fff',
+            borderRadius: 4,
+            animation: 'benchPulse 1.5s ease-in-out infinite',
+          }}
+        >
           ● Recording... {remaining}s remaining
         </div>
       )}
 
       {/* Results panel */}
       {result && !capturing && (
-        <div style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.88)',
-          color: '#ccc',
-          padding: '10px 14px',
-          borderRadius: 6,
-          fontSize: 11,
-          fontFamily: 'monospace',
-          lineHeight: 1.7,
-          minWidth: 260,
-          maxWidth: 320,
-          border: '1px solid rgba(255,255,255,0.1)',
-        }}>
-          <div style={{ color: '#90caf9', fontWeight: 'bold', marginBottom: 4, fontSize: 12 }}>
-            Benchmark Results
-          </div>
+        <div
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.88)',
+            color: '#ccc',
+            padding: '10px 14px',
+            borderRadius: 6,
+            fontSize: 11,
+            fontFamily: 'monospace',
+            lineHeight: 1.7,
+            minWidth: 260,
+            maxWidth: 320,
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}
+        >
+          <div style={{ color: '#90caf9', fontWeight: 'bold', marginBottom: 4, fontSize: 12 }}>Benchmark Results</div>
 
           <Section title="Timing">
             <Row label="Duration" value={`${(result.durationMs / 1000).toFixed(1)}s`} />

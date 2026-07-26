@@ -7,15 +7,29 @@ import { buildTransformComponent } from './entityHelpers';
 
 /** Pipe prototypes that belong to gas pipe network */
 const GAS_PIPE_PROTOTYPES = new Set([
-  'GasPipeStraight', 'GasPipeBend', 'GasPipeTJunction', 'GasPipeFourway', 'GasPipeHalf',
-  'GasPipeStraightAlt1', 'GasPipeBendAlt1', 'GasPipeTJunctionAlt1', 'GasPipeFourwayAlt1',
-  'GasPipeStraightAlt2', 'GasPipeBendAlt2', 'GasPipeTJunctionAlt2', 'GasPipeFourwayAlt2',
+  'GasPipeStraight',
+  'GasPipeBend',
+  'GasPipeTJunction',
+  'GasPipeFourway',
+  'GasPipeHalf',
+  'GasPipeStraightAlt1',
+  'GasPipeBendAlt1',
+  'GasPipeTJunctionAlt1',
+  'GasPipeFourwayAlt1',
+  'GasPipeStraightAlt2',
+  'GasPipeBendAlt2',
+  'GasPipeTJunctionAlt2',
+  'GasPipeFourwayAlt2',
 ]);
 
 /** Pipe prototypes that belong to disposal network */
 const DISPOSAL_PIPE_PROTOTYPES = new Set([
-  'DisposalPipe', 'DisposalBend', 'DisposalJunction', 'DisposalYJunction',
-  'DisposalJunctionFlipped', 'DisposalTrunk',
+  'DisposalPipe',
+  'DisposalBend',
+  'DisposalJunction',
+  'DisposalYJunction',
+  'DisposalJunctionFlipped',
+  'DisposalTrunk',
 ]);
 
 /**
@@ -81,7 +95,7 @@ export class PipeDrawTool implements ITool {
 
     const { removedUids, fittedPipes } = computePipeChanges(
       this.visitedTiles,
-      existingPipes.map(e => ({
+      existingPipes.map((e) => ({
         uid: e.uid,
         x: Math.floor(e.position.x),
         y: Math.floor(e.position.y),
@@ -95,7 +109,7 @@ export class PipeDrawTool implements ITool {
 
     // Remove old entities that are being refitted
     for (const uid of removedUids) {
-      const entity = ctx.state.entities.find(e => e.uid === uid);
+      const entity = ctx.state.entities.find((e) => e.uid === uid);
       if (entity) {
         entityChanges.push({ action: 'remove', entity });
       }
@@ -135,12 +149,7 @@ export class PipeDrawTool implements ITool {
     this.visitedSet.clear();
   }
 
-  renderPreview(
-    canvasCtx: CanvasRenderingContext2D,
-    toolCtx: ToolContext,
-    cursorTileX: number,
-    cursorTileY: number,
-  ) {
+  renderPreview(canvasCtx: CanvasRenderingContext2D, toolCtx: ToolContext, cursorTileX: number, cursorTileY: number) {
     const { camera, canvasW, canvasH } = toolCtx;
     const tileScreenSize = camera.tileScreenSize;
     const color = PIPE_DISPLAY[this.pipeType].color;
@@ -207,8 +216,14 @@ export class PipeDrawTool implements ITool {
 
     while (x0 !== toX || y0 !== toY) {
       const e2 = 2 * err;
-      if (e2 > -dy) { err -= dy; x0 += sx; }
-      if (e2 < dx) { err += dx; y0 += sy; }
+      if (e2 > -dy) {
+        err -= dy;
+        x0 += sx;
+      }
+      if (e2 < dx) {
+        err += dx;
+        y0 += sy;
+      }
       // Don't add the final tile, addTile will add it
       if (x0 === toX && y0 === toY) break;
       this.addSingleTile(x0, y0);
@@ -221,7 +236,7 @@ export class PipeDrawTool implements ITool {
    */
   private getMatchingPipeEntities(ctx: ToolContext): ImportedEntity[] {
     const protos = this.prototypeSet;
-    return ctx.state.entities.filter(e => {
+    return ctx.state.entities.filter((e) => {
       if (!protos.has(e.prototype)) return false;
       if (this.family === 'disposal') return true;
 
@@ -243,16 +258,13 @@ export class PipeDrawTool implements ITool {
 
   private erasePipeAt(ctx: ToolContext, tileX: number, tileY: number) {
     const protos = this.prototypeSet;
-    const toRemove = ctx.state.entities.filter(e =>
-      protos.has(e.prototype) &&
-      Math.floor(e.position.x) === tileX &&
-      Math.floor(e.position.y) === tileY,
+    const toRemove = ctx.state.entities.filter(
+      (e) => protos.has(e.prototype) && Math.floor(e.position.x) === tileX && Math.floor(e.position.y) === tileY,
     );
     if (toRemove.length === 0) return;
 
     // After removing, refit neighbors
-    const remainingPipes = this.getMatchingPipeEntities(ctx)
-      .filter(e => !toRemove.some(r => r.uid === e.uid));
+    const remainingPipes = this.getMatchingPipeEntities(ctx).filter((e) => !toRemove.some((r) => r.uid === e.uid));
 
     // Find neighbor positions that need refitting
     const entityChanges: { action: 'add' | 'remove'; entity: ImportedEntity }[] = [];
@@ -265,7 +277,12 @@ export class PipeDrawTool implements ITool {
     for (const e of toRemove) {
       const ex = Math.floor(e.position.x);
       const ey = Math.floor(e.position.y);
-      for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+      for (const [dx, dy] of [
+        [0, 1],
+        [0, -1],
+        [1, 0],
+        [-1, 0],
+      ]) {
         neighbors.add(`${ex + dx},${ey + dy}`);
       }
     }
@@ -286,8 +303,8 @@ export class PipeDrawTool implements ITool {
         if (!neighbors.has(key)) continue;
 
         // Remove old entity at this position
-        const oldEntity = remainingPipes.find(e =>
-          Math.floor(e.position.x) === pipe.x && Math.floor(e.position.y) === pipe.y,
+        const oldEntity = remainingPipes.find(
+          (e) => Math.floor(e.position.x) === pipe.x && Math.floor(e.position.y) === pipe.y,
         );
         if (oldEntity) {
           entityChanges.push({ action: 'remove', entity: oldEntity });
@@ -295,7 +312,11 @@ export class PipeDrawTool implements ITool {
 
         // Add new fitted entity
         const refitPos = { x: pipe.x + 0.5, y: pipe.y + 0.5 };
-        const refitComps: Record<string, unknown>[] = buildTransformComponent(refitPos, pipe.rotation, ctx.state.gridUid);
+        const refitComps: Record<string, unknown>[] = buildTransformComponent(
+          refitPos,
+          pipe.rotation,
+          ctx.state.gridUid,
+        );
         if (pipe.color) {
           refitComps.push({ type: 'AtmosPipeColor', color: pipe.color });
         }

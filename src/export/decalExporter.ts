@@ -32,12 +32,7 @@ function formatCoord(n: number): string {
  */
 export function serializeDecalGrid(decals: DecalInstance[]): string[] {
   if (decals.length === 0) {
-    return [
-      '    - type: DecalGrid',
-      '      chunkCollection:',
-      '        version: 2',
-      '        nodes: []',
-    ];
+    return ['    - type: DecalGrid', '      chunkCollection:', '        version: 2', '        nodes: []'];
   }
 
   // Group decals by shared properties
@@ -52,12 +47,7 @@ export function serializeDecalGrid(decals: DecalInstance[]): string[] {
     group.push(d);
   }
 
-  const lines: string[] = [
-    '    - type: DecalGrid',
-    '      chunkCollection:',
-    '        version: 2',
-    '        nodes:',
-  ];
+  const lines: string[] = ['    - type: DecalGrid', '      chunkCollection:', '        version: 2', '        nodes:'];
 
   for (const group of groups.values()) {
     // Use first decal as representative for shared properties

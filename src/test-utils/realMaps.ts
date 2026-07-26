@@ -41,7 +41,7 @@ export function findMapFiles(mapsDir: string): string[] {
 /** Map files sorted largest-first (station maps, the most interesting, come first). */
 function filesBySizeDesc(mapsDir: string): string[] {
   return findMapFiles(mapsDir)
-    .map(f => {
+    .map((f) => {
       try {
         return { f, size: statSync(f).size };
       } catch {
@@ -49,7 +49,7 @@ function filesBySizeDesc(mapsDir: string): string[] {
       }
     })
     .sort((a, b) => b.size - a.size)
-    .map(x => x.f);
+    .map((x) => x.f);
 }
 
 export interface PickOptions {

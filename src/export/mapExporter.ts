@@ -88,7 +88,7 @@ export function exportMap(map: ImportedMap, decalsDirty?: Set<number>): string {
   // target map on load.
   const isGridDoc = map.meta.category === 'Grid';
   if (format >= 7) {
-    const allGridUids = map.gridDataList?.map(g => g.gridUid) ?? [map.gridUid];
+    const allGridUids = map.gridDataList?.map((g) => g.gridUid) ?? [map.gridUid];
     pushUidList(lines, 'maps', map.maps ?? (isGridDoc ? [] : [map.mapUid]));
     pushUidList(lines, 'grids', map.grids ?? allGridUids);
     pushUidList(lines, 'orphans', map.orphans ?? (isGridDoc ? allGridUids : []));
@@ -184,19 +184,22 @@ export function exportMap(map: ImportedMap, decalsDirty?: Set<number>): string {
       lines.push('    - type: OccluderTree');
     }
 
-    const fallbackGrids = map.gridDataList && map.gridDataList.length > 0
-      ? map.gridDataList.map(g => ({
-          uid: g.gridUid,
-          pos: g.worldPosition,
-          identity: g.identity,
-          extraComponents: g.extraRootComponents ?? [],
-        }))
-      : [{
-          uid: map.gridUid,
-          pos: { x: 0, y: 0 },
-          identity: undefined,
-          extraComponents: [] as { type: string; fields?: Record<string, string> }[],
-        }];
+    const fallbackGrids =
+      map.gridDataList && map.gridDataList.length > 0
+        ? map.gridDataList.map((g) => ({
+            uid: g.gridUid,
+            pos: g.worldPosition,
+            identity: g.identity,
+            extraComponents: g.extraRootComponents ?? [],
+          }))
+        : [
+            {
+              uid: map.gridUid,
+              pos: { x: 0, y: 0 },
+              identity: undefined,
+              extraComponents: [] as { type: string; fields?: Record<string, string> }[],
+            },
+          ];
 
     for (const g of fallbackGrids) {
       lines.push(`  - uid: ${g.uid}`);
@@ -225,7 +228,7 @@ export function exportMap(map: ImportedMap, decalsDirty?: Set<number>): string {
       // Properties; scalar fields alphabetical like the engine serializer.
       for (const extra of g.extraComponents) {
         lines.push(`    - type: ${extra.type}`);
-        for (const [k, v] of Object.entries(extra.fields ?? {}).sort(([a], [b]) => a < b ? -1 : 1)) {
+        for (const [k, v] of Object.entries(extra.fields ?? {}).sort(([a], [b]) => (a < b ? -1 : 1))) {
           lines.push(`      ${k}: ${formatPrimitive(v)}`);
         }
       }
@@ -409,7 +412,9 @@ function buildChunksYamlForGrid(
 
   // Remove all-Space chunks (where every tile is the Space tile type with no flags/variant)
   for (const [key, tiles] of chunks) {
-    if (tiles.every(t => t.typeId === spaceTileIndex && t.flags === 0 && t.variant === 0 && t.rotationMirroring === 0)) {
+    if (
+      tiles.every((t) => t.typeId === spaceTileIndex && t.flags === 0 && t.variant === 0 && t.rotationMirroring === 0)
+    ) {
       chunks.delete(key);
     }
   }
@@ -451,10 +456,7 @@ function buildChunksYamlForGrid(
 /**
  * Build a map of gridUid -> chunk YAML lines for all grids.
  */
-function buildGridChunksMap(
-  map: ImportedMap,
-  reverseTilemap: Record<string, number>,
-): Map<number, string[]> {
+function buildGridChunksMap(map: ImportedMap, reverseTilemap: Record<string, number>): Map<number, string[]> {
   const result = new Map<number, string[]>();
   const format = map.meta.format;
 
@@ -476,10 +478,7 @@ function buildGridChunksMap(
  * Build a map of gridUid -> serialized DecalGrid YAML lines for dirty grids.
  * Only includes grids that are in the decalsDirty set and have decal data.
  */
-function buildGridDecalsMap(
-  map: ImportedMap,
-  decalsDirty?: Set<number>,
-): Map<number, string[]> {
+function buildGridDecalsMap(map: ImportedMap, decalsDirty?: Set<number>): Map<number, string[]> {
   const result = new Map<number, string[]>();
   if (!decalsDirty || decalsDirty.size === 0) return result;
 
@@ -544,7 +543,7 @@ function stripDanglingDeviceRefs(
       const comp = entity.components[i] as Record<string, unknown>;
 
       if (comp.type === 'DeviceList' && Array.isArray(comp.devices)) {
-        const filtered = (comp.devices as number[]).filter(uid => validUids.has(uid));
+        const filtered = (comp.devices as number[]).filter((uid) => validUids.has(uid));
         if (filtered.length !== (comp.devices as number[]).length) {
           entity.components[i] = { ...comp, devices: filtered };
           modified = true;
@@ -570,7 +569,7 @@ function stripDanglingDeviceRefs(
       }
 
       if (comp.type === 'DeviceNetwork' && Array.isArray(comp.deviceLists)) {
-        const filtered = (comp.deviceLists as number[]).filter(uid => validUids.has(uid));
+        const filtered = (comp.deviceLists as number[]).filter((uid) => validUids.has(uid));
         if (filtered.length !== (comp.deviceLists as number[]).length) {
           entity.components[i] = { ...comp, deviceLists: filtered };
           modified = true;
@@ -606,7 +605,7 @@ function buildEntityGroupsYaml(map: ImportedMap): string[] {
 
   if (Object.keys(allContained).length > 0) {
     // Build set of valid parent UIDs, grid entities are always valid
-    const validUids = new Set(gridEntities.map(e => e.uid));
+    const validUids = new Set(gridEntities.map((e) => e.uid));
     // Iteratively resolve transitive containment (entity inside entity inside entity...)
     let changed = true;
     while (changed) {
@@ -648,7 +647,7 @@ function buildEntityGroupsYaml(map: ImportedMap): string[] {
   // This can happen when a linked entity is deleted but the DeviceList/DeviceLinkSource
   // on the other entity isn't cleaned up, or when DeviceNetwork.deviceLists references
   // a deleted alarm entity.
-  const validUidSet = new Set(allEntities.map(e => e.uid));
+  const validUidSet = new Set(allEntities.map((e) => e.uid));
   // Also include structural UIDs (map entity, grid entities) that aren't in allEntities
   validUidSet.add(map.mapUid);
   validUidSet.add(map.gridUid);
@@ -690,9 +689,7 @@ function buildEntityGroupsYaml(map: ImportedMap): string[] {
         for (const rl of rawLines) lines.push(rl);
       } else {
         // Check if entity already has a Transform component in its components array
-        const hasTransform = entity.components.some(
-          (c: Record<string, unknown>) => c.type === 'Transform',
-        );
+        const hasTransform = entity.components.some((c: Record<string, unknown>) => c.type === 'Transform');
 
         if (!hasTransform) {
           // Synthesize Transform from entity position/rotation for editor-placed entities
@@ -805,12 +802,7 @@ function emitComponent(lines: string[], comp: Record<string, unknown>): void {
 /**
  * Emit a key-value pair at a given indentation level (in spaces).
  */
-function emitValue(
-  lines: string[],
-  key: string,
-  value: unknown,
-  indent: number,
-): void {
+function emitValue(lines: string[], key: string, value: unknown, indent: number): void {
   const prefix = ' '.repeat(indent);
 
   if (value === null || value === undefined) {
@@ -846,8 +838,7 @@ function emitValue(
           emitNestedSequence(lines, item, indent);
         } else if (typeof item === 'object' && item !== null) {
           // First key of the object gets the "- " prefix; skip _ss14Tag
-          const entries = Object.entries(item as Record<string, unknown>)
-            .filter(([k]) => k !== '_ss14Tag');
+          const entries = Object.entries(item as Record<string, unknown>).filter(([k]) => k !== '_ss14Tag');
           if (entries.length > 0) {
             const [firstKey, firstVal] = entries[0];
             const itemPrefix = prefix + '- ';
@@ -862,8 +853,7 @@ function emitValue(
                 emitArrayItems(lines, firstVal, indent + 2);
               }
             } else if (typeof firstVal === 'object' && firstVal !== null) {
-              const objEntries = Object.entries(firstVal as Record<string, unknown>)
-                .filter(([k]) => k !== '_ss14Tag');
+              const objEntries = Object.entries(firstVal as Record<string, unknown>).filter(([k]) => k !== '_ss14Tag');
               if (objEntries.length === 0) {
                 lines.push(`${itemPrefix}${firstKey}: {}`);
               } else {
@@ -951,8 +941,7 @@ function emitNestedSequence(lines: string[], arr: unknown[], indent: number): vo
     lines.push(`${prefix}- - ...`); // Deeply nested, unlikely in SS14 but handle gracefully
   } else if (typeof firstItem === 'object' && firstItem !== null) {
     // Object item in nested sequence
-    const entries = Object.entries(firstItem as Record<string, unknown>)
-      .filter(([k]) => k !== '_ss14Tag');
+    const entries = Object.entries(firstItem as Record<string, unknown>).filter(([k]) => k !== '_ss14Tag');
     if (entries.length > 0) {
       const [fk, fv] = entries[0];
       lines.push(`${prefix}- - ${fk}: ${formatPrimitive(fv)}`);
@@ -969,8 +958,7 @@ function emitNestedSequence(lines: string[], arr: unknown[], indent: number): vo
     if (Array.isArray(item)) {
       emitNestedSequence(lines, item, indent + 2);
     } else if (typeof item === 'object' && item !== null) {
-      const entries = Object.entries(item as Record<string, unknown>)
-        .filter(([k]) => k !== '_ss14Tag');
+      const entries = Object.entries(item as Record<string, unknown>).filter(([k]) => k !== '_ss14Tag');
       if (entries.length > 0) {
         const [fk, fv] = entries[0];
         lines.push(`${prefix}  - ${fk}: ${formatPrimitive(fv)}`);
@@ -993,8 +981,7 @@ function emitArrayItems(lines: string[], arr: unknown[], indent: number): void {
     if (Array.isArray(item)) {
       emitNestedSequence(lines, item, indent);
     } else if (typeof item === 'object' && item !== null) {
-      const entries = Object.entries(item as Record<string, unknown>)
-        .filter(([k]) => k !== '_ss14Tag');
+      const entries = Object.entries(item as Record<string, unknown>).filter(([k]) => k !== '_ss14Tag');
       if (entries.length > 0) {
         const [fk, fv] = entries[0];
         if (isPrimitive(fv)) {
@@ -1017,13 +1004,7 @@ function emitArrayItems(lines: string[], arr: unknown[], indent: number): void {
  * Uses |- (strip) if the string doesn't end with newline, | (clip) if it does.
  * The indentation indicator is computed from the content.
  */
-function emitBlockScalar(
-  lines: string[],
-  key: string,
-  value: string,
-  indent: number,
-  isArrayItem = false,
-): void {
+function emitBlockScalar(lines: string[], key: string, value: string, indent: number, isArrayItem = false): void {
   const prefix = ' '.repeat(indent);
   const contentIndent = indent + 2;
   const contentPrefix = ' '.repeat(contentIndent);

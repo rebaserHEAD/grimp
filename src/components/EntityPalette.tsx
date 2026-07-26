@@ -33,8 +33,9 @@ export const EntityPalette: React.FC<Props> = ({ registry, selectedItem, onSelec
 
     const map = new Map<string, ResolvedEntity[]>();
     for (const cat of registry.getCategories()) {
-      const entities = registry.getEntitiesByCategory(cat)
-        .filter(e => !e.abstract)
+      const entities = registry
+        .getEntitiesByCategory(cat)
+        .filter((e) => !e.abstract)
         .sort((a, b) => a.name.localeCompare(b.name));
       if (entities.length > 0) {
         map.set(cat, entities);
@@ -44,8 +45,8 @@ export const EntityPalette: React.FC<Props> = ({ registry, selectedItem, onSelec
     // Sort categories: priority first, then alphabetical
     const allCats = Array.from(map.keys());
     const prioritySet = new Set(PRIORITY_CATEGORIES);
-    const priority = PRIORITY_CATEGORIES.filter(c => allCats.includes(c));
-    const rest = allCats.filter(c => !prioritySet.has(c)).sort();
+    const priority = PRIORITY_CATEGORIES.filter((c) => allCats.includes(c));
+    const rest = allCats.filter((c) => !prioritySet.has(c)).sort();
 
     return { categories: [...priority, ...rest], entityMap: map };
   }, [registry]);
@@ -70,7 +71,7 @@ export const EntityPalette: React.FC<Props> = ({ registry, selectedItem, onSelec
   }, [search, registry, entityMap]);
 
   const toggleCategory = (cat: string) => {
-    setExpandedCategories(prev => {
+    setExpandedCategories((prev) => {
       const next = new Set(prev);
       if (next.has(cat)) next.delete(cat);
       else next.add(cat);
@@ -78,8 +79,7 @@ export const EntityPalette: React.FC<Props> = ({ registry, selectedItem, onSelec
     });
   };
 
-  const isEntitySelected = (id: string) =>
-    selectedItem?.type === 'entity' && selectedItem.id === id;
+  const isEntitySelected = (id: string) => selectedItem?.type === 'entity' && selectedItem.id === id;
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
@@ -95,7 +95,7 @@ export const EntityPalette: React.FC<Props> = ({ registry, selectedItem, onSelec
         <input
           type="text"
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="Search entities..."
           className="w-full px-2 py-1 bg-surface border border-subtle rounded-sm text-primary text-xs outline-none focus:border-accent"
         />
@@ -108,7 +108,7 @@ export const EntityPalette: React.FC<Props> = ({ registry, selectedItem, onSelec
             {filteredEntities.length === 0 && (
               <div className="text-muted text-xs p-3 italic text-center">No results</div>
             )}
-            {filteredEntities.map(e => (
+            {filteredEntities.map((e) => (
               <EntityRow
                 key={e.id}
                 entity={e}
@@ -122,7 +122,7 @@ export const EntityPalette: React.FC<Props> = ({ registry, selectedItem, onSelec
           </div>
         ) : (
           // Category tree
-          categories.map(cat => {
+          categories.map((cat) => {
             const entities = entityMap.get(cat);
             if (!entities) return null;
             const expanded = expandedCategories.has(cat);
@@ -140,7 +140,7 @@ export const EntityPalette: React.FC<Props> = ({ registry, selectedItem, onSelec
                 </button>
                 {expanded && (
                   <div className="pl-2 pr-2">
-                    {entities.map(e => (
+                    {entities.map((e) => (
                       <EntityRow
                         key={e.id}
                         entity={e}
@@ -199,7 +199,9 @@ const EntityRow: React.FC<{
       onMouseEnter={handleMouseEnter}
       onMouseLeave={onHoverLeave}
       className={`flex items-center gap-1.5 px-2 py-0.5 text-xs cursor-pointer w-full text-left border-none rounded-sm mb-px ${
-        selected ? 'bg-active text-accent border border-accent' : 'text-primary hover:bg-hover bg-transparent border border-transparent'
+        selected
+          ? 'bg-active text-accent border border-accent'
+          : 'text-primary hover:bg-hover bg-transparent border border-transparent'
       }`}
       title={`${entity.id}${entity.suffix ? ` (${String(entity.suffix)})` : ''}\n${entity.description || ''}`}
     >

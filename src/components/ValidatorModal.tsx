@@ -39,14 +39,16 @@ const ValidatorModal: React.FC<ValidatorModalProps> = ({ issues, onJumpTo, onClo
     return groups;
   }, [issues]);
 
-  const errorCount = issues.filter(i => i.severity === 'error').length;
-  const warningCount = issues.filter(i => i.severity === 'warning').length;
+  const errorCount = issues.filter((i) => i.severity === 'error').length;
+  const warningCount = issues.filter((i) => i.severity === 'warning').length;
 
   return (
     <div
       className="fixed inset-0 z-[9998] flex items-center justify-center"
       style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className="bg-elevated border border-subtle rounded-lg p-6 max-w-[550px] w-full max-h-[70vh] overflow-y-auto text-primary text-[13px]">
         <div className="flex items-center justify-between mb-4">
@@ -68,11 +70,15 @@ const ValidatorModal: React.FC<ValidatorModalProps> = ({ issues, onJumpTo, onClo
           <>
             <div className="mb-4 text-[12px]">
               {errorCount > 0 && (
-                <span className="text-danger font-semibold">{errorCount} error{errorCount !== 1 ? 's' : ''}</span>
+                <span className="text-danger font-semibold">
+                  {errorCount} error{errorCount !== 1 ? 's' : ''}
+                </span>
               )}
               {errorCount > 0 && warningCount > 0 && <span className="text-muted">, </span>}
               {warningCount > 0 && (
-                <span className="text-warning font-semibold">{warningCount} warning{warningCount !== 1 ? 's' : ''}</span>
+                <span className="text-warning font-semibold">
+                  {warningCount} warning{warningCount !== 1 ? 's' : ''}
+                </span>
               )}
             </div>
 
@@ -134,7 +140,10 @@ const CollapsibleRuleGroup: React.FC<{
             <div
               key={idx}
               className="text-[11px] text-primary py-0.5 px-1 rounded hover:bg-hover cursor-pointer"
-              onClick={() => { onJumpTo(issue.x, issue.y); onClose(); }}
+              onClick={() => {
+                onJumpTo(issue.x, issue.y);
+                onClose();
+              }}
             >
               {issue.message}
             </div>

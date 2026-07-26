@@ -7,10 +7,15 @@ function makeMinimalMap(): ImportedMap {
     meta: { format: 6, postmapinit: false },
     tilemap: { 0: 'Space', 1: 'FloorSteel' },
     grid: {
-      width: 16, height: 16, offsetX: 0, offsetY: 0,
-      cells: Array(256).fill(null).map((_, i) => ({
-        tileId: i === 0 ? 'FloorSteel' : 'Space'
-      })),
+      width: 16,
+      height: 16,
+      offsetX: 0,
+      offsetY: 0,
+      cells: Array(256)
+        .fill(null)
+        .map((_, i) => ({
+          tileId: i === 0 ? 'FloorSteel' : 'Space',
+        })),
     },
     entities: [
       {
@@ -61,7 +66,7 @@ describe('exportMap', () => {
     const original = makeMinimalMap();
     const yamlStr = exportMap(original);
     const reimported = importMap(yamlStr);
-    const apc = reimported.entities.find(e => e.prototype === 'APCBasic');
+    const apc = reimported.entities.find((e) => e.prototype === 'APCBasic');
     expect(apc).toBeDefined();
     expect(apc!.uid).toBe(100);
   });
@@ -70,7 +75,7 @@ describe('exportMap', () => {
     const original = makeMinimalMap();
     const yamlStr = exportMap(original);
     const reimported = importMap(yamlStr);
-    const apc = reimported.entities.find(e => e.prototype === 'APCBasic');
+    const apc = reimported.entities.find((e) => e.prototype === 'APCBasic');
     const battery = apc!.components.find((c: any) => c.type === 'Battery') as any;
     expect(battery.startingCharge).toBe(25000);
   });
@@ -83,9 +88,7 @@ describe('exportMap', () => {
       prototype: 'AirlockGlass',
       position: { x: 1.5, y: 1.5 },
       rotation: 0,
-      components: [
-        { type: 'Transform', pos: '1.5,1.5', parent: 1 },
-      ],
+      components: [{ type: 'Transform', pos: '1.5,1.5', parent: 1 }],
       spriteStateOverride: 'open',
     });
     const yamlStr = exportMap(map);
@@ -99,15 +102,15 @@ describe('exportMap', () => {
       uid: 300,
       prototype: 'APCBasic',
       position: { x: 2.5, y: 3.5 },
-      rotation: 3 * Math.PI / 2,
+      rotation: (3 * Math.PI) / 2,
       components: [],
     });
     const yamlStr = exportMap(map);
     // Should contain the rotation value with " rad" suffix
-    expect(yamlStr).toContain(`${3 * Math.PI / 2} rad`);
+    expect(yamlStr).toContain(`${(3 * Math.PI) / 2} rad`);
     // The rot line must include "rad"
     const lines = yamlStr.split('\n');
-    const rotLine = lines.find(l => l.includes('rot:') && l.includes(`${3 * Math.PI / 2}`));
+    const rotLine = lines.find((l) => l.includes('rot:') && l.includes(`${(3 * Math.PI) / 2}`));
     expect(rotLine).toBeDefined();
     expect(rotLine).toContain('rad');
   });
@@ -115,7 +118,9 @@ describe('exportMap', () => {
   it('skips all-Space chunks', () => {
     const map = makeMinimalMap();
     // Make all cells Space
-    map.grid.cells = Array(256).fill(null).map(() => ({ tileId: 'Space' }));
+    map.grid.cells = Array(256)
+      .fill(null)
+      .map(() => ({ tileId: 'Space' }));
     const yamlStr = exportMap(map);
     // Should not contain any chunks (or the chunks section should be empty)
     expect(yamlStr).not.toContain('tiles:');
@@ -125,28 +130,32 @@ describe('exportMap', () => {
     it('exports imported contained entities with raw YAML lines', () => {
       const map = makeMinimalMap();
       map.entities.push({
-        uid: 50, prototype: 'LockerBotanist',
-        position: { x: 5.5, y: 3.5 }, rotation: 0,
+        uid: 50,
+        prototype: 'LockerBotanist',
+        position: { x: 5.5, y: 3.5 },
+        rotation: 0,
         components: [
           { type: 'Transform', pos: '5.5,3.5', parent: 1 },
           { type: 'ContainerContainer', containers: { entity_storage: { ents: [51] } } },
         ],
       });
       map.containedEntities = {
-        50: [{
-          uid: 51, prototype: 'Crowbar',
-          position: { x: 0, y: 0 }, rotation: 0,
-          components: [{ type: 'Transform', parent: 50 }, { type: 'Physics', canCollide: false }],
-        }],
+        50: [
+          {
+            uid: 51,
+            prototype: 'Crowbar',
+            position: { x: 0, y: 0 },
+            rotation: 0,
+            components: [
+              { type: 'Transform', parent: 50 },
+              { type: 'Physics', canCollide: false },
+            ],
+          },
+        ],
       };
       map.entityRawComponents = {
         ...map.entityRawComponents,
-        51: [
-          '    - type: Transform',
-          '      parent: 50',
-          '    - type: Physics',
-          '      canCollide: False',
-        ],
+        51: ['    - type: Transform', '      parent: 50', '    - type: Physics', '      canCollide: False'],
       };
 
       const yaml = exportMap(map);
@@ -159,22 +168,28 @@ describe('exportMap', () => {
     it('exports newly added contained entities with synthesized components', () => {
       const map = makeMinimalMap();
       map.entities.push({
-        uid: 50, prototype: 'LockerBotanist',
-        position: { x: 5.5, y: 3.5 }, rotation: 0,
+        uid: 50,
+        prototype: 'LockerBotanist',
+        position: { x: 5.5, y: 3.5 },
+        rotation: 0,
         components: [
           { type: 'Transform', pos: '5.5,3.5', parent: 1 },
           { type: 'ContainerContainer', containers: { entity_storage: { ents: [51] } } },
         ],
       });
       map.containedEntities = {
-        50: [{
-          uid: 51, prototype: 'Wrench',
-          position: { x: 0, y: 0 }, rotation: 0,
-          components: [
-            { type: 'Transform', parent: 50 },
-            { type: 'Physics', canCollide: false },
-          ],
-        }],
+        50: [
+          {
+            uid: 51,
+            prototype: 'Wrench',
+            position: { x: 0, y: 0 },
+            rotation: 0,
+            components: [
+              { type: 'Transform', parent: 50 },
+              { type: 'Physics', canCollide: false },
+            ],
+          },
+        ],
       };
 
       const yaml = exportMap(map);
@@ -186,11 +201,15 @@ describe('exportMap', () => {
     it('does not export contained entities when their container is absent', () => {
       const map = makeMinimalMap();
       map.containedEntities = {
-        999: [{
-          uid: 1000, prototype: 'Crowbar',
-          position: { x: 0, y: 0 }, rotation: 0,
-          components: [{ type: 'Transform', parent: 999 }],
-        }],
+        999: [
+          {
+            uid: 1000,
+            prototype: 'Crowbar',
+            position: { x: 0, y: 0 },
+            rotation: 0,
+            components: [{ type: 'Transform', parent: 999 }],
+          },
+        ],
       };
 
       const yaml = exportMap(map);
@@ -234,9 +253,7 @@ describe('exportMap', () => {
         prototype: 'GasVentPump',
         position: { x: 2.5, y: 3.5 },
         rotation: 0,
-        components: [
-          { type: 'Transform', pos: '2.5,3.5', parent: 1 },
-        ],
+        components: [{ type: 'Transform', pos: '2.5,3.5', parent: 1 }],
       });
 
       const yamlStr = exportMap(map);
@@ -246,12 +263,12 @@ describe('exportMap', () => {
       expect(lines[lines.length - 1]).toBe('...');
 
       // ... should only appear once in the output
-      const terminatorCount = lines.filter(l => l.trim() === '...').length;
+      const terminatorCount = lines.filter((l) => l.trim() === '...').length;
       expect(terminatorCount).toBe(1);
 
       // The new entity should appear BEFORE the terminator
       const terminatorIdx = lines.lastIndexOf('...');
-      const entityLine = lines.findIndex(l => l.includes('uid: 300'));
+      const entityLine = lines.findIndex((l) => l.includes('uid: 300'));
       expect(entityLine).toBeGreaterThan(-1);
       expect(entityLine).toBeLessThan(terminatorIdx);
     });
@@ -400,9 +417,9 @@ entities:
 
       const exported = exportMap(map);
       const reimported = importMap(exported);
-      const alarm = reimported.entities.find(e => e.prototype === 'AirAlarm');
+      const alarm = reimported.entities.find((e) => e.prototype === 'AirAlarm');
       expect(alarm).toBeDefined();
-      const dl = alarm!.components.find(c => (c as any).type === 'DeviceList') as any;
+      const dl = alarm!.components.find((c) => (c as any).type === 'DeviceList') as any;
       expect(dl.devices).toEqual([300]);
       expect(dl.devices).not.toContain(999);
     });
@@ -429,9 +446,9 @@ entities:
 
       const exported = exportMap(map);
       const reimported = importMap(exported);
-      const button = reimported.entities.find(e => e.prototype === 'SignalButton');
+      const button = reimported.entities.find((e) => e.prototype === 'SignalButton');
       expect(button).toBeDefined();
-      const dls = button!.components.find(c => (c as any).type === 'DeviceLinkSource') as any;
+      const dls = button!.components.find((c) => (c as any).type === 'DeviceLinkSource') as any;
       expect(dls.linkedPorts).toHaveProperty('300');
       expect(dls.linkedPorts).not.toHaveProperty('888');
     });
@@ -451,9 +468,9 @@ entities:
 
       const exported = exportMap(map);
       const reimported = importMap(exported);
-      const vent = reimported.entities.find(e => e.prototype === 'GasVentPump');
+      const vent = reimported.entities.find((e) => e.prototype === 'GasVentPump');
       expect(vent).toBeDefined();
-      const dn = vent!.components.find(c => (c as any).type === 'DeviceNetwork') as any;
+      const dn = vent!.components.find((c) => (c as any).type === 'DeviceNetwork') as any;
       expect(dn.deviceLists).toEqual([100]);
       expect(dn.deviceLists).not.toContain(777);
     });

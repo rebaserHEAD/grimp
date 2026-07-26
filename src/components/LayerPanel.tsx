@@ -22,13 +22,21 @@ const LAYER_DEFS: { key: keyof LayerVisibility; label: string; desc: string }[] 
 ];
 
 export const LayerPanel: React.FC<Props> = ({
-  layers, onToggleLayer, showSubFloor, onToggleSubFloor,
-  showConnections, onToggleConnections,
+  layers,
+  onToggleLayer,
+  showSubFloor,
+  onToggleSubFloor,
+  showConnections,
+  onToggleConnections,
 }) => {
   return (
     <div className="p-3">
-      {LAYER_DEFS.map(def => (
-        <label key={def.key} className="flex items-center gap-2 py-0.5 text-primary text-[11px] cursor-pointer select-none" title={def.desc}>
+      {LAYER_DEFS.map((def) => (
+        <label
+          key={def.key}
+          className="flex items-center gap-2 py-0.5 text-primary text-[11px] cursor-pointer select-none"
+          title={def.desc}
+        >
           <input
             type="checkbox"
             checked={layers[def.key]}
@@ -41,17 +49,18 @@ export const LayerPanel: React.FC<Props> = ({
 
       <div className="h-px bg-subtle my-2" />
 
-      <label className="flex items-center gap-2 py-0.5 text-primary text-[11px] cursor-pointer select-none" title="Show infrastructure under non-subfloor tiles (T-ray mode)">
-        <input
-          type="checkbox"
-          checked={showSubFloor}
-          onChange={onToggleSubFloor}
-          className="accent-accent w-3 h-3"
-        />
+      <label
+        className="flex items-center gap-2 py-0.5 text-primary text-[11px] cursor-pointer select-none"
+        title="Show infrastructure under non-subfloor tiles (T-ray mode)"
+      >
+        <input type="checkbox" checked={showSubFloor} onChange={onToggleSubFloor} className="accent-accent w-3 h-3" />
         T-Ray (SubFloor)
       </label>
 
-      <label className="flex items-center gap-2 py-0.5 text-primary text-[11px] cursor-pointer select-none" title="Show device links and connections">
+      <label
+        className="flex items-center gap-2 py-0.5 text-primary text-[11px] cursor-pointer select-none"
+        title="Show device links and connections"
+      >
         <input
           type="checkbox"
           checked={showConnections}

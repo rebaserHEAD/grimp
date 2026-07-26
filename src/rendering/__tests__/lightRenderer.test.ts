@@ -8,21 +8,40 @@ import type { ImportedEntity } from '../../import/mapImporter';
 
 function makeEntity(components: Record<string, unknown>[]): ImportedEntity {
   return {
-    uid: 1, prototype: 'PoweredLight', position: { x: 5, y: 5 },
-    rotation: 0, components,
+    uid: 1,
+    prototype: 'PoweredLight',
+    position: { x: 5, y: 5 },
+    rotation: 0,
+    components,
   };
 }
 
 function makeRegistry(protoComponents: Record<string, unknown>[]): IPrototypeRegistry {
   return {
     getEntity: () => ({
-      id: 'PoweredLight', name: 'Powered Light', description: '', suffix: '',
-      abstract: false, categories: [], placement: {}, components: protoComponents as any,
-      spriteInfo: null, sourceCategory: '', raw: { type: 'entity', id: 'PoweredLight' },
+      id: 'PoweredLight',
+      name: 'Powered Light',
+      description: '',
+      suffix: '',
+      abstract: false,
+      categories: [],
+      placement: {},
+      components: protoComponents as any,
+      spriteInfo: null,
+      sourceCategory: '',
+      raw: { type: 'entity', id: 'PoweredLight' },
     }),
-    getTile: () => null, getAllTiles: () => [], getAllEntities: () => [],
-    getEntitiesByCategory: () => [], getCategories: () => [],
-    getSpriteInfo: () => null, tileCount: 0, entityCount: 0, getDecal: () => null, getAllDecals: () => [], decalCount: 0,
+    getTile: () => null,
+    getAllTiles: () => [],
+    getAllEntities: () => [],
+    getEntitiesByCategory: () => [],
+    getCategories: () => [],
+    getSpriteInfo: () => null,
+    tileCount: 0,
+    entityCount: 0,
+    getDecal: () => null,
+    getAllDecals: () => [],
+    decalCount: 0,
   };
 }
 
@@ -33,9 +52,7 @@ describe('extractLightInfo', () => {
   });
 
   it('extracts light info from entity instance PointLight', () => {
-    const entity = makeEntity([
-      { type: 'PointLight', color: '#FF0000', radius: 8, energy: 2.0, softness: 1.5 },
-    ]);
+    const entity = makeEntity([{ type: 'PointLight', color: '#FF0000', radius: 8, energy: 2.0, softness: 1.5 }]);
     const info = extractLightInfo(entity, null);
     expect(info).not.toBeNull();
     expect(info!.color).toBe('#FF0000');
@@ -60,18 +77,14 @@ describe('extractLightInfo', () => {
   });
 
   it('extracts falloff from PointLight component', () => {
-    const entity = makeEntity([
-      { type: 'PointLight', falloff: 3.0 },
-    ]);
+    const entity = makeEntity([{ type: 'PointLight', falloff: 3.0 }]);
     const info = extractLightInfo(entity, null);
     expect(info!.falloff).toBe(3.0);
   });
 
   it('falls back to prototype PointLight when entity has none', () => {
     const entity = makeEntity([{ type: 'Transform' }]);
-    const registry = makeRegistry([
-      { type: 'PointLight', color: '#FFE4CE', radius: 10, energy: 0.8 },
-    ]);
+    const registry = makeRegistry([{ type: 'PointLight', color: '#FFE4CE', radius: 10, energy: 0.8 }]);
     const info = extractLightInfo(entity, registry);
     expect(info).not.toBeNull();
     expect(info!.color).toBe('#FFE4CE');
@@ -80,12 +93,8 @@ describe('extractLightInfo', () => {
   });
 
   it('instance PointLight fields override prototype fields', () => {
-    const entity = makeEntity([
-      { type: 'PointLight', color: '#FF0000' },
-    ]);
-    const registry = makeRegistry([
-      { type: 'PointLight', color: '#FFE4CE', radius: 10, energy: 0.8, softness: 1.0 },
-    ]);
+    const entity = makeEntity([{ type: 'PointLight', color: '#FF0000' }]);
+    const registry = makeRegistry([{ type: 'PointLight', color: '#FFE4CE', radius: 10, energy: 0.8, softness: 1.0 }]);
     const info = extractLightInfo(entity, registry);
     expect(info!.color).toBe('#FF0000');
     // Non-overridden fields come from prototype
@@ -94,17 +103,13 @@ describe('extractLightInfo', () => {
   });
 
   it('respects enabled: false', () => {
-    const entity = makeEntity([
-      { type: 'PointLight', enabled: false, color: '#00FF00' },
-    ]);
+    const entity = makeEntity([{ type: 'PointLight', enabled: false, color: '#00FF00' }]);
     const info = extractLightInfo(entity, null);
     expect(info!.enabled).toBe(false);
   });
 
   it('parses offset string "0, -0.5"', () => {
-    const entity = makeEntity([
-      { type: 'PointLight', offset: '0, -0.5' },
-    ]);
+    const entity = makeEntity([{ type: 'PointLight', offset: '0, -0.5' }]);
     const info = extractLightInfo(entity, null);
     expect(info!.offset.x).toBe(0);
     expect(info!.offset.y).toBe(-0.5);
@@ -158,7 +163,7 @@ describe('computeGradientStops', () => {
 
   it('applies light color to stops', () => {
     const stops = computeGradientStops('#FF0000', 1.0, 6.8);
-    expect(stops[0].color).toContain('255');  // red channel
+    expect(stops[0].color).toContain('255'); // red channel
     expect(stops[0].color).toContain(', 0,'); // green = 0
   });
 });
@@ -170,9 +175,10 @@ describe('PointLight export compatibility', () => {
       { type: 'Transform' },
       { type: 'PointLight', color: '#FF0000', radius: 12, energy: 2.5, enabled: true },
     ]);
-    const pointLight = entity.components.find(
-      c => (c as Record<string, unknown>).type === 'PointLight',
-    ) as Record<string, unknown>;
+    const pointLight = entity.components.find((c) => (c as Record<string, unknown>).type === 'PointLight') as Record<
+      string,
+      unknown
+    >;
 
     // These exact field names are what SS14 expects
     expect(pointLight.type).toBe('PointLight');
@@ -184,14 +190,10 @@ describe('PointLight export compatibility', () => {
 
   it('extractLightInfo round-trips through component override', () => {
     // Start with prototype defaults
-    const registry = makeRegistry([
-      { type: 'PointLight', color: '#FFE4CE', radius: 10, energy: 0.8, softness: 1.0 },
-    ]);
+    const registry = makeRegistry([{ type: 'PointLight', color: '#FFE4CE', radius: 10, energy: 0.8, softness: 1.0 }]);
 
     // Entity with a color override only
-    const entity = makeEntity([
-      { type: 'PointLight', color: '#00FF00' },
-    ]);
+    const entity = makeEntity([{ type: 'PointLight', color: '#00FF00' }]);
 
     const info = extractLightInfo(entity, registry);
     expect(info).not.toBeNull();
@@ -219,14 +221,29 @@ function mockCamera() {
 function makeOccluderRegistry(): IPrototypeRegistry {
   return {
     getEntity: (id: string) => ({
-      id, name: id, description: '', suffix: '',
-      abstract: false, categories: [], placement: {},
+      id,
+      name: id,
+      description: '',
+      suffix: '',
+      abstract: false,
+      categories: [],
+      placement: {},
       components: [{ type: 'Occluder' }, { type: 'Transform' }] as any,
-      spriteInfo: null, sourceCategory: '', raw: { type: 'entity' as const, id },
+      spriteInfo: null,
+      sourceCategory: '',
+      raw: { type: 'entity' as const, id },
     }),
-    getTile: () => null, getAllTiles: () => [], getAllEntities: () => [],
-    getEntitiesByCategory: () => [], getCategories: () => [],
-    getSpriteInfo: () => null, tileCount: 0, entityCount: 0, getDecal: () => null, getAllDecals: () => [], decalCount: 0,
+    getTile: () => null,
+    getAllTiles: () => [],
+    getAllEntities: () => [],
+    getEntitiesByCategory: () => [],
+    getCategories: () => [],
+    getSpriteInfo: () => null,
+    tileCount: 0,
+    entityCount: 0,
+    getDecal: () => null,
+    getAllDecals: () => [],
+    decalCount: 0,
   };
 }
 
@@ -255,12 +272,18 @@ describe('renderLightmap shadow integration', () => {
 
     // Create a light entity and a wall entity
     const lightEntity: ImportedEntity = {
-      uid: 1, prototype: 'PoweredLight', position: { x: 5, y: 5 },
-      rotation: 0, components: [{ type: 'PointLight', color: '#FFFFFF', radius: 5, energy: 1.0 } as any],
+      uid: 1,
+      prototype: 'PoweredLight',
+      position: { x: 5, y: 5 },
+      rotation: 0,
+      components: [{ type: 'PointLight', color: '#FFFFFF', radius: 5, energy: 1.0 } as any],
     };
     const wallEntity: ImportedEntity = {
-      uid: 2, prototype: 'Wall', position: { x: 8, y: 5 },
-      rotation: 0, components: [],
+      uid: 2,
+      prototype: 'Wall',
+      position: { x: 8, y: 5 },
+      rotation: 0,
+      components: [],
     };
 
     const wallCache = buildWallSegmentCache([wallEntity], registry);
@@ -276,8 +299,11 @@ describe('renderLightmap shadow integration', () => {
     const camera = mockCamera();
 
     const lightEntity: ImportedEntity = {
-      uid: 1, prototype: 'PoweredLight', position: { x: 5, y: 5 },
-      rotation: 0, components: [{ type: 'PointLight', color: '#FFFFFF', radius: 5, energy: 1.0 } as any],
+      uid: 1,
+      prototype: 'PoweredLight',
+      position: { x: 5, y: 5 },
+      rotation: 0,
+      components: [{ type: 'PointLight', color: '#FFFFFF', radius: 5, energy: 1.0 } as any],
     };
 
     // Should not throw when called with 6 args (no wallCache)
@@ -295,9 +321,7 @@ function makeLightEntity(uid: number, x: number, y: number, radius = 5): Importe
     prototype: 'TestLight',
     position: { x, y },
     rotation: 0,
-    components: [
-      { type: 'PointLight', radius, color: '#FFFFFF', energy: 1, enabled: true },
-    ],
+    components: [{ type: 'PointLight', radius, color: '#FFFFFF', energy: 1, enabled: true }],
   };
 }
 
@@ -360,10 +384,11 @@ describe('collectVisibleLights', () => {
 
   it('excludes disabled lights', () => {
     const entity: ImportedEntity = {
-      uid: 1, prototype: 'TestLight', position: { x: 25, y: 25 },
-      rotation: 0, components: [
-        { type: 'PointLight', radius: 5, color: '#FFFFFF', energy: 1, enabled: false },
-      ],
+      uid: 1,
+      prototype: 'TestLight',
+      position: { x: 25, y: 25 },
+      rotation: 0,
+      components: [{ type: 'PointLight', radius: 5, color: '#FFFFFF', energy: 1, enabled: false }],
     };
     rebuildSpatialIndex([entity]);
     const result = collectVisibleLights(nullRegistry, camera, canvasW, canvasH);
@@ -372,8 +397,11 @@ describe('collectVisibleLights', () => {
 
   it('excludes entities without PointLight component', () => {
     const entity: ImportedEntity = {
-      uid: 1, prototype: 'Wall', position: { x: 25, y: 25 },
-      rotation: 0, components: [{ type: 'Transform' }],
+      uid: 1,
+      prototype: 'Wall',
+      position: { x: 25, y: 25 },
+      rotation: 0,
+      components: [{ type: 'Transform' }],
     };
     rebuildSpatialIndex([entity]);
     const result = collectVisibleLights(nullRegistry, camera, canvasW, canvasH);

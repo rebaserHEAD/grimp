@@ -34,8 +34,12 @@ export class EraseTool implements ITool {
     if (!this.erasing) return;
     this.erasing = false;
     if (this.tileChanges.length > 0 || this.entityChanges.length > 0 || this.decalChanges.length > 0) {
-      const label = this.decalChanges.length > 0 ? 'Erase decals'
-        : this.entityChanges.length > 0 ? 'Erase entities' : 'Erase tiles';
+      const label =
+        this.decalChanges.length > 0
+          ? 'Erase decals'
+          : this.entityChanges.length > 0
+            ? 'Erase entities'
+            : 'Erase tiles';
       ctx.dispatch({
         type: 'APPLY_COMMAND',
         command: {
@@ -52,12 +56,7 @@ export class EraseTool implements ITool {
     this.visited.clear();
   }
 
-  renderPreview(
-    canvasCtx: CanvasRenderingContext2D,
-    toolCtx: ToolContext,
-    cursorTileX: number,
-    cursorTileY: number,
-  ) {
+  renderPreview(canvasCtx: CanvasRenderingContext2D, toolCtx: ToolContext, cursorTileX: number, cursorTileY: number) {
     const { camera, canvasW, canvasH } = toolCtx;
     const tileScreenSize = camera.tileScreenSize;
     const drawX = camera.worldToScreenX(cursorTileX, canvasW);
@@ -85,9 +84,7 @@ export class EraseTool implements ITool {
 
     // Erase entities if entity palette is selected
     if (paletteItem && paletteItem.type === 'entity') {
-      const removals = removeEntitiesAtPositions(
-        [[worldX, worldY]], state.entities, paletteItem.id,
-      );
+      const removals = removeEntitiesAtPositions([[worldX, worldY]], state.entities, paletteItem.id);
       this.entityChanges.push(...removals);
       return;
     }
@@ -95,9 +92,7 @@ export class EraseTool implements ITool {
     // Erase decals if decal palette is selected
     if (paletteItem && paletteItem.type === 'decal') {
       const activeGrid = state.grids[state.activeGridIndex];
-      const removals = removeDecalsAtPositions(
-        [[worldX, worldY]], activeGrid.decals.decals, paletteItem.id,
-      );
+      const removals = removeDecalsAtPositions([[worldX, worldY]], activeGrid.decals.decals, paletteItem.id);
       this.decalChanges.push(...removals);
       if (removals.length > 0) markSceneDirty();
       return;

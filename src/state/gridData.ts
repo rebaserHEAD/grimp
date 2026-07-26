@@ -42,5 +42,5 @@ export function getActiveGrid(grids: GridData[], activeGridIndex: number): GridD
 }
 
 export function getGridByUid(grids: GridData[], uid: number): GridData | undefined {
-  return grids.find(g => g.gridUid === uid);
+  return grids.find((g) => g.gridUid === uid);
 }

@@ -16,7 +16,7 @@ function syncGrids(state: EditorState): EditorState {
   };
   return {
     ...state,
-    grids: state.grids.map((g, i) => i === state.activeGridIndex ? updated : g),
+    grids: state.grids.map((g, i) => (i === state.activeGridIndex ? updated : g)),
   };
 }
 
@@ -66,7 +66,7 @@ describe('container reducer actions', () => {
       parentUid: 100,
       prototypeId: 'Crowbar',
     });
-    const locker = result.entities.find(e => e.uid === 100)!;
+    const locker = result.entities.find((e) => e.uid === 100)!;
     const cc = locker.components.find((c: any) => c.type === 'ContainerContainer') as any;
     expect(cc.containers.entity_storage.ents).toContain(101);
   });
@@ -83,7 +83,7 @@ describe('container reducer actions', () => {
 
     const undone = editorReducer(added, { type: 'UNDO' });
     expect(undone.containedEntities[100] ?? []).toHaveLength(0);
-    const locker = undone.entities.find(e => e.uid === 100)!;
+    const locker = undone.entities.find((e) => e.uid === 100)!;
     const cc = locker.components.find((c: any) => c.type === 'ContainerContainer') as any;
     expect(cc.containers.entity_storage.ents).not.toContain(101);
   });
@@ -117,7 +117,7 @@ describe('container reducer actions', () => {
       parentUid: 100,
       entityUid: childUid,
     });
-    const locker = result.entities.find(e => e.uid === 100)!;
+    const locker = result.entities.find((e) => e.uid === 100)!;
     const cc = locker.components.find((c: any) => c.type === 'ContainerContainer') as any;
     expect(cc.containers.entity_storage.ents).not.toContain(childUid);
   });
@@ -160,10 +160,10 @@ describe('container reducer actions', () => {
       command: {
         label: 'Delete LockerBotanist',
         tileChanges: [],
-        entityChanges: [{ action: 'remove', entity: state.entities.find(e => e.uid === 100)! }],
+        entityChanges: [{ action: 'remove', entity: state.entities.find((e) => e.uid === 100)! }],
       },
     });
-    expect(deleted.entities.find(e => e.uid === 100)).toBeUndefined();
+    expect(deleted.entities.find((e) => e.uid === 100)).toBeUndefined();
     expect(deleted.containedEntities[100]).toBeUndefined();
   });
 
@@ -180,13 +180,13 @@ describe('container reducer actions', () => {
       command: {
         label: 'Delete LockerBotanist',
         tileChanges: [],
-        entityChanges: [{ action: 'remove', entity: state.entities.find(e => e.uid === 100)! }],
+        entityChanges: [{ action: 'remove', entity: state.entities.find((e) => e.uid === 100)! }],
       },
     });
     expect(deleted.containedEntities[100]).toBeUndefined();
 
     const undone = editorReducer(deleted, { type: 'UNDO' });
-    expect(undone.entities.find(e => e.uid === 100)).toBeDefined();
+    expect(undone.entities.find((e) => e.uid === 100)).toBeDefined();
     expect(undone.containedEntities[100]).toHaveLength(1);
   });
 
@@ -200,10 +200,18 @@ describe('container reducer actions', () => {
         grid: { width: 0, height: 0, offsetX: 0, offsetY: 0, cells: [] },
         entities: [makeEntity(100, 'LockerBotanist')],
         containedEntities: {
-          100: [{
-            uid: 101, prototype: 'Crowbar', position: { x: 0, y: 0 }, rotation: 0,
-            components: [{ type: 'Transform', parent: 100 }, { type: 'Physics', canCollide: false }],
-          }],
+          100: [
+            {
+              uid: 101,
+              prototype: 'Crowbar',
+              position: { x: 0, y: 0 },
+              rotation: 0,
+              components: [
+                { type: 'Transform', parent: 100 },
+                { type: 'Physics', canCollide: false },
+              ],
+            },
+          ],
         },
         gridUid: 1,
         mapUid: 0,
@@ -228,8 +236,10 @@ describe('container reducer actions', () => {
   it('ADD_CONTAINED_ENTITY creates ContainerContainer if missing', () => {
     const state = createInitialState();
     const entity: ImportedEntity = {
-      uid: 100, prototype: 'LockerBotanist',
-      position: { x: 5, y: 3 }, rotation: 0,
+      uid: 100,
+      prototype: 'LockerBotanist',
+      position: { x: 5, y: 3 },
+      rotation: 0,
       components: [{ type: 'Transform', pos: '5.5,3.5', parent: 1 }],
     };
     const withEntity: EditorState = syncGrids({
@@ -243,7 +253,7 @@ describe('container reducer actions', () => {
       parentUid: 100,
       prototypeId: 'Crowbar',
     });
-    const locker = result.entities.find(e => e.uid === 100)!;
+    const locker = result.entities.find((e) => e.uid === 100)!;
     const cc = locker.components.find((c: any) => c.type === 'ContainerContainer') as any;
     expect(cc).toBeDefined();
     expect(cc.containers.entity_storage.ents).toContain(101);
@@ -262,7 +272,7 @@ describe('container reducer actions', () => {
     const redone = editorReducer(undone, { type: 'REDO' });
     expect(redone.containedEntities[100]).toHaveLength(1);
     expect(redone.containedEntities[100][0].prototype).toBe('Crowbar');
-    const locker = redone.entities.find(e => e.uid === 100)!;
+    const locker = redone.entities.find((e) => e.uid === 100)!;
     const cc = locker.components.find((c: any) => c.type === 'ContainerContainer') as any;
     expect(cc.containers.entity_storage.ents).toContain(101);
   });

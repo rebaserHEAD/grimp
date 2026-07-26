@@ -8,9 +8,7 @@ describe('HttpResourceProvider', () => {
 
   it('listFiles tries dev endpoint first', async () => {
     const files = ['/Prototypes/Tiles/floors.yml'];
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response(JSON.stringify(files), { status: 200 }),
-    );
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify(files), { status: 200 }));
     const provider = new HttpResourceProvider('');
     const result = await provider.listFiles('Prototypes/Tiles', '.yml');
     expect(result).toEqual(files);
@@ -28,9 +26,7 @@ describe('HttpResourceProvider', () => {
   });
 
   it('readText fetches from /resources path', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response('tile content', { status: 200 }),
-    );
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response('tile content', { status: 200 }));
     const provider = new HttpResourceProvider('');
     const text = await provider.readText('/Prototypes/Tiles/floors.yml');
     expect(text).toBe('tile content');
@@ -74,17 +70,13 @@ describe('HttpResourceProvider', () => {
   });
 
   it('readText throws on non-OK response', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response('Not Found', { status: 404 }),
-    );
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response('Not Found', { status: 404 }));
     const provider = new HttpResourceProvider('');
     await expect(provider.readText('/missing/file.yml')).rejects.toThrow('Failed to read');
   });
 
   it('respects baseUrl prefix', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response('content', { status: 200 }),
-    );
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response('content', { status: 200 }));
     const provider = new HttpResourceProvider('https://cdn.example.com');
     await provider.readText('/Prototypes/Tiles/floors.yml');
     expect(fetch).toHaveBeenCalledWith('https://cdn.example.com/resources/Prototypes/Tiles/floors.yml');
@@ -105,16 +97,11 @@ describe('FileSystemResourceProvider', () => {
     ]);
     const provider = new FileSystemResourceProvider(files, 'TestFork');
     const result = await provider.listFiles('Prototypes/Tiles', '.yml');
-    expect(result).toEqual([
-      '/Prototypes/Tiles/floors.yml',
-      '/Prototypes/Tiles/walls.yml',
-    ]);
+    expect(result).toEqual(['/Prototypes/Tiles/floors.yml', '/Prototypes/Tiles/walls.yml']);
   });
 
   it('readText reads file content', async () => {
-    const files = new Map<string, File>([
-      ['Prototypes/Tiles/floors.yml', makeFile('tile: FloorSteel', 'floors.yml')],
-    ]);
+    const files = new Map<string, File>([['Prototypes/Tiles/floors.yml', makeFile('tile: FloorSteel', 'floors.yml')]]);
     const provider = new FileSystemResourceProvider(files, 'TestFork');
     const text = await provider.readText('/Prototypes/Tiles/floors.yml');
     expect(text).toBe('tile: FloorSteel');
@@ -166,9 +153,7 @@ describe('FileSystemResourceProvider', () => {
   });
 
   it('listFiles returns empty for non-matching directory', async () => {
-    const files = new Map<string, File>([
-      ['Prototypes/Entities/mobs.yml', makeFile('', 'mobs.yml')],
-    ]);
+    const files = new Map<string, File>([['Prototypes/Entities/mobs.yml', makeFile('', 'mobs.yml')]]);
     const provider = new FileSystemResourceProvider(files, 'TestFork');
     const result = await provider.listFiles('Prototypes/Tiles', '.yml');
     expect(result).toEqual([]);

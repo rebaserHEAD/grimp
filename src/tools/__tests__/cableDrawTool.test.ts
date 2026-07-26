@@ -9,7 +9,7 @@ function makeToolContext(entities: ImportedEntity[] = []): { ctx: ToolContext; d
   const state = {
     ...createInitialState(),
     entities: [...entities],
-    nextEntityId: entities.length > 0 ? Math.max(...entities.map(e => e.uid)) + 1 : 1,
+    nextEntityId: entities.length > 0 ? Math.max(...entities.map((e) => e.uid)) + 1 : 1,
   };
   const ctx: ToolContext = {
     state,
@@ -22,7 +22,7 @@ function makeToolContext(entities: ImportedEntity[] = []): { ctx: ToolContext; d
             if (ec.entity.uid >= state.nextEntityId) state.nextEntityId = ec.entity.uid + 1;
           }
           if (ec.action === 'remove') {
-            const idx = state.entities.findIndex(e => e.uid === ec.entity.uid);
+            const idx = state.entities.findIndex((e) => e.uid === ec.entity.uid);
             if (idx >= 0) state.entities.splice(idx, 1);
           }
         }
@@ -58,8 +58,11 @@ describe('CableDrawTool', () => {
 
   it('does not duplicate cables on existing positions', () => {
     const existing: ImportedEntity = {
-      uid: 1, prototype: 'CableHV',
-      position: { x: 5.5, y: 5.5 }, rotation: 0, components: [],
+      uid: 1,
+      prototype: 'CableHV',
+      position: { x: 5.5, y: 5.5 },
+      rotation: 0,
+      components: [],
     };
     const tool = new CableDrawTool();
     tool.cableType = 'CableHV';
@@ -77,8 +80,11 @@ describe('CableDrawTool', () => {
 
   it('right-click erases cable at tile', () => {
     const existing: ImportedEntity = {
-      uid: 1, prototype: 'CableHV',
-      position: { x: 5.5, y: 5.5 }, rotation: 0, components: [],
+      uid: 1,
+      prototype: 'CableHV',
+      position: { x: 5.5, y: 5.5 },
+      rotation: 0,
+      components: [],
     };
     const tool = new CableDrawTool();
     tool.cableType = 'CableHV';

@@ -11,9 +11,7 @@ interface Props {
   searchInputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
-export const EntitySearchBar: React.FC<Props> = ({
-  entities, registry, onNavigate, searchInputRef,
-}) => {
+export const EntitySearchBar: React.FC<Props> = ({ entities, registry, onNavigate, searchInputRef }) => {
   const { query, setQuery, results, selectedIndex, setSelectedIndex } = useEntitySearch(entities, registry);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -40,52 +38,61 @@ export const EntitySearchBar: React.FC<Props> = ({
     item?.scrollIntoView({ block: 'nearest' });
   }, [selectedIndex, showDropdown]);
 
-  const handleNavigate = useCallback((entity: ImportedEntity) => {
-    onNavigate(entity);
-    setDropdownOpen(false);
-  }, [onNavigate]);
+  const handleNavigate = useCallback(
+    (entity: ImportedEntity) => {
+      onNavigate(entity);
+      setDropdownOpen(false);
+    },
+    [onNavigate],
+  );
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (!showDropdown && query.trim().length > 0 && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-      setDropdownOpen(true);
-      e.preventDefault();
-      return;
-    }
-
-    if (!showDropdown) {
-      if (e.key === 'Escape') {
-        setQuery('');
-        (e.target as HTMLInputElement).blur();
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (!showDropdown && query.trim().length > 0 && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+        setDropdownOpen(true);
+        e.preventDefault();
+        return;
       }
-      return;
-    }
 
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex((selectedIndex + 1) % results.length);
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex((selectedIndex - 1 + results.length) % results.length);
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (results[selectedIndex]) {
-          handleNavigate(results[selectedIndex].entity);
+      if (!showDropdown) {
+        if (e.key === 'Escape') {
+          setQuery('');
+          (e.target as HTMLInputElement).blur();
         }
-        break;
-      case 'Escape':
-        e.preventDefault();
-        setDropdownOpen(false);
-        break;
-    }
-  }, [showDropdown, query, results, selectedIndex, setSelectedIndex, setQuery, handleNavigate]);
+        return;
+      }
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
-    setDropdownOpen(true);
-  }, [setQuery]);
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          setSelectedIndex((selectedIndex + 1) % results.length);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setSelectedIndex((selectedIndex - 1 + results.length) % results.length);
+          break;
+        case 'Enter':
+          e.preventDefault();
+          if (results[selectedIndex]) {
+            handleNavigate(results[selectedIndex].entity);
+          }
+          break;
+        case 'Escape':
+          e.preventDefault();
+          setDropdownOpen(false);
+          break;
+      }
+    },
+    [showDropdown, query, results, selectedIndex, setSelectedIndex, setQuery, handleNavigate],
+  );
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setQuery(e.target.value);
+      setDropdownOpen(true);
+    },
+    [setQuery],
+  );
 
   const handleClear = useCallback(() => {
     setQuery('');
@@ -102,7 +109,9 @@ export const EntitySearchBar: React.FC<Props> = ({
           value={query}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          onFocus={() => { if (query.trim()) setDropdownOpen(true); }}
+          onFocus={() => {
+            if (query.trim()) setDropdownOpen(true);
+          }}
           placeholder="Search entities..."
           className="w-[200px] px-2 py-1 bg-transparent border-none text-primary text-xs outline-none placeholder:text-muted"
         />
@@ -136,14 +145,10 @@ export const EntitySearchBar: React.FC<Props> = ({
                 onClick={() => handleNavigate(result.entity)}
                 onMouseEnter={() => setSelectedIndex(i)}
                 className={`flex items-center gap-2 w-full px-3 py-1.5 text-left border-none cursor-pointer text-xs ${
-                  i === selectedIndex
-                    ? 'bg-active text-accent'
-                    : 'bg-transparent text-primary hover:bg-hover'
+                  i === selectedIndex ? 'bg-active text-accent' : 'bg-transparent text-primary hover:bg-hover'
                 }`}
               >
-                {registry && (
-                  <EntityThumbnail prototypeId={result.prototypeId} registry={registry} />
-                )}
+                {registry && <EntityThumbnail prototypeId={result.prototypeId} registry={registry} />}
                 <div className="flex-1 min-w-0">
                   <span className="font-medium">{result.displayName}</span>
                   {result.displayName !== result.prototypeId && (
@@ -153,9 +158,7 @@ export const EntitySearchBar: React.FC<Props> = ({
                 <span className="text-muted text-[10px] whitespace-nowrap">
                   ({Math.floor(result.entity.position.x)}, {Math.floor(result.entity.position.y)})
                 </span>
-                <span className="text-muted text-[10px]">
-                  #{result.entity.uid}
-                </span>
+                <span className="text-muted text-[10px]">#{result.entity.uid}</span>
               </button>
             ))
           )}

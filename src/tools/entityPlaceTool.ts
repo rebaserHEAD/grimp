@@ -7,9 +7,9 @@ import { getEntitySprite } from '../rendering/entityRenderer';
 function rotToDir(rotation: number): CardinalDirection {
   const TWO_PI = 2 * Math.PI;
   const norm = ((rotation % TWO_PI) + TWO_PI) % TWO_PI;
-  if (norm < Math.PI / 4 || norm >= 7 * Math.PI / 4) return 'south';
-  if (norm < 3 * Math.PI / 4) return 'east';
-  if (norm < 5 * Math.PI / 4) return 'north';
+  if (norm < Math.PI / 4 || norm >= (7 * Math.PI) / 4) return 'south';
+  if (norm < (3 * Math.PI) / 4) return 'east';
+  if (norm < (5 * Math.PI) / 4) return 'north';
   return 'west';
 }
 
@@ -33,9 +33,7 @@ export class EntityPlaceTool implements ITool {
     const uid = state.nextEntityId;
 
     // Free placement: use exact fractional coords; grid-snap: center of tile
-    const pos = shiftHeld
-      ? { x: tileX, y: tileY }
-      : { x: Math.floor(tileX) + 0.5, y: Math.floor(tileY) + 0.5 };
+    const pos = shiftHeld ? { x: tileX, y: tileY } : { x: Math.floor(tileX) + 0.5, y: Math.floor(tileY) + 0.5 };
     const rot = this.currentRotation;
     const entity: ImportedEntity = {
       uid,
@@ -59,12 +57,7 @@ export class EntityPlaceTool implements ITool {
 
   onMouseUp() {}
 
-  renderPreview(
-    canvasCtx: CanvasRenderingContext2D,
-    toolCtx: ToolContext,
-    cursorTileX: number,
-    cursorTileY: number,
-  ) {
+  renderPreview(canvasCtx: CanvasRenderingContext2D, toolCtx: ToolContext, cursorTileX: number, cursorTileY: number) {
     const { state, camera, canvasW, canvasH, shiftHeld } = toolCtx;
     if (!state.selectedPaletteItem || state.selectedPaletteItem.type !== 'entity') return;
 
@@ -96,8 +89,14 @@ export class EntityPlaceTool implements ITool {
         }
         canvasCtx.drawImage(
           sprite.image,
-          sprite.sx, sprite.sy, sprite.sw, sprite.sh,
-          drawX, drawY, tileScreenSize, tileScreenSize,
+          sprite.sx,
+          sprite.sy,
+          sprite.sw,
+          sprite.sh,
+          drawX,
+          drawY,
+          tileScreenSize,
+          tileScreenSize,
         );
         canvasCtx.restore();
         drewSprite = true;

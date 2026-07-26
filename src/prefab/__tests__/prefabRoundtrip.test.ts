@@ -21,7 +21,7 @@ function syncGrids(state: EditorState): EditorState {
   };
   return {
     ...state,
-    grids: state.grids.map((g, i) => i === state.activeGridIndex ? updated : g),
+    grids: state.grids.map((g, i) => (i === state.activeGridIndex ? updated : g)),
   };
 }
 
@@ -64,7 +64,13 @@ describe('prefab roundtrip: serialize → JSON → parse → place', () => {
     ];
 
     const rawLines100 = ['  - type: Transform', '    parent: 1', '    pos: 2.5,3.5'];
-    const rawLines101 = ['  - type: Transform', '    parent: 1', '    pos: 3.5,3.5', '  - type: AtmosPipeColor', '    color: "#0055CCFF"'];
+    const rawLines101 = [
+      '  - type: Transform',
+      '    parent: 1',
+      '    pos: 3.5,3.5',
+      '  - type: AtmosPipeColor',
+      '    color: "#0055CCFF"',
+    ];
     const entityRawComponents: Record<number, string[]> = {
       100: rawLines100,
       101: rawLines101,
@@ -73,7 +79,10 @@ describe('prefab roundtrip: serialize → JSON → parse → place', () => {
     // 2. Serialize
     const prefab = serializePrefab({
       name: 'TestRoundtrip',
-      minX: 2, minY: 3, maxX: 3, maxY: 3,
+      minX: 2,
+      minY: 3,
+      maxX: 3,
+      maxY: 3,
       grid,
       entities,
       entityRawComponents,
@@ -95,7 +104,7 @@ describe('prefab roundtrip: serialize → JSON → parse → place', () => {
     });
 
     // 5. Verify entities have correct world positions
-    const adds = result.command.entityChanges.filter(ec => ec.action === 'add');
+    const adds = result.command.entityChanges.filter((ec) => ec.action === 'add');
     expect(adds).toHaveLength(2);
 
     expect(adds[0].entity.prototype).toBe('APCBasic');
@@ -127,7 +136,10 @@ describe('prefab roundtrip: serialize → JSON → parse → place', () => {
 
     const prefab = serializePrefab({
       name: 'TileTrip',
-      minX: 1, minY: 1, maxX: 2, maxY: 2,
+      minX: 1,
+      minY: 1,
+      maxX: 2,
+      maxY: 2,
       grid,
       entities: [],
       entityRawComponents: {},
@@ -149,9 +161,7 @@ describe('prefab roundtrip: serialize → JSON → parse → place', () => {
     // Only non-Space tiles produce tile changes
     expect(result.command.tileChanges).toHaveLength(3);
 
-    const tileMap = new Map(
-      result.command.tileChanges.map(tc => [`${tc.x},${tc.y}`, tc.after.tileId]),
-    );
+    const tileMap = new Map(result.command.tileChanges.map((tc) => [`${tc.x},${tc.y}`, tc.after.tileId]));
     expect(tileMap.get('5,5')).toBe('FloorSteel');
     expect(tileMap.get('6,5')).toBe('Plating');
     expect(tileMap.get('5,6')).toBe('FloorWood');
@@ -181,9 +191,7 @@ describe('prefab roundtrip: serialize → place → undo', () => {
         { dx: 0, dy: 0, tileId: 'FloorSteel' },
         { dx: 1, dy: 0, tileId: 'FloorSteel' },
       ],
-      entities: [
-        { dx: 0, dy: 0, prototype: 'APCBasic', rotation: 0, components: [{ type: 'Transform' }] },
-      ],
+      entities: [{ dx: 0, dy: 0, prototype: 'APCBasic', rotation: 0, components: [{ type: 'Transform' }] }],
       deviceLinks: [],
     };
 
@@ -226,9 +234,7 @@ describe('prefab roundtrip: serialize → place → undo', () => {
       width: 1,
       height: 1,
       tiles: [{ dx: 0, dy: 0, tileId: 'FloorSteel' }],
-      entities: [
-        { dx: 0, dy: 0, prototype: 'Table', rotation: 0, components: [] },
-      ],
+      entities: [{ dx: 0, dy: 0, prototype: 'Table', rotation: 0, components: [] }],
       deviceLinks: [],
     };
 
@@ -243,8 +249,8 @@ describe('prefab roundtrip: serialize → place → undo', () => {
 
     // Apply
     state = editorReducer(state, { type: 'APPLY_COMMAND', command: result.command });
-    expect(state.entities.find(e => e.uid === 50)).toBeUndefined();
-    expect(state.entities.find(e => e.prototype === 'Table')).toBeDefined();
+    expect(state.entities.find((e) => e.uid === 50)).toBeUndefined();
+    expect(state.entities.find((e) => e.prototype === 'Table')).toBeDefined();
 
     // Undo, existing entity should be restored
     state = editorReducer(state, { type: 'UNDO' });
@@ -273,7 +279,10 @@ describe('prefab roundtrip: device links survive', () => {
     // Serialize
     const prefab = serializePrefab({
       name: 'LinkRoundtrip',
-      minX: 2, minY: 2, maxX: 3, maxY: 2,
+      minX: 2,
+      minY: 2,
+      maxX: 3,
+      maxY: 2,
       grid,
       entities: [source, target],
       entityRawComponents: {},
@@ -282,7 +291,10 @@ describe('prefab roundtrip: device links survive', () => {
     // Verify serialized device links
     expect(prefab.deviceLinks).toHaveLength(1);
     expect(prefab.deviceLinks[0]).toEqual({
-      sourceIdx: 0, targetIdx: 1, port: 'Pressed', sink: 'Toggle',
+      sourceIdx: 0,
+      targetIdx: 1,
+      port: 'Pressed',
+      sink: 'Toggle',
     });
 
     // JSON roundtrip
@@ -310,7 +322,7 @@ describe('prefab roundtrip: device links survive', () => {
     });
 
     // Verify the entities themselves got the right UIDs
-    const adds = result.command.entityChanges.filter(ec => ec.action === 'add');
+    const adds = result.command.entityChanges.filter((ec) => ec.action === 'add');
     expect(adds[0].entity.uid).toBe(300);
     expect(adds[0].entity.prototype).toBe('SignalButton');
     expect(adds[1].entity.uid).toBe(301);
@@ -324,7 +336,10 @@ describe('prefab roundtrip: device links survive', () => {
       {
         type: 'DeviceLinkSource',
         linkedPorts: {
-          '21': [['Pressed', 'Toggle'], ['Status', 'Open']],
+          '21': [
+            ['Pressed', 'Toggle'],
+            ['Status', 'Open'],
+          ],
           '22': [['Pressed', 'Toggle']],
         },
       },
@@ -334,7 +349,10 @@ describe('prefab roundtrip: device links survive', () => {
 
     const prefab = serializePrefab({
       name: 'MultiLink',
-      minX: 1, minY: 1, maxX: 2, maxY: 2,
+      minX: 1,
+      minY: 1,
+      maxX: 2,
+      maxY: 2,
       grid,
       entities: [source, target1, target2],
       entityRawComponents: {},
@@ -354,13 +372,22 @@ describe('prefab roundtrip: device links survive', () => {
 
     expect(result.resolvedDeviceLinks).toHaveLength(3);
     expect(result.resolvedDeviceLinks[0]).toEqual({
-      sourceUid: 1000, targetUid: 1001, port: 'Pressed', sink: 'Toggle',
+      sourceUid: 1000,
+      targetUid: 1001,
+      port: 'Pressed',
+      sink: 'Toggle',
     });
     expect(result.resolvedDeviceLinks[1]).toEqual({
-      sourceUid: 1000, targetUid: 1001, port: 'Status', sink: 'Open',
+      sourceUid: 1000,
+      targetUid: 1001,
+      port: 'Status',
+      sink: 'Open',
     });
     expect(result.resolvedDeviceLinks[2]).toEqual({
-      sourceUid: 1000, targetUid: 1002, port: 'Pressed', sink: 'Toggle',
+      sourceUid: 1000,
+      targetUid: 1002,
+      port: 'Pressed',
+      sink: 'Toggle',
     });
   });
 });
@@ -446,7 +473,7 @@ describe('prefab roundtrip: edge cases', () => {
     });
 
     expect(result.command.tileChanges).toHaveLength(0);
-    const adds = result.command.entityChanges.filter(ec => ec.action === 'add');
+    const adds = result.command.entityChanges.filter((ec) => ec.action === 'add');
     expect(adds).toHaveLength(2);
     expect(adds[0].entity.position).toEqual({ x: 5.5, y: 5.5 });
     expect(adds[1].entity.position).toEqual({ x: 6.5, y: 5.5 });
@@ -456,19 +483,25 @@ describe('prefab roundtrip: edge cases', () => {
     const grid = makeGrid(2, 2);
     setCell(grid, 0, 0, { tileId: 'FloorSteel' });
 
-    const entities: ImportedEntity[] = [{
-      uid: 1,
-      prototype: 'ClosetBase',
-      position: { x: 0.5, y: 0.5 },
-      rotation: 0,
-      components: [{ type: 'Transform', pos: '0.5,0.5', parent: 1 }],
-      spriteStateOverride: 'generic_open',
-    }];
+    const entities: ImportedEntity[] = [
+      {
+        uid: 1,
+        prototype: 'ClosetBase',
+        position: { x: 0.5, y: 0.5 },
+        rotation: 0,
+        components: [{ type: 'Transform', pos: '0.5,0.5', parent: 1 }],
+        spriteStateOverride: 'generic_open',
+      },
+    ];
 
     const prefab = serializePrefab({
       name: 'state-test',
-      minX: 0, minY: 0, maxX: 1, maxY: 1,
-      grid, entities,
+      minX: 0,
+      minY: 0,
+      maxX: 1,
+      maxY: 1,
+      grid,
+      entities,
       entityRawComponents: {},
     });
 
@@ -482,13 +515,14 @@ describe('prefab roundtrip: edge cases', () => {
     // Place roundtrip
     const result = placePrefab({
       prefab: restored,
-      placeX: 5, placeY: 5,
+      placeX: 5,
+      placeY: 5,
       grid: makeGrid(10, 10),
       entities: [],
       nextEntityId: 100,
     });
 
-    const placed = result.command.entityChanges.filter(ec => ec.action === 'add');
+    const placed = result.command.entityChanges.filter((ec) => ec.action === 'add');
     expect(placed[0].entity.spriteStateOverride).toBe('generic_open');
   });
 });

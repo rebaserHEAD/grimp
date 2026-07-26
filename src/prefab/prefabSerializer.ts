@@ -47,7 +47,7 @@ export function serializePrefab(input: SerializePrefabInput): PrefabData {
   }
 
   // 4. For each entity, store relative dx/dy, copy components, copy rawYamlLines
-  const prefabEntities: PrefabEntity[] = insideEntities.map(ent => {
+  const prefabEntities: PrefabEntity[] = insideEntities.map((ent) => {
     const tileX = Math.floor(ent.position.x);
     const tileY = Math.floor(ent.position.y);
     const pe: PrefabEntity = {
@@ -55,7 +55,7 @@ export function serializePrefab(input: SerializePrefabInput): PrefabData {
       dy: tileY - minY,
       prototype: ent.prototype,
       rotation: ent.rotation,
-      components: ent.components.map(c => ({ ...c })),  // Clone to avoid shared references
+      components: ent.components.map((c) => ({ ...c })), // Clone to avoid shared references
     };
     if (ent.spriteStateOverride) {
       pe.spriteStateOverride = ent.spriteStateOverride;

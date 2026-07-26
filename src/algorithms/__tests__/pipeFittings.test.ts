@@ -13,7 +13,7 @@ describe('fitPipes', () => {
   it('vertical straight (N-S neighbors)', () => {
     const tiles = new Set(['5,4', '5,5', '5,6']);
     const result = fitPipes(tiles);
-    const mid = result.find(p => p.x === 5 && p.y === 5)!;
+    const mid = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(mid.prototype).toBe('GasPipeStraight');
     expect(mid.rotation).toBe(0); // vertical
   });
@@ -21,7 +21,7 @@ describe('fitPipes', () => {
   it('horizontal straight (E-W neighbors)', () => {
     const tiles = new Set(['4,5', '5,5', '6,5']);
     const result = fitPipes(tiles);
-    const mid = result.find(p => p.x === 5 && p.y === 5)!;
+    const mid = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(mid.prototype).toBe('GasPipeStraight');
     expect(mid.rotation).toBeCloseTo(Math.PI / 2); // horizontal
   });
@@ -31,7 +31,7 @@ describe('fitPipes', () => {
   it('bend S+W (default orientation)', () => {
     const tiles = new Set(['5,5', '5,4', '4,5']);
     const result = fitPipes(tiles);
-    const corner = result.find(p => p.x === 5 && p.y === 5)!;
+    const corner = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(corner.prototype).toBe('GasPipeBend');
     expect(corner.rotation).toBe(0);
   });
@@ -39,7 +39,7 @@ describe('fitPipes', () => {
   it('bend E+S', () => {
     const tiles = new Set(['5,5', '6,5', '5,4']);
     const result = fitPipes(tiles);
-    const corner = result.find(p => p.x === 5 && p.y === 5)!;
+    const corner = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(corner.prototype).toBe('GasPipeBend');
     expect(corner.rotation).toBeCloseTo(Math.PI / 2);
   });
@@ -47,7 +47,7 @@ describe('fitPipes', () => {
   it('bend N+E', () => {
     const tiles = new Set(['5,5', '5,6', '6,5']);
     const result = fitPipes(tiles);
-    const corner = result.find(p => p.x === 5 && p.y === 5)!;
+    const corner = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(corner.prototype).toBe('GasPipeBend');
     expect(corner.rotation).toBeCloseTo(Math.PI);
   });
@@ -55,7 +55,7 @@ describe('fitPipes', () => {
   it('bend W+N', () => {
     const tiles = new Set(['5,5', '4,5', '5,6']);
     const result = fitPipes(tiles);
-    const corner = result.find(p => p.x === 5 && p.y === 5)!;
+    const corner = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(corner.prototype).toBe('GasPipeBend');
     expect(corner.rotation).toBeCloseTo(-Math.PI / 2);
   });
@@ -66,7 +66,7 @@ describe('fitPipes', () => {
     // S, E, W present
     const tiles = new Set(['5,5', '5,4', '6,5', '4,5']);
     const result = fitPipes(tiles);
-    const center = result.find(p => p.x === 5 && p.y === 5)!;
+    const center = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(center.prototype).toBe('GasPipeTJunction');
     expect(center.rotation).toBe(0);
   });
@@ -75,7 +75,7 @@ describe('fitPipes', () => {
     // N, S, E present
     const tiles = new Set(['5,5', '5,6', '5,4', '6,5']);
     const result = fitPipes(tiles);
-    const center = result.find(p => p.x === 5 && p.y === 5)!;
+    const center = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(center.prototype).toBe('GasPipeTJunction');
     expect(center.rotation).toBeCloseTo(Math.PI / 2);
   });
@@ -84,7 +84,7 @@ describe('fitPipes', () => {
     // N, E, W present
     const tiles = new Set(['5,5', '5,6', '6,5', '4,5']);
     const result = fitPipes(tiles);
-    const center = result.find(p => p.x === 5 && p.y === 5)!;
+    const center = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(center.prototype).toBe('GasPipeTJunction');
     expect(center.rotation).toBeCloseTo(Math.PI);
   });
@@ -93,7 +93,7 @@ describe('fitPipes', () => {
     // N, S, W present
     const tiles = new Set(['5,5', '5,6', '5,4', '4,5']);
     const result = fitPipes(tiles);
-    const center = result.find(p => p.x === 5 && p.y === 5)!;
+    const center = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(center.prototype).toBe('GasPipeTJunction');
     expect(center.rotation).toBeCloseTo(-Math.PI / 2);
   });
@@ -101,7 +101,7 @@ describe('fitPipes', () => {
   it('fourway junction', () => {
     const tiles = new Set(['5,5', '5,6', '5,4', '6,5', '4,5']);
     const result = fitPipes(tiles);
-    const center = result.find(p => p.x === 5 && p.y === 5)!;
+    const center = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(center.prototype).toBe('GasPipeFourway');
     expect(center.rotation).toBe(0);
   });
@@ -109,7 +109,7 @@ describe('fitPipes', () => {
   it('single connection facing east produces horizontal straight', () => {
     const tiles = new Set(['5,5', '6,5']);
     const result = fitPipes(tiles);
-    const left = result.find(p => p.x === 5 && p.y === 5)!;
+    const left = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(left.prototype).toBe('GasPipeStraight');
     expect(left.rotation).toBeCloseTo(Math.PI / 2); // horizontal
   });
@@ -117,7 +117,7 @@ describe('fitPipes', () => {
   it('single connection facing north produces vertical straight', () => {
     const tiles = new Set(['5,5', '5,6']);
     const result = fitPipes(tiles);
-    const bottom = result.find(p => p.x === 5 && p.y === 5)!;
+    const bottom = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(bottom.prototype).toBe('GasPipeStraight');
     expect(bottom.rotation).toBe(0); // vertical
   });
@@ -131,7 +131,7 @@ describe('fitPipes', () => {
   it('disposal family uses disposal prototypes', () => {
     const tiles = new Set(['5,5', '5,6', '5,4']);
     const result = fitPipes(tiles, 'disposal');
-    const mid = result.find(p => p.x === 5 && p.y === 5)!;
+    const mid = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(mid.prototype).toBe('DisposalPipe');
     expect(mid.color).toBeUndefined();
   });
@@ -140,7 +140,7 @@ describe('fitPipes', () => {
   it('disposal bend S+W (default orientation, same as gas)', () => {
     const tiles = new Set(['5,5', '5,4', '4,5']);
     const result = fitPipes(tiles, 'disposal');
-    const corner = result.find(p => p.x === 5 && p.y === 5)!;
+    const corner = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(corner.prototype).toBe('DisposalBend');
     expect(corner.rotation).toBe(0);
   });
@@ -148,7 +148,7 @@ describe('fitPipes', () => {
   it('disposal bend E+S', () => {
     const tiles = new Set(['5,5', '6,5', '5,4']);
     const result = fitPipes(tiles, 'disposal');
-    const corner = result.find(p => p.x === 5 && p.y === 5)!;
+    const corner = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(corner.prototype).toBe('DisposalBend');
     expect(corner.rotation).toBeCloseTo(Math.PI / 2);
   });
@@ -156,7 +156,7 @@ describe('fitPipes', () => {
   it('disposal bend N+E', () => {
     const tiles = new Set(['5,5', '5,6', '6,5']);
     const result = fitPipes(tiles, 'disposal');
-    const corner = result.find(p => p.x === 5 && p.y === 5)!;
+    const corner = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(corner.prototype).toBe('DisposalBend');
     expect(corner.rotation).toBeCloseTo(Math.PI);
   });
@@ -164,7 +164,7 @@ describe('fitPipes', () => {
   it('disposal bend W+N', () => {
     const tiles = new Set(['5,5', '4,5', '5,6']);
     const result = fitPipes(tiles, 'disposal');
-    const corner = result.find(p => p.x === 5 && p.y === 5)!;
+    const corner = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(corner.prototype).toBe('DisposalBend');
     expect(corner.rotation).toBeCloseTo(-Math.PI / 2);
   });
@@ -173,8 +173,8 @@ describe('fitPipes', () => {
     const tiles = new Set(['5,5', '5,4', '4,5']);
     const gasResult = fitPipes(tiles, 'gas');
     const disposalResult = fitPipes(tiles, 'disposal');
-    const gasBend = gasResult.find(p => p.x === 5 && p.y === 5)!;
-    const disposalBend = disposalResult.find(p => p.x === 5 && p.y === 5)!;
+    const gasBend = gasResult.find((p) => p.x === 5 && p.y === 5)!;
+    const disposalBend = disposalResult.find((p) => p.x === 5 && p.y === 5)!;
     expect(gasBend.rotation).toBe(disposalBend.rotation);
   });
 
@@ -183,14 +183,14 @@ describe('fitPipes', () => {
     const tiles = new Set(['5,3', '5,4', '5,5', '6,5', '7,5']);
     const result = fitPipes(tiles);
 
-    const corner = result.find(p => p.x === 5 && p.y === 5)!;
+    const corner = result.find((p) => p.x === 5 && p.y === 5)!;
     expect(corner.prototype).toBe('GasPipeBend');
 
-    const vertMid = result.find(p => p.x === 5 && p.y === 4)!;
+    const vertMid = result.find((p) => p.x === 5 && p.y === 4)!;
     expect(vertMid.prototype).toBe('GasPipeStraight');
     expect(vertMid.rotation).toBe(0); // vertical
 
-    const horizMid = result.find(p => p.x === 6 && p.y === 5)!;
+    const horizMid = result.find((p) => p.x === 6 && p.y === 5)!;
     expect(horizMid.prototype).toBe('GasPipeStraight');
     expect(horizMid.rotation).toBeCloseTo(Math.PI / 2); // horizontal
   });
@@ -213,14 +213,14 @@ describe('computePipeChanges', () => {
     expect(removedUids).toContain(101);
 
     // New tile (6,5) should be in fitted results
-    const newPipe = fittedPipes.find(p => p.x === 6 && p.y === 5);
+    const newPipe = fittedPipes.find((p) => p.x === 6 && p.y === 5);
     expect(newPipe).toBeDefined();
 
     // (5,5) should be refitted as a bend (has N at 5,6... wait, y+1=N, y-1=S)
     // existing: (5,4) is y-1 = S neighbor of (5,5)
     // new: (6,5) is x+1 = E neighbor of (5,5)
     // So (5,5) has S+E → bend
-    const refitted = fittedPipes.find(p => p.x === 5 && p.y === 5);
+    const refitted = fittedPipes.find((p) => p.x === 5 && p.y === 5);
     expect(refitted).toBeDefined();
     expect(refitted!.prototype).toBe('GasPipeBend');
   });
@@ -240,4 +240,3 @@ describe('computePipeChanges', () => {
     expect(removedUids).not.toContain(100); // (5,3) is not adjacent to new tile
   });
 });
-

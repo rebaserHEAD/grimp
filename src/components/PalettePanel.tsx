@@ -18,7 +18,13 @@ interface Props {
 
 type Tab = 'tiles' | 'entities' | 'decals' | 'prefabs';
 
-export const PalettePanel: React.FC<Props> = ({ registry, selectedItem, onSelect, onSelectPrefab, decalPlacementSettingsRef }) => {
+export const PalettePanel: React.FC<Props> = ({
+  registry,
+  selectedItem,
+  onSelect,
+  onSelectPrefab,
+  decalPlacementSettingsRef,
+}) => {
   const [activeTab, setActiveTab] = useState<Tab>('tiles');
 
   return (
@@ -54,9 +60,11 @@ const TabButton: React.FC<{ label: string; active: boolean; onClick: () => void 
   <button
     onClick={onClick}
     className={`flex-1 py-1.5 text-[11px] cursor-pointer border-none border-b-2
-                ${active
-                  ? 'bg-active text-white font-bold border-accent'
-                  : 'bg-surface text-muted font-normal border-transparent hover:text-primary'}`}
+                ${
+                  active
+                    ? 'bg-active text-white font-bold border-accent'
+                    : 'bg-surface text-muted font-normal border-transparent hover:text-primary'
+                }`}
   >
     {label}
   </button>

@@ -14,7 +14,7 @@ interface Props {
 export const DecalInfoPanel: React.FC<Props> = ({ selectedDecalIds, decals, registry, dispatch }) => {
   const selectedDecals = useMemo(() => {
     const idSet = new Set(selectedDecalIds);
-    return decals.filter(d => idSet.has(d.id));
+    return decals.filter((d) => idSet.has(d.id));
   }, [selectedDecalIds, decals]);
 
   if (selectedDecals.length === 0) return null;
@@ -26,11 +26,13 @@ export const DecalInfoPanel: React.FC<Props> = ({ selectedDecalIds, decals, regi
         label: 'Edit decal',
         tileChanges: [],
         entityChanges: [],
-        decalChanges: [{
-          action: 'update',
-          decal: updated,
-          previousDecal: original,
-        }],
+        decalChanges: [
+          {
+            action: 'update',
+            decal: updated,
+            previousDecal: original,
+          },
+        ],
       },
     });
   };
@@ -42,7 +44,7 @@ export const DecalInfoPanel: React.FC<Props> = ({ selectedDecalIds, decals, regi
         label: `Edit ${updates.length} decals`,
         tileChanges: [],
         entityChanges: [],
-        decalChanges: updates.map(u => ({
+        decalChanges: updates.map((u) => ({
           action: 'update' as const,
           decal: u.updated,
           previousDecal: u.original,
@@ -53,23 +55,25 @@ export const DecalInfoPanel: React.FC<Props> = ({ selectedDecalIds, decals, regi
 
   /** Recolor all decals in the grid that match a source color to a new color. */
   const recolorAllMatching = (sourceColor: string | null, newColor: string | null) => {
-    const matching = decals.filter(d => d.color === sourceColor);
+    const matching = decals.filter((d) => d.color === sourceColor);
     if (matching.length === 0) return;
-    dispatchMultiUpdate(matching.map(d => ({
-      original: d,
-      updated: { ...d, color: newColor },
-    })));
+    dispatchMultiUpdate(
+      matching.map((d) => ({
+        original: d,
+        updated: { ...d, color: newColor },
+      })),
+    );
   };
 
   /** Select all decals in the grid that match a color. */
   const selectAllMatchingColor = (color: string | null) => {
-    const matching = decals.filter(d => d.color === color);
+    const matching = decals.filter((d) => d.color === color);
     if (matching.length === 0) return;
-    dispatch({ type: 'SELECT_DECAL', ids: matching.map(d => d.id) });
+    dispatch({ type: 'SELECT_DECAL', ids: matching.map((d) => d.id) });
   };
 
   /** Count how many decals share a given color in the grid. */
-  const countMatchingColor = (color: string | null) => decals.filter(d => d.color === color).length;
+  const countMatchingColor = (color: string | null) => decals.filter((d) => d.color === color).length;
 
   // Multi-select view
   if (selectedDecals.length > 1) {
@@ -115,8 +119,16 @@ interface SingleDecalViewProps {
   countMatchingColor: (color: string | null) => number;
 }
 
-const SingleDecalView: React.FC<SingleDecalViewProps> = ({ decal, proto, onUpdate, onDeselect, onRecolorAll, onSelectAllColor, countMatchingColor }) => {
-  const angleDeg = Math.round(decal.angle * 180 / Math.PI);
+const SingleDecalView: React.FC<SingleDecalViewProps> = ({
+  decal,
+  proto,
+  onUpdate,
+  onDeselect,
+  onRecolorAll,
+  onSelectAllColor,
+  countMatchingColor,
+}) => {
+  const angleDeg = Math.round((decal.angle * 180) / Math.PI);
   const colorHex = decal.color ? colorToHex(decal.color) : '#ffffff';
   const colorAlpha = decal.color ? colorToAlpha(decal.color) : 255;
   // Always allow color editing, defaultCustomColor is just a placement UI hint,
@@ -126,7 +138,11 @@ const SingleDecalView: React.FC<SingleDecalViewProps> = ({ decal, proto, onUpdat
     if (!proto || !proto.state) return null;
     const rsi = proto.rsiPath;
     const path = rsi.startsWith('Textures/') ? `/${rsi}/${proto.state}.png` : `/Textures/${rsi}/${proto.state}.png`;
-    try { return getActiveProvider().getImageUrl(path); } catch { return null; }
+    try {
+      return getActiveProvider().getImageUrl(path);
+    } catch {
+      return null;
+    }
   })();
 
   return (
@@ -143,7 +159,10 @@ const SingleDecalView: React.FC<SingleDecalViewProps> = ({ decal, proto, onUpdat
       </div>
 
       {/* Prototype name */}
-      <span className="text-primary text-[11px] font-medium overflow-hidden text-ellipsis whitespace-nowrap" title={String(decal.prototypeId)}>
+      <span
+        className="text-primary text-[11px] font-medium overflow-hidden text-ellipsis whitespace-nowrap"
+        title={String(decal.prototypeId)}
+      >
         {String(decal.prototypeId)}
       </span>
 
@@ -234,7 +253,7 @@ const SingleDecalView: React.FC<SingleDecalViewProps> = ({ decal, proto, onUpdat
             value={angleDeg}
             onChange={(e) => {
               const deg = parseFloat(e.target.value) || 0;
-              onUpdate({ ...decal, angle: deg * Math.PI / 180 });
+              onUpdate({ ...decal, angle: (deg * Math.PI) / 180 });
             }}
             className="bg-elevated border border-subtle rounded-sm text-primary text-[11px] px-2 py-1 w-16"
           />
@@ -282,28 +301,38 @@ interface MultiDecalViewProps {
   countMatchingColor: (color: string | null) => number;
 }
 
-const MultiDecalView: React.FC<MultiDecalViewProps> = ({ decals, registry, onUpdate, onDeselect, onRecolorAll, onSelectAllColor, countMatchingColor }) => {
+const MultiDecalView: React.FC<MultiDecalViewProps> = ({
+  decals,
+  registry,
+  onUpdate,
+  onDeselect,
+  onRecolorAll,
+  onSelectAllColor,
+  countMatchingColor,
+}) => {
   // Compute shared values
-  const sharedColor = allSame(decals, d => d.color);
-  const sharedAngle = allSame(decals, d => d.angle);
-  const sharedZIndex = allSame(decals, d => d.zIndex);
-  const sharedCleanable = allSame(decals, d => d.cleanable);
+  const sharedColor = allSame(decals, (d) => d.color);
+  const sharedAngle = allSame(decals, (d) => d.angle);
+  const sharedZIndex = allSame(decals, (d) => d.zIndex);
+  const sharedCleanable = allSame(decals, (d) => d.cleanable);
 
   // Check if all selected decals support custom color
-  const allSupportColor = decals.every(d => {
+  const allSupportColor = decals.every((d) => {
     const p = registry?.getDecal(d.prototypeId);
     return p?.defaultCustomColor ?? true;
   });
 
-  const angleDeg = sharedAngle !== undefined ? Math.round(sharedAngle * 180 / Math.PI) : undefined;
+  const angleDeg = sharedAngle !== undefined ? Math.round((sharedAngle * 180) / Math.PI) : undefined;
   const colorHex = sharedColor !== undefined && sharedColor !== null ? colorToHex(sharedColor) : '#ffffff';
   const colorAlpha = sharedColor !== undefined && sharedColor !== null ? colorToAlpha(sharedColor) : 255;
 
   const applyToAll = (field: keyof DecalInstance, value: unknown) => {
-    onUpdate(decals.map(d => ({
-      original: d,
-      updated: { ...d, [field]: value },
-    })));
+    onUpdate(
+      decals.map((d) => ({
+        original: d,
+        updated: { ...d, [field]: value },
+      })),
+    );
   };
 
   return (
@@ -319,9 +348,7 @@ const MultiDecalView: React.FC<MultiDecalViewProps> = ({ decals, registry, onUpd
         </button>
       </div>
 
-      <div className="text-muted text-[10px]">
-        {summarizeDecalPrototypes(decals)}
-      </div>
+      <div className="text-muted text-[10px]">{summarizeDecalPrototypes(decals)}</div>
 
       {/* Color */}
       <div className="flex flex-col gap-1">
@@ -377,7 +404,7 @@ const MultiDecalView: React.FC<MultiDecalViewProps> = ({ decals, registry, onUpd
             placeholder={sharedAngle === undefined ? '\u2014' : ''}
             onChange={(e) => {
               const deg = parseFloat(e.target.value) || 0;
-              applyToAll('angle', deg * Math.PI / 180);
+              applyToAll('angle', (deg * Math.PI) / 180);
             }}
             className="bg-elevated border border-subtle rounded-sm text-primary text-[11px] px-2 py-1 w-16"
           />
@@ -411,9 +438,7 @@ const MultiDecalView: React.FC<MultiDecalViewProps> = ({ decals, registry, onUpd
           onChange={(e) => applyToAll('cleanable', e.target.checked)}
           className="accent-accent w-3 h-3"
         />
-        <span className="text-[11px] text-primary">
-          Cleanable{sharedCleanable === undefined ? ' (mixed)' : ''}
-        </span>
+        <span className="text-[11px] text-primary">Cleanable{sharedCleanable === undefined ? ' (mixed)' : ''}</span>
       </label>
     </div>
   );
@@ -490,7 +515,10 @@ const ColorBulkActions: React.FC<ColorBulkActionsProps> = ({ color, matchCount, 
 const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div className="flex justify-between py-px">
     <span className="text-muted">{label}:</span>
-    <span className="text-primary max-w-[120px] overflow-hidden text-ellipsis whitespace-nowrap text-right" title={value}>
+    <span
+      className="text-primary max-w-[120px] overflow-hidden text-ellipsis whitespace-nowrap text-right"
+      title={value}
+    >
       {value}
     </span>
   </div>

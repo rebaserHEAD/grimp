@@ -46,10 +46,7 @@ export function parseRsiMeta(raw: RsiRawMeta): RsiMeta {
 
   for (const rawState of raw.states) {
     const directions = rawState.directions ?? 1;
-    const frameCount =
-      rawState.delays && rawState.delays.length > 0
-        ? rawState.delays[0].length
-        : 1;
+    const frameCount = rawState.delays && rawState.delays.length > 0 ? rawState.delays[0].length : 1;
 
     states.set(rawState.name, {
       name: rawState.name,
@@ -72,10 +69,7 @@ export function parseRsiMeta(raw: RsiRawMeta): RsiMeta {
  * SS14 RSI direction order: South=0, North=1, East=2, West=3.
  * Returns 0 for single-direction sprites.
  */
-export function getDirectionOffset(
-  direction: CardinalDirection,
-  numDirections: number,
-): number {
+export function getDirectionOffset(direction: CardinalDirection, numDirections: number): number {
   if (numDirections <= 1) return 0;
 
   const dirMap: Record<CardinalDirection, number> = {
@@ -99,15 +93,14 @@ const imageCache = new Map<string, Promise<HTMLImageElement>>();
  * Uses the active ResourceProvider to resolve the URL.
  * @param rsiPath - Relative path like "Structures/Power/apc.rsi"
  */
-export async function loadRsiMeta(
-  rsiPath: string,
-): Promise<RsiMeta> {
+export async function loadRsiMeta(rsiPath: string): Promise<RsiMeta> {
   const key = rsiPath;
 
   if (!metaCache.has(key)) {
     const provider = getActiveProvider();
     const texPath = rsiPath.startsWith('Textures/') ? `/${rsiPath}` : `/Textures/${rsiPath}`;
-    const promise = provider.readText(`${texPath}/meta.json`)
+    const promise = provider
+      .readText(`${texPath}/meta.json`)
       .then((text) => JSON.parse(text) as RsiRawMeta)
       .then(parseRsiMeta);
     metaCache.set(key, promise);
@@ -139,10 +132,7 @@ export function loadImage(url: string): Promise<HTMLImageElement> {
  * @param rsiPath - Relative path like "Structures/Power/apc.rsi"
  * @param stateName - State name like "base"
  */
-export async function loadRsiStateImage(
-  rsiPath: string,
-  stateName: string,
-): Promise<HTMLImageElement> {
+export async function loadRsiStateImage(rsiPath: string, stateName: string): Promise<HTMLImageElement> {
   const provider = getActiveProvider();
   const texPath = rsiPath.startsWith('Textures/') ? `/${rsiPath}` : `/Textures/${rsiPath}`;
   const url = provider.getImageUrl(`${texPath}/${stateName}.png`);
@@ -171,10 +161,7 @@ export async function loadSprite(
 
   if (!state) return null;
 
-  const image = await loadRsiStateImage(
-    spriteInfo.rsiPath,
-    stateName,
-  );
+  const image = await loadRsiStateImage(spriteInfo.rsiPath, stateName);
 
   const dirOffset = getDirectionOffset(direction, state.directions);
 

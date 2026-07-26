@@ -1,7 +1,15 @@
 import {
-  clearEntitySpriteCache, clearExtraLayerCache, clearPrototypeFlags,
-  clearSmoothInfoCache, clearCornerFillCache, clearCardinalMaskCache,
-  clearNoRotCache, clearDrawDepthCache, clearSpriteColorCache, clearSpriteScaleCache, clearPipeColorCache,
+  clearEntitySpriteCache,
+  clearExtraLayerCache,
+  clearPrototypeFlags,
+  clearSmoothInfoCache,
+  clearCornerFillCache,
+  clearCardinalMaskCache,
+  clearNoRotCache,
+  clearDrawDepthCache,
+  clearSpriteColorCache,
+  clearSpriteScaleCache,
+  clearPipeColorCache,
 } from '../rendering/entityRenderer';
 import { clearRsiCache } from './rsiLoader';
 import { clearDecalSpriteCache } from '../rendering/decalRenderer';

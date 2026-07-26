@@ -14,7 +14,6 @@ interface Props {
   onClose: () => void;
 }
 
-
 export function ContextMenu({ x, y, items, onClose }: Props) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
@@ -43,8 +42,20 @@ export function ContextMenu({ x, y, items, onClose }: Props) {
   return (
     <>
       {/* Invisible overlay to catch clicks outside */}
-      <div className="fixed inset-0 z-[999]" onClick={onClose} onContextMenu={(e) => { e.preventDefault(); onClose(); }} />
-      <div ref={menuRef} className="fixed bg-elevated border border-subtle rounded shadow-lg min-w-[160px] py-1 z-[1000] text-xs text-primary font-inherit" style={{ left: x, top: y }} role="menu">
+      <div
+        className="fixed inset-0 z-[999]"
+        onClick={onClose}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          onClose();
+        }}
+      />
+      <div
+        ref={menuRef}
+        className="fixed bg-elevated border border-subtle rounded shadow-lg min-w-[160px] py-1 z-[1000] text-xs text-primary font-inherit"
+        style={{ left: x, top: y }}
+        role="menu"
+      >
         {items.map((item, i) => (
           <div
             key={i}
@@ -57,9 +68,7 @@ export function ContextMenu({ x, y, items, onClose }: Props) {
             onMouseLeave={() => setHoveredIndex(null)}
           >
             <span>{item.label}</span>
-            {item.shortcut && (
-              <span className="text-muted text-[11px] ml-4">{item.shortcut}</span>
-            )}
+            {item.shortcut && <span className="text-muted text-[11px] ml-4">{item.shortcut}</span>}
           </div>
         ))}
       </div>

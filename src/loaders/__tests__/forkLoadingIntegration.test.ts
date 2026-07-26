@@ -14,24 +14,20 @@ describe('fork loading integration', () => {
 
   it('loads prototypes from FileSystemResourceProvider end-to-end', async () => {
     const files = new Map<string, File>([
-      ['Prototypes/Tiles/floors.yml', makeYaml([
-        '- type: tile',
-        '  id: FloorSteel',
-        '  name: Steel Floor',
-        '  baseTurf: Space',
-      ].join('\n'))],
-      ['Prototypes/Entities/structures.yml', makeYaml([
-        '- type: entity',
-        '  id: WallSolid',
-        '  name: Wall',
-        '  components:',
-        '  - type: Transform',
-      ].join('\n'))],
-      ['Prototypes/Decals/bot.yml', makeYaml([
-        '- type: decal',
-        '  id: BotGreyscale',
-        '  defaultCustomColor: true',
-      ].join('\n'))],
+      [
+        'Prototypes/Tiles/floors.yml',
+        makeYaml(['- type: tile', '  id: FloorSteel', '  name: Steel Floor', '  baseTurf: Space'].join('\n')),
+      ],
+      [
+        'Prototypes/Entities/structures.yml',
+        makeYaml(
+          ['- type: entity', '  id: WallSolid', '  name: Wall', '  components:', '  - type: Transform'].join('\n'),
+        ),
+      ],
+      [
+        'Prototypes/Decals/bot.yml',
+        makeYaml(['- type: decal', '  id: BotGreyscale', '  defaultCustomColor: true'].join('\n')),
+      ],
     ]);
 
     const provider = new FileSystemResourceProvider(files, 'TestFork');

@@ -16,9 +16,14 @@ interface Props {
  * Electron. Enter submits (when non-empty), Escape cancels, click-outside cancels.
  */
 export const PromptModal: React.FC<Props> = ({
-  title, message, defaultValue = '', placeholder,
-  confirmLabel = 'OK', cancelLabel = 'Cancel',
-  onSubmit, onCancel,
+  title,
+  message,
+  defaultValue = '',
+  placeholder,
+  confirmLabel = 'OK',
+  cancelLabel = 'Cancel',
+  onSubmit,
+  onCancel,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState(defaultValue);
@@ -34,10 +39,7 @@ export const PromptModal: React.FC<Props> = ({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70"
-      onClick={onCancel}
-    >
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70" onClick={onCancel}>
       <div
         className="bg-elevated border border-subtle rounded-lg px-10 py-8 max-w-[480px] w-full mx-4 text-center"
         onClick={(e) => e.stopPropagation()}

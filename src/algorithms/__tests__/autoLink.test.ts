@@ -2,7 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { floodFillRoom, autoLinkDeviceList } from '../autoLink';
 import type { ImportedEntity } from '../../import/mapImporter';
 import type { TileGrid, TileCell } from '../../types';
-import type { IPrototypeRegistry, ResolvedEntity, ResolvedTile, SpriteInfo, DecalPrototypeInfo, RawComponent } from '../../loaders/registryTypes';
+import type {
+  IPrototypeRegistry,
+  ResolvedEntity,
+  ResolvedTile,
+  SpriteInfo,
+  DecalPrototypeInfo,
+  RawComponent,
+} from '../../loaders/registryTypes';
 
 // ---- Helpers ----
 
@@ -29,9 +36,7 @@ function setTile(grid: TileGrid, x: number, y: number, tileId: string): void {
  * Create a mock registry. `entityComponents` maps prototype ID to component type strings.
  * e.g. { WallSolid: ['Occluder'], AirAlarm: ['DeviceList'] }
  */
-function makeMockRegistry(
-  entityComponents: Record<string, string[]> = {},
-): IPrototypeRegistry {
+function makeMockRegistry(entityComponents: Record<string, string[]> = {}): IPrototypeRegistry {
   return {
     getTile: () => null,
     getEntity: (id: string): ResolvedEntity | null => {
@@ -45,7 +50,7 @@ function makeMockRegistry(
         abstract: false,
         categories: [],
         placement: {},
-        components: compTypes.map(t => ({ type: t } as RawComponent)),
+        components: compTypes.map((t) => ({ type: t }) as RawComponent),
         spriteInfo: null,
         sourceCategory: '',
         raw: { type: 'entity', id },
@@ -58,9 +63,15 @@ function makeMockRegistry(
     getSpriteInfo: () => null,
     getDecal: () => null,
     getAllDecals: () => [],
-    get tileCount() { return 0; },
-    get entityCount() { return 0; },
-    get decalCount() { return 0; },
+    get tileCount() {
+      return 0;
+    },
+    get entityCount() {
+      return 0;
+    },
+    get decalCount() {
+      return 0;
+    },
   };
 }
 
@@ -197,9 +208,7 @@ describe('autoLinkDeviceList', () => {
       makeEntity(52, 'WallSolid', 3, 2),
     ];
 
-    const alarm = makeEntity(1, 'AirAlarm', 1, 1, [
-      { type: 'DeviceList', devices: [] },
-    ]);
+    const alarm = makeEntity(1, 'AirAlarm', 1, 1, [{ type: 'DeviceList', devices: [] }]);
     const ventSameRoom = makeEntity(10, 'GasVentPump', 2, 1);
     const scrubberSameRoom = makeEntity(11, 'GasVentScrubber', 0, 1);
     const ventOtherRoom = makeEntity(12, 'GasVentPump', 5, 1);
@@ -211,11 +220,11 @@ describe('autoLinkDeviceList', () => {
     expect(result).not.toBeNull();
     expect(result!.linkedCount).toBe(2);
     const dl = result!.updatedEntity.components.find(
-      c => (c as Record<string, unknown>).type === 'DeviceList',
+      (c) => (c as Record<string, unknown>).type === 'DeviceList',
     ) as Record<string, unknown>;
     expect(dl.devices).toEqual([10, 11]);
     // Vent in other room should NOT be linked
-    expect((dl.devices as number[])).not.toContain(12);
+    expect(dl.devices as number[]).not.toContain(12);
   });
 
   it('fire alarm links firelocks on room boundary', () => {
@@ -230,9 +239,7 @@ describe('autoLinkDeviceList', () => {
     // Firelock far away in a different disconnected area
     const firelockFar = makeEntity(12, 'Firelock', 4, 4);
 
-    const alarm = makeEntity(1, 'FireAlarm', 2, 2, [
-      { type: 'DeviceList', devices: [] },
-    ]);
+    const alarm = makeEntity(1, 'FireAlarm', 2, 2, [{ type: 'DeviceList', devices: [] }]);
 
     const allEntities = [alarm, firelock1, firelock2, firelockFar];
 
@@ -242,7 +249,7 @@ describe('autoLinkDeviceList', () => {
     // Fire alarm searches boundary tiles, firelocks at (0,2) and (4,2) are boundary
     // firelockFar at (4,4) is also reachable boundary (since it's a Firelock, it's boundary)
     const dl = result!.updatedEntity.components.find(
-      c => (c as Record<string, unknown>).type === 'DeviceList',
+      (c) => (c as Record<string, unknown>).type === 'DeviceList',
     ) as Record<string, unknown>;
     const devices = dl.devices as number[];
     expect(devices).toContain(10);
@@ -266,7 +273,7 @@ describe('autoLinkDeviceList', () => {
     expect(result!.linkedCount).toBe(1);
     // Should have added a DeviceList component
     const dl = result!.updatedEntity.components.find(
-      c => (c as Record<string, unknown>).type === 'DeviceList',
+      (c) => (c as Record<string, unknown>).type === 'DeviceList',
     ) as Record<string, unknown>;
     expect(dl).toBeDefined();
     expect(dl.devices).toEqual([10]);
@@ -278,9 +285,7 @@ describe('autoLinkDeviceList', () => {
       APCBasic: ['DeviceList'],
     });
 
-    const entity = makeEntity(1, 'APCBasic', 2, 2, [
-      { type: 'DeviceList', devices: [] },
-    ]);
+    const entity = makeEntity(1, 'APCBasic', 2, 2, [{ type: 'DeviceList', devices: [] }]);
     const vent = makeEntity(10, 'GasVentPump', 3, 2);
 
     const result = autoLinkDeviceList(entity, [entity, vent], grid, registry);
@@ -293,9 +298,7 @@ describe('autoLinkDeviceList', () => {
       AirAlarm: ['DeviceList'],
     });
 
-    const alarm = makeEntity(1, 'AirAlarm', 2, 2, [
-      { type: 'DeviceList', devices: [] },
-    ]);
+    const alarm = makeEntity(1, 'AirAlarm', 2, 2, [{ type: 'DeviceList', devices: [] }]);
     const unrelated = makeEntity(10, 'APCBasic', 3, 2);
 
     const result = autoLinkDeviceList(alarm, [alarm, unrelated], grid, registry);
@@ -308,9 +311,7 @@ describe('autoLinkDeviceList', () => {
       AirAlarm: ['DeviceList'],
     });
 
-    const alarm = makeEntity(1, 'AirAlarm', 2, 2, [
-      { type: 'DeviceList', devices: [10] },
-    ]);
+    const alarm = makeEntity(1, 'AirAlarm', 2, 2, [{ type: 'DeviceList', devices: [10] }]);
     const vent = makeEntity(10, 'GasVentPump', 3, 2);
     const scrubber = makeEntity(11, 'GasVentScrubber', 1, 2);
 
@@ -319,7 +320,7 @@ describe('autoLinkDeviceList', () => {
     expect(result).not.toBeNull();
     expect(result!.linkedCount).toBe(1);
     const dl = result!.updatedEntity.components.find(
-      c => (c as Record<string, unknown>).type === 'DeviceList',
+      (c) => (c as Record<string, unknown>).type === 'DeviceList',
     ) as Record<string, unknown>;
     // Existing 10 preserved, new 11 appended
     expect(dl.devices).toEqual([10, 11]);

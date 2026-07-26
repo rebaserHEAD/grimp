@@ -8,15 +8,15 @@
 import { markOverlayDirty } from './dirtyFlags';
 
 interface SpaceClown {
-  x: number;        // current position (px)
+  x: number; // current position (px)
   y: number;
-  vx: number;       // velocity (px per second)
+  vx: number; // velocity (px per second)
   vy: number;
-  rotation: number;  // radians
-  spinRate: number;  // radians per second
-  scale: number;     // size multiplier
-  opacity: number;   // fade-in/out
-  age: number;       // seconds alive
+  rotation: number; // radians
+  spinRate: number; // radians per second
+  scale: number; // size multiplier
+  opacity: number; // fade-in/out
+  age: number; // seconds alive
 }
 
 let activeClown: SpaceClown | null = null;
@@ -29,8 +29,12 @@ function ensureClownImage(): void {
   if (clownImg || clownLoading) return;
   clownLoading = true;
   const img = new Image();
-  img.onload = () => { clownImg = img; };
-  img.onerror = () => { clownLoading = false; };
+  img.onload = () => {
+    clownImg = img;
+  };
+  img.onerror = () => {
+    clownLoading = false;
+  };
   img.src = '/images/clown.png';
 }
 
@@ -47,16 +51,20 @@ export function triggerSpaceClown(canvasW: number, canvasH: number): void {
   let x: number, y: number;
   if (p < canvasW) {
     // Top edge
-    x = p; y = -size;
+    x = p;
+    y = -size;
   } else if (p < canvasW + canvasH) {
     // Right edge
-    x = canvasW + size; y = p - canvasW;
+    x = canvasW + size;
+    y = p - canvasW;
   } else if (p < 2 * canvasW + canvasH) {
     // Bottom edge
-    x = p - canvasW - canvasH; y = canvasH + size;
+    x = p - canvasW - canvasH;
+    y = canvasH + size;
   } else {
     // Left edge
-    x = -size; y = p - 2 * canvasW - canvasH;
+    x = -size;
+    y = p - 2 * canvasW - canvasH;
   }
 
   // Aim roughly toward the opposite side with some angular spread.
@@ -69,7 +77,10 @@ export function triggerSpaceClown(canvasW: number, canvasH: number): void {
   const vy = Math.sin(angle) * speed;
 
   activeClown = {
-    x, y, vx, vy,
+    x,
+    y,
+    vx,
+    vy,
     rotation: Math.random() * Math.PI * 2,
     spinRate: (Math.random() - 0.5) * 1.5, // -0.75 to 0.75 rad/s tumble
     scale: size / 64, // assuming 64px source
@@ -122,10 +133,7 @@ export function renderSpaceClown(
   // Kill once fully off-screen (after fade-in period so we don't kill on entry)
   const drawSize = clownImg.width * c.scale;
   const margin = drawSize;
-  if (c.age > 1.5 && (
-    c.x < -margin || c.x > canvasW + margin ||
-    c.y < -margin || c.y > canvasH + margin
-  )) {
+  if (c.age > 1.5 && (c.x < -margin || c.x > canvasW + margin || c.y < -margin || c.y > canvasH + margin)) {
     activeClown = null;
     return false;
   }

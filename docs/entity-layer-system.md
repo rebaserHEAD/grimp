@@ -10,40 +10,40 @@ This document captures how SS14 handles entities, rendering layers, grids, and i
 
 SS14 renders entities in a strict depth order. Lower values render first (behind), higher values render last (on top). All values are offsets from `DrawDepthTag.Default` (0).
 
-| DrawDepth | Value | Examples |
-|-----------|-------|----------|
-| LowFloors | -22 | Sub-floors visible after prying tiles |
-| ThickPipe | -21 | Thick pipes on subfloor |
-| ThickWire | -20 | Thick wires on subfloor |
-| ThinPipeAlt4 | -19 | Alt pipe layer 4 |
-| ThinPipeAlt3 | -18 | Alt pipe layer 3 |
-| ThinPipeAlt2 | -17 | Alt pipe layer 2 |
-| ThinPipeAlt1 | -16 | Alt pipe layer 1 |
-| ThinPipe | -15 | Standard thin pipes |
-| ThinWire | -14 | Standard thin wires |
-| BelowFloor | -13 | Entities beneath floors |
-| FloorTiles | -12 | Carpets, floor decorations |
-| FloorObjects | -11 | Items on floor, atmos devices |
-| Puddles | -10 | Liquid puddles |
-| HighFloorObjects | -5 | Holopads, levers |
-| DeadMobs | -4 | Dead creatures |
-| SmallMobs | -3 | Mice, drones |
-| Walls | -2 | Wall structures |
-| WallTops | -1 | Windows, grilles, signage |
-| Objects | 0 | Furniture, crates, tables (default) |
-| SmallObjects | +1 | Items on tables |
-| WallMountedItems | +2 | APCs, air alarms, lights |
-| LargeObjects | +3 | Tall machines |
-| Items | +4 | Items above crates/tables |
-| BelowMobs | +5 | Muzzle flashes |
-| Mobs | +6 | Players and creatures |
-| OverMobs | +7 | Effects above mobs |
-| Doors | +8 | Standard doors |
-| BlastDoors | +9 | Blast doors, shutters |
-| Overdoors | +10 | Special overlays |
-| Effects | +11 | Explosions, fire |
-| Ghosts | +12 | Ghost entities |
-| Overlays | +13 | Debug tools |
+| DrawDepth        | Value | Examples                              |
+| ---------------- | ----- | ------------------------------------- |
+| LowFloors        | -22   | Sub-floors visible after prying tiles |
+| ThickPipe        | -21   | Thick pipes on subfloor               |
+| ThickWire        | -20   | Thick wires on subfloor               |
+| ThinPipeAlt4     | -19   | Alt pipe layer 4                      |
+| ThinPipeAlt3     | -18   | Alt pipe layer 3                      |
+| ThinPipeAlt2     | -17   | Alt pipe layer 2                      |
+| ThinPipeAlt1     | -16   | Alt pipe layer 1                      |
+| ThinPipe         | -15   | Standard thin pipes                   |
+| ThinWire         | -14   | Standard thin wires                   |
+| BelowFloor       | -13   | Entities beneath floors               |
+| FloorTiles       | -12   | Carpets, floor decorations            |
+| FloorObjects     | -11   | Items on floor, atmos devices         |
+| Puddles          | -10   | Liquid puddles                        |
+| HighFloorObjects | -5    | Holopads, levers                      |
+| DeadMobs         | -4    | Dead creatures                        |
+| SmallMobs        | -3    | Mice, drones                          |
+| Walls            | -2    | Wall structures                       |
+| WallTops         | -1    | Windows, grilles, signage             |
+| Objects          | 0     | Furniture, crates, tables (default)   |
+| SmallObjects     | +1    | Items on tables                       |
+| WallMountedItems | +2    | APCs, air alarms, lights              |
+| LargeObjects     | +3    | Tall machines                         |
+| Items            | +4    | Items above crates/tables             |
+| BelowMobs        | +5    | Muzzle flashes                        |
+| Mobs             | +6    | Players and creatures                 |
+| OverMobs         | +7    | Effects above mobs                    |
+| Doors            | +8    | Standard doors                        |
+| BlastDoors       | +9    | Blast doors, shutters                 |
+| Overdoors        | +10   | Special overlays                      |
+| Effects          | +11   | Explosions, fire                      |
+| Ghosts           | +12   | Ghost entities                        |
+| Overlays         | +13   | Debug tools                           |
 
 ### Sort Order for Same-Tile Entities
 
@@ -95,30 +95,30 @@ SS14 is strictly 2D. There is no z-axis coordinate on tiles or entities. What ap
 
 ```yaml
 maps:
-  - 1                     # Map EntityUid
+  - 1 # Map EntityUid
 
 grids:
-  - 2                     # Grid 1 (main station)
-  - 29396                 # Grid 2 (arrivals shuttle)
+  - 2 # Grid 1 (main station)
+  - 29396 # Grid 2 (arrivals shuttle)
 
 entities:
-  - proto: ""
+  - proto: ''
     entities:
-      - uid: 1            # Map entity
+      - uid: 1 # Map entity
         components:
           - type: Map
-      - uid: 2            # Grid 1
+      - uid: 2 # Grid 1
         components:
           - type: Transform
             pos: 0.5, 0.5
-            parent: 1     # Child of map entity
+            parent: 1 # Child of map entity
           - type: MapGrid
             chunks: { ... }
-      - uid: 29396        # Grid 2
+      - uid: 29396 # Grid 2
         components:
           - type: Transform
             pos: -65.5, 25.2
-            parent: 1     # Also child of same map
+            parent: 1 # Also child of same map
           - type: MapGrid
             chunks: { ... }
 ```
@@ -138,10 +138,10 @@ entities:
 
 ```yaml
 - type: Transform
-  pos: 10.5, -34.5     # World position (float)
-  rot: 1.5707963        # Rotation in radians
-  parent: 2              # Parent entity UID (usually the grid)
-  anchored: true         # Locked in place
+  pos: 10.5, -34.5 # World position (float)
+  rot: 1.5707963 # Rotation in radians
+  parent: 2 # Parent entity UID (usually the grid)
+  anchored: true # Locked in place
 ```
 
 ### Key Properties
@@ -203,27 +203,27 @@ Prototypes use `parent:` for inheritance. Components are merged, child overrides
   id: BaseStructure
   abstract: true
   components:
-  - type: Transform
-    anchored: true
-  - type: Physics
-    bodyType: Static
+    - type: Transform
+      anchored: true
+    - type: Physics
+      bodyType: Static
 
 # Concrete entity inheriting from base
 - type: entity
   id: APCBasic
   parent: BaseAPC
   components:
-  - type: Sprite
-    sprite: Structures/Power/apc.rsi
+    - type: Sprite
+      sprite: Structures/Power/apc.rsi
 ```
 
 ### Categories and Placement
 
 ```yaml
-categories: [ HideSpawnMenu ]   # Hidden from spawn menu
+categories: [HideSpawnMenu] # Hidden from spawn menu
 placement:
-  mode: SnapgridCenter          # Snap to tile center
-  snap: [ Wall ]                # Snap to walls
+  mode: SnapgridCenter # Snap to tile center
+  snap: [Wall] # Snap to walls
 ```
 
 **Placement modes**: `SnapgridCenter` (structures), `PlaceFree` (furniture), `AlignAtmosPipeLayers` (pipes)
@@ -239,21 +239,21 @@ placement:
 Power connections form **automatically** when cable entities are adjacent on the same grid. No explicit links stored in YAML.
 
 **Three voltage tiers:**
+
 - **HVPower**, High voltage (generators → substations)
 - **MVPower**, Medium voltage (substations → APCs)
 - **Apc**, Low voltage (APCs → devices)
 
 **How APCs connect:**
+
 ```yaml
 # APC has two node types:
 - type: NodeContainer
   nodes:
-    input:
-      !type:CableDeviceNode
-      nodeGroupID: MVPower    # Receives from MV cable network
-    output:
-      !type:CableDeviceNode
-      nodeGroupID: Apc        # Provides to APC network
+    input: !type:CableDeviceNode
+      nodeGroupID: MVPower # Receives from MV cable network
+    output: !type:CableDeviceNode
+      nodeGroupID: Apc # Provides to APC network
 ```
 
 Devices connect by having `ApcPowerReceiver` component, they draw from the nearest APC network via cable adjacency. **No explicit wiring in YAML.**
@@ -266,20 +266,21 @@ In-game, cables use a `CableVisualizer` component to dynamically select a sprite
 
 **Bitmask:** `WireVisDirFlags`, North=1, South=2, East=4, West=8
 
-| Mask | Connections | State Example |
-|------|------------|---------------|
-| 0 | None (isolated) | `hvcable_0` |
-| 3 | North+South | `hvcable_3` |
-| 5 | North+East | `hvcable_5` |
-| 12 | East+West | `hvcable_12` |
-| 15 | All four | `hvcable_15` |
+| Mask | Connections     | State Example |
+| ---- | --------------- | ------------- |
+| 0    | None (isolated) | `hvcable_0`   |
+| 3    | North+South     | `hvcable_3`   |
+| 5    | North+East      | `hvcable_5`   |
+| 12   | East+West       | `hvcable_12`  |
+| 15   | All four        | `hvcable_15`  |
 
 **Cable type → state prefix mapping:**
-| Prototype | RSI | State Prefix |
-|-----------|-----|--------------|
-| CableHV | `Structures/Power/Cables/hv_cable.rsi` | `hvcable_` |
-| CableMV | `Structures/Power/Cables/mv_cable.rsi` | `mvcable_` |
-| CableApcExtension | `Structures/Power/Cables/lv_cable.rsi` | `lvcable_` |
+
+| Prototype         | RSI                                    | State Prefix |
+| ----------------- | -------------------------------------- | ------------ |
+| CableHV           | `Structures/Power/Cables/hv_cable.rsi` | `hvcable_`   |
+| CableMV           | `Structures/Power/Cables/mv_cable.rsi` | `mvcable_`   |
+| CableApcExtension | `Structures/Power/Cables/lv_cable.rsi` | `lvcable_`   |
 
 **Editor implementation:** The entity renderer builds a spatial index of cable positions each frame, then for each cable entity computes a neighbor bitmask by checking the 4 adjacent tiles for cables of the same type. The mask is used to select the sprite state (e.g., `hvcable_5`) via `loadSprite`'s `stateOverride` parameter. This matches the in-game appearance without needing the full CableVisualizer system.
 
@@ -300,12 +301,13 @@ Each entity renders as **4 quarter-tile sprites** (one per corner: NE, SE, SW, N
 - **Bit 4 (Clockwise):** Cardinal neighbor CW from the corner
 
 Per-corner cardinal assignments:
+
 | Corner | CCW (bit 1) | Diagonal (bit 2) | CW (bit 4) | RSI Direction |
-|--------|------------|-------------------|------------|---------------|
-| NE | North | NE | East | East |
-| SE | East | SE | South | South |
-| SW | South | SW | West | West |
-| NW | West | NW | North | North |
+| ------ | ----------- | ---------------- | ---------- | ------------- |
+| NE     | North       | NE               | East       | East          |
+| SE     | East        | SE               | South      | South         |
+| SW     | South       | SW               | West       | West          |
+| NW     | West        | NW               | North      | North         |
 
 The state name is `{base}{cornerFill}` (e.g., `solid5` for a corner with CCW+CW neighbors). Each corner sprite is drawn at quarter-tile offset using the direction column from the RSI (SE→South, NE→East, NW→North, SW→West).
 
@@ -320,6 +322,7 @@ When IconSmooth has no explicit `base` field (like Puddle), `inferSmoothBase()` 
 #### Preview State for Palette
 
 Entities with IconSmooth use a special baseState for palette previews:
+
 1. Icon component's state (e.g., `'full'` for carpets)
 2. `'full'` (SS14 convention for IconSmooth RSIs)
 3. `{base}0` as last resort
@@ -333,6 +336,7 @@ This avoids showing quarter-tile corner pieces in the palette.
 Pipe networks form automatically when pipe entities with compatible `PipeDirection` values are adjacent.
 
 **Key properties:**
+
 - **PipeDirection**: South, North, East, West, Fourway, determines which sides connect
 - **AtmosPipeLayer**: Primary, Secondary (Alt1), Tertiary (Alt2), etc., visual layering only, for stacking multiple pipes on one tile
 - **Rotation**: Entity rotation rotates the pipe direction
@@ -346,6 +350,7 @@ Pipe networks form automatically when pipe entities with compatible `PipeDirecti
 **Source:** `Content.Shared/DeviceLinking/`
 
 Some devices have explicit signal links stored in the map YAML. This is used for:
+
 - Air alarms → vents/scrubbers (DeviceList)
 - Signal buttons → doors
 - Sensors → alarms
@@ -353,20 +358,22 @@ Some devices have explicit signal links stored in the map YAML. This is used for
 **Two mechanisms:**
 
 1. **DeviceLinkSource/Sink**, Direct signal ports:
+
 ```yaml
 - type: DeviceLinkSource
   linkedPorts:
-    201:                    # Target entity UID
-    - - DoorStatus          # Source port name
-      - Close               # Sink port name
+    201: # Target entity UID
+      - - DoorStatus # Source port name
+        - Close # Sink port name
 ```
 
 2. **DeviceList**, Device network whitelist:
+
 ```yaml
 - type: DeviceList
   devices:
-  - 18094                   # UID of connected vent
-  - 670                     # UID of connected scrubber
+    - 18094 # UID of connected vent
+    - 670 # UID of connected scrubber
 ```
 
 ### 6d. Disposal Pipe Network (Automatic via Adjacency)
@@ -379,16 +386,16 @@ Works identically to atmos pipes but uses `DisposalPipe` node group. Disposal un
 
 Based on the above research, the editor should expose these logical layers for visibility and editing:
 
-| Layer | DrawDepth Range | Contents | Toggle |
-|-------|----------------|----------|--------|
-| **Tiles** | N/A | Floor tiles (rendered as grid) | Always visible |
-| **SubFloor** | -22 to -13 | Cables (HV/MV/APC), pipes, disposal | "Show SubFloor" toggle |
-| **Floor Objects** | -12 to -5 | Carpets, floor decorations, puddles | "Show Floor Objects" |
-| **Structures** | -2 to -1 | Walls, windows, grilles | "Show Structures" |
-| **Objects** | 0 to +3 | Furniture, machines, wall mounts | "Show Objects" |
-| **Doors** | +8 to +9 | Airlocks, firelocks, blast doors | "Show Doors" |
-| **Markers** | N/A | Spawn points, mapping helpers (detected by the `Marker` component, not just the name) | "Show Markers" |
-| **Atmos Markers** | N/A | `AtmosFix` (VAC. / gas-fill) markers, a sub-layer of Markers | "Atmos Markers" (View menu) |
+| Layer             | DrawDepth Range | Contents                                                                              | Toggle                      |
+| ----------------- | --------------- | ------------------------------------------------------------------------------------- | --------------------------- |
+| **Tiles**         | N/A             | Floor tiles (rendered as grid)                                                        | Always visible              |
+| **SubFloor**      | -22 to -13      | Cables (HV/MV/APC), pipes, disposal                                                   | "Show SubFloor" toggle      |
+| **Floor Objects** | -12 to -5       | Carpets, floor decorations, puddles                                                   | "Show Floor Objects"        |
+| **Structures**    | -2 to -1        | Walls, windows, grilles                                                               | "Show Structures"           |
+| **Objects**       | 0 to +3         | Furniture, machines, wall mounts                                                      | "Show Objects"              |
+| **Doors**         | +8 to +9        | Airlocks, firelocks, blast doors                                                      | "Show Doors"                |
+| **Markers**       | N/A             | Spawn points, mapping helpers (detected by the `Marker` component, not just the name) | "Show Markers"              |
+| **Atmos Markers** | N/A             | `AtmosFix` (VAC. / gas-fill) markers, a sub-layer of Markers                          | "Atmos Markers" (View menu) |
 
 Markers are classified by their composed `Marker` component when the registry is
 available, falling back to a name heuristic. This catches markers like `WarpPoint` whose

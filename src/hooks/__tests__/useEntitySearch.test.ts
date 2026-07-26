@@ -14,9 +14,17 @@ function makeRegistry(names: Record<string, string>): IPrototypeRegistry {
       const name = names[id];
       if (!name) return null;
       return {
-        id, name, description: '', suffix: '', abstract: false,
-        categories: [], placement: {}, components: [], spriteInfo: null,
-        sourceCategory: '', raw: { type: 'entity' as const, id },
+        id,
+        name,
+        description: '',
+        suffix: '',
+        abstract: false,
+        categories: [],
+        placement: {},
+        components: [],
+        spriteInfo: null,
+        sourceCategory: '',
+        raw: { type: 'entity' as const, id },
       };
     },
     getAllTiles: () => [],
@@ -59,17 +67,17 @@ describe('filterEntities', () => {
 
   it('matches prototype ID substring (case-insensitive)', () => {
     const results = filterEntities(entities, 'apc', registry);
-    expect(results.map(r => r.entity.uid)).toEqual([1, 2]);
+    expect(results.map((r) => r.entity.uid)).toEqual([1, 2]);
   });
 
   it('matches display name substring (case-insensitive)', () => {
     const results = filterEntities(entities, 'reinforced', registry);
-    expect(results.map(r => r.entity.uid)).toEqual([3]);
+    expect(results.map((r) => r.entity.uid)).toEqual([3]);
   });
 
   it('matches display name even when prototype ID does not match', () => {
     const results = filterEntities(entities, 'air vent', registry);
-    expect(results.map(r => r.entity.uid)).toEqual([5]);
+    expect(results.map((r) => r.entity.uid)).toEqual([5]);
   });
 
   it('returns no results for non-matching query', () => {

@@ -66,7 +66,7 @@ describe('Decal mutations via APPLY_COMMAND', () => {
     expect(grid.decals.decals).toHaveLength(0);
   });
 
-  it('updates a decal\'s properties', () => {
+  it("updates a decal's properties", () => {
     let state = createInitialState();
     const original = makeDecal(0, 'BrickTileWhite', 3, 5);
     state = editorReducer(state, { type: 'APPLY_COMMAND', command: addDecalCommand(original) });

@@ -157,7 +157,10 @@ describe('serializePrefab', () => {
       {
         type: 'DeviceLinkSource',
         linkedPorts: {
-          '11': [['Pressed', 'Toggle'], ['Status', 'Open']],
+          '11': [
+            ['Pressed', 'Toggle'],
+            ['Status', 'Open'],
+          ],
         },
       },
     ]);

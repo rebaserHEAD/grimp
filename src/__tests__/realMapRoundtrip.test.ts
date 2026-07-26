@@ -32,7 +32,7 @@ describe('real map roundtrip', () => {
     const map = importMap(yamlContent);
 
     // A real station should have many non-Space tiles
-    const nonSpaceTiles = map.grid.cells.filter(c => c.tileId !== 'Space');
+    const nonSpaceTiles = map.grid.cells.filter((c) => c.tileId !== 'Space');
     expect(nonSpaceTiles.length).toBeGreaterThan(100);
 
     // And many entities
@@ -77,7 +77,7 @@ describe('real map roundtrip', () => {
     expect(reimported.entities.length).toBe(original.entities.length);
 
     for (const origEntity of original.entities) {
-      const match = reimported.entities.find(e => e.uid === origEntity.uid);
+      const match = reimported.entities.find((e) => e.uid === origEntity.uid);
       expect(match, `Entity uid=${origEntity.uid} (${origEntity.prototype}) missing after roundtrip`).toBeDefined();
       expect(match!.prototype).toBe(origEntity.prototype);
     }
@@ -90,7 +90,7 @@ describe('real map roundtrip', () => {
     const reimported = importMap(exported);
 
     for (const origEntity of original.entities) {
-      const match = reimported.entities.find(e => e.uid === origEntity.uid);
+      const match = reimported.entities.find((e) => e.uid === origEntity.uid);
       if (!match) continue; // covered by previous test
       expect(match.position.x).toBeCloseTo(origEntity.position.x, 1);
       expect(match.position.y).toBeCloseTo(origEntity.position.y, 1);
@@ -170,14 +170,14 @@ describe('decal preservation', () => {
     const exported = exportMap(map);
 
     // Extract all DecalGrid lines from original and exported
-    const originalDecalLines = yamlContent.split('\n').filter(l =>
-      l.includes('DecalGrid') || l.includes('chunkCollection') ||
-      l.includes('decals:') || l.match(/^\s+\d+:/) // decal ID: coordinate lines
+    const originalDecalLines = yamlContent.split('\n').filter(
+      (l) => l.includes('DecalGrid') || l.includes('chunkCollection') || l.includes('decals:') || l.match(/^\s+\d+:/), // decal ID: coordinate lines
     );
-    const exportedDecalLines = exported.split('\n').filter(l =>
-      l.includes('DecalGrid') || l.includes('chunkCollection') ||
-      l.includes('decals:') || l.match(/^\s+\d+:/)
-    );
+    const exportedDecalLines = exported
+      .split('\n')
+      .filter(
+        (l) => l.includes('DecalGrid') || l.includes('chunkCollection') || l.includes('decals:') || l.match(/^\s+\d+:/),
+      );
 
     expect(exportedDecalLines.length).toBe(originalDecalLines.length);
     for (let i = 0; i < originalDecalLines.length; i++) {
@@ -195,7 +195,7 @@ describe('decal preservation', () => {
     // DecalGrid section should be identical after two roundtrips
     const getDecalSection = (yml: string) => {
       const lines = yml.split('\n');
-      const start = lines.findIndex(l => l.includes('DecalGrid'));
+      const start = lines.findIndex((l) => l.includes('DecalGrid'));
       if (start < 0) return '';
       // Find the end: next component (line starting with "    - type:")
       let end = start + 1;
@@ -215,7 +215,7 @@ describe('decal preservation', () => {
     if (skip) return;
     // Count decal entries (lines matching "            NNNN: X,Y" pattern)
     const countDecals = (yml: string) => {
-      return yml.split('\n').filter(l => l.match(/^\s{12}\d+:\s+[\d.]+,[\d.]+/)).length;
+      return yml.split('\n').filter((l) => l.match(/^\s{12}\d+:\s+[\d.]+,[\d.]+/)).length;
     };
 
     const originalCount = countDecals(yamlContent);
@@ -235,7 +235,7 @@ describe('decal preservation', () => {
     // Count decal entries within the DecalGrid section of the original YAML.
     // We isolate the DecalGrid block first, then count "ID: x,y" lines.
     const lines = yamlContent.split('\n');
-    const decalGridStart = lines.findIndex(l => l.includes('- type: DecalGrid'));
+    const decalGridStart = lines.findIndex((l) => l.includes('- type: DecalGrid'));
     expect(decalGridStart).toBeGreaterThan(-1);
 
     // Find the end of the DecalGrid component (next "    - type:" line)
@@ -246,8 +246,7 @@ describe('decal preservation', () => {
 
     const decalSection = lines.slice(decalGridStart, decalGridEnd);
     // Decal entries are lines like "            1113: 10.711808,16.843641"
-    const yamlDecalCount = decalSection
-      .filter(l => l.match(/^\s{12}\d+:\s+[\d.,-]+\s*$/)).length;
+    const yamlDecalCount = decalSection.filter((l) => l.match(/^\s{12}\d+:\s+[\d.,-]+\s*$/)).length;
 
     // Count parsed decals from the first grid
     const gridDecals = map.gridDataList?.[0]?.decals?.decals ?? [];

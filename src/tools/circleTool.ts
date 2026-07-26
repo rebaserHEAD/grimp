@@ -60,7 +60,11 @@ export class CircleTool implements ITool {
 
     if (paletteItem.type === 'entity') {
       const { entityChanges } = createEntitiesAtPositions(
-        tiles, paletteItem.id, state.entities, state.nextEntityId, state.gridUid,
+        tiles,
+        paletteItem.id,
+        state.entities,
+        state.nextEntityId,
+        state.gridUid,
       );
       if (entityChanges.length > 0) {
         ctx.dispatch({
@@ -74,7 +78,11 @@ export class CircleTool implements ITool {
     if (paletteItem.type === 'decal' && ctx.decalSettings) {
       const activeGrid = state.grids[state.activeGridIndex];
       const { decalChanges } = createDecalsAtPositions(
-        tiles, paletteItem.id, activeGrid.decals.decals, activeGrid.decals.nextDecalId, ctx.decalSettings,
+        tiles,
+        paletteItem.id,
+        activeGrid.decals.decals,
+        activeGrid.decals.nextDecalId,
+        ctx.decalSettings,
       );
       if (decalChanges.length > 0) {
         ctx.dispatch({
@@ -91,8 +99,10 @@ export class CircleTool implements ITool {
     const r = Math.round(this.radius);
     const expanded = ensureGridContainsBounds(
       state.grid,
-      this.centerX - r, this.centerY - r,
-      this.centerX + r, this.centerY + r,
+      this.centerX - r,
+      this.centerY - r,
+      this.centerX + r,
+      this.centerY + r,
       0,
     );
     if (expanded !== state.grid) {
@@ -117,12 +127,7 @@ export class CircleTool implements ITool {
     }
   }
 
-  renderPreview(
-    canvasCtx: CanvasRenderingContext2D,
-    toolCtx: ToolContext,
-    cursorTileX: number,
-    cursorTileY: number,
-  ) {
+  renderPreview(canvasCtx: CanvasRenderingContext2D, toolCtx: ToolContext, cursorTileX: number, cursorTileY: number) {
     const { camera, canvasW, canvasH } = toolCtx;
     const tileScreenSize = camera.tileScreenSize;
 

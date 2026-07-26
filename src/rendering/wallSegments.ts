@@ -2,8 +2,10 @@ import type { ImportedEntity } from '../import/mapImporter';
 import type { IPrototypeRegistry } from '../loaders/registryTypes';
 
 export interface WallSegment {
-  x1: number; y1: number;
-  x2: number; y2: number;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
 }
 
 export interface WallSegmentCache {
@@ -26,7 +28,7 @@ export function buildWallSegmentCache(
   for (const entity of entities) {
     const resolved = registry.getEntity(entity.prototype);
     if (!resolved) continue;
-    const hasOccluder = resolved.components.some(c => c.type === 'Occluder');
+    const hasOccluder = resolved.components.some((c) => c.type === 'Occluder');
     if (hasOccluder) {
       const x = Math.floor(entity.position.x);
       const y = Math.floor(entity.position.y);
@@ -42,8 +44,10 @@ export function buildWallSegmentCache(
   // Each wall cell at (x, y) spans from (x, y) to (x+1, y+1).
   // Edges are defined as line segments in world coordinates.
   interface RawEdge {
-    x1: number; y1: number;
-    x2: number; y2: number;
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
     horizontal: boolean;
   }
 
@@ -84,7 +88,10 @@ export function buildWallSegmentCache(
       for (let by = minBy; by <= maxBy; by++) {
         const key = `${bx},${by}`;
         let list = buckets.get(key);
-        if (!list) { list = []; buckets.set(key, list); }
+        if (!list) {
+          list = [];
+          buckets.set(key, list);
+        }
         list.push(seg);
       }
     }
@@ -116,11 +123,7 @@ export function buildWallSegmentCache(
  * For merged segments that partially overlap the tile boundary, only the
  * overlapping portion is removed and the remaining parts are preserved.
  */
-export function excludeTileEdges(
-  segments: WallSegment[],
-  tileX: number,
-  tileY: number,
-): WallSegment[] {
+export function excludeTileEdges(segments: WallSegment[], tileX: number, tileY: number): WallSegment[] {
   const result: WallSegment[] = [];
 
   for (const seg of segments) {
@@ -182,9 +185,7 @@ export function excludeTileEdges(
   return result;
 }
 
-function mergeEdges(
-  edges: { x1: number; y1: number; x2: number; y2: number; horizontal: boolean }[],
-): WallSegment[] {
+function mergeEdges(edges: { x1: number; y1: number; x2: number; y2: number; horizontal: boolean }[]): WallSegment[] {
   const segments: WallSegment[] = [];
 
   // Group edges by orientation and shared coordinate

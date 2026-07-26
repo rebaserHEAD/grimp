@@ -105,9 +105,12 @@ const floorUnderWallRule: ValidationRule = {
       const cell = getCell(grid, x, y);
       if (cell && !ALLOWED_WALL_TILES.has(cell.tileId)) {
         issues.push({
-          ruleId: 'floor-under-wall', severity: 'warning',
+          ruleId: 'floor-under-wall',
+          severity: 'warning',
           message: `Floor tile (${cell.tileId}) under wall at (${x}, ${y}). Walls should be on Plating.`,
-          x, y, entityUid: entity.uid,
+          x,
+          y,
+          entityUid: entity.uid,
         });
       }
     }
@@ -129,9 +132,12 @@ const doorWithoutFloorRule: ValidationRule = {
       const cell = getCell(grid, x, y);
       if (!cell || NO_FLOOR_TILES.has(cell.tileId)) {
         issues.push({
-          ruleId: 'door-without-floor', severity: 'warning',
+          ruleId: 'door-without-floor',
+          severity: 'warning',
           message: `Door (${entity.prototype}) has no floor tile at (${x}, ${y}).`,
-          x, y, entityUid: entity.uid,
+          x,
+          y,
+          entityUid: entity.uid,
         });
       }
     }
@@ -145,7 +151,7 @@ const danglingDeviceRefRule: ValidationRule = {
   severity: 'error',
   run(_grid, entities) {
     const issues: ValidationIssue[] = [];
-    const validUids = new Set(entities.map(e => e.uid));
+    const validUids = new Set(entities.map((e) => e.uid));
 
     for (const entity of entities) {
       const x = Math.floor(entity.position.x);
@@ -157,9 +163,12 @@ const danglingDeviceRefRule: ValidationRule = {
           for (const uid of c.devices as number[]) {
             if (!validUids.has(uid)) {
               issues.push({
-                ruleId: 'dangling-device-ref', severity: 'error',
+                ruleId: 'dangling-device-ref',
+                severity: 'error',
                 message: `${entity.prototype} (UID ${entity.uid}) references non-existent entity UID ${uid} in DeviceList.`,
-                x, y, entityUid: entity.uid,
+                x,
+                y,
+                entityUid: entity.uid,
               });
             }
           }
@@ -170,9 +179,12 @@ const danglingDeviceRefRule: ValidationRule = {
             const uid = parseInt(uidStr, 10);
             if (!isNaN(uid) && !validUids.has(uid)) {
               issues.push({
-                ruleId: 'dangling-device-ref', severity: 'error',
+                ruleId: 'dangling-device-ref',
+                severity: 'error',
                 message: `${entity.prototype} (UID ${entity.uid}) references non-existent entity UID ${uid} in DeviceLinkSource.`,
-                x, y, entityUid: entity.uid,
+                x,
+                y,
+                entityUid: entity.uid,
               });
             }
           }
@@ -182,9 +194,12 @@ const danglingDeviceRefRule: ValidationRule = {
           for (const uid of c.deviceLists as number[]) {
             if (!validUids.has(uid)) {
               issues.push({
-                ruleId: 'dangling-device-ref', severity: 'error',
+                ruleId: 'dangling-device-ref',
+                severity: 'error',
                 message: `${entity.prototype} (UID ${entity.uid}) references non-existent entity UID ${uid} in DeviceNetwork.`,
-                x, y, entityUid: entity.uid,
+                x,
+                y,
+                entityUid: entity.uid,
               });
             }
           }
@@ -209,14 +224,18 @@ function makeAlarmRule(alarmType: 'AirAlarm' | 'FireAlarm'): ValidationRule {
         const y = Math.floor(entity.position.y);
 
         // Check instance components
-        const instanceDL = entity.components.find(c => (c as Record<string, unknown>).type === 'DeviceList') as Record<string, unknown> | undefined;
+        const instanceDL = entity.components.find((c) => (c as Record<string, unknown>).type === 'DeviceList') as
+          Record<string, unknown> | undefined;
         if (instanceDL) {
           const devices = instanceDL.devices;
           if (!Array.isArray(devices) || devices.length === 0) {
             issues.push({
-              ruleId: id, severity: 'warning',
+              ruleId: id,
+              severity: 'warning',
               message: `${entity.prototype} at (${x}, ${y}) has no linked devices.`,
-              x, y, entityUid: entity.uid,
+              x,
+              y,
+              entityUid: entity.uid,
             });
           }
           continue; // has instance component, checked
@@ -224,13 +243,16 @@ function makeAlarmRule(alarmType: 'AirAlarm' | 'FireAlarm'): ValidationRule {
 
         // No instance component, check prototype
         const resolved = registry.getEntity(entity.prototype);
-        const hasProtoDL = resolved?.components.some(c => c.type === 'DeviceList') ?? false;
+        const hasProtoDL = resolved?.components.some((c) => c.type === 'DeviceList') ?? false;
         if (hasProtoDL) {
           // Prototype has DeviceList but instance doesn't, means no devices linked
           issues.push({
-            ruleId: id, severity: 'warning',
+            ruleId: id,
+            severity: 'warning',
             message: `${entity.prototype} at (${x}, ${y}) has no linked devices.`,
-            x, y, entityUid: entity.uid,
+            x,
+            y,
+            entityUid: entity.uid,
           });
         }
       }
@@ -263,5 +285,5 @@ export function validateMap(
 
 /** Get rule metadata for UI grouping. */
 export function getValidationRules(): { id: string; label: string; severity: 'error' | 'warning' }[] {
-  return RULES.map(r => ({ id: r.id, label: r.label, severity: r.severity }));
+  return RULES.map((r) => ({ id: r.id, label: r.label, severity: r.severity }));
 }

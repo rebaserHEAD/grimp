@@ -49,8 +49,15 @@ const SHIP_SWITCHES: { type: string; label: string; hint: string }[] = [
 const MAP_CONTAMINATION = ['Map', 'PhysicsMap', 'GridTree', 'MovedGrids'];
 
 export const MapPropertiesModal: React.FC<Props> = ({
-  documentKind, meta, gridUid, gridProperties, tileCount,
-  onSetIdentity, onToggleComponent, onSetBecomesStation, onClose,
+  documentKind,
+  meta,
+  gridUid,
+  gridProperties,
+  tileCount,
+  onSetIdentity,
+  onToggleComponent,
+  onSetBecomesStation,
+  onClose,
 }) => {
   const [name, setName] = useState(gridProperties.name);
   const [desc, setDesc] = useState(gridProperties.desc);
@@ -72,11 +79,10 @@ export const MapPropertiesModal: React.FC<Props> = ({
     }
   };
 
-  const editableTypes = new Set([...SHIP_SWITCHES.map(s => s.type), 'BecomesStation']);
-  const otherComponents = gridProperties.components.filter(t => !editableTypes.has(t));
-  const contamination = documentKind === 'Grid'
-    ? MAP_CONTAMINATION.filter(t => gridProperties.components.includes(t))
-    : [];
+  const editableTypes = new Set([...SHIP_SWITCHES.map((s) => s.type), 'BecomesStation']);
+  const otherComponents = gridProperties.components.filter((t) => !editableTypes.has(t));
+  const contamination =
+    documentKind === 'Grid' ? MAP_CONTAMINATION.filter((t) => gridProperties.components.includes(t)) : [];
 
   const metaRows: [string, string][] = [
     ['Kind', documentKind],
@@ -92,7 +98,9 @@ export const MapPropertiesModal: React.FC<Props> = ({
     <div
       className="fixed inset-0 z-[9998] flex items-center justify-center"
       style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className="bg-elevated border border-subtle rounded-lg p-6 max-w-[560px] w-full max-h-[80vh] overflow-y-auto text-primary text-[13px]">
         <div className="flex items-center justify-between mb-4">
@@ -117,8 +125,8 @@ export const MapPropertiesModal: React.FC<Props> = ({
           </div>
           {meta.postmapinit === true && (
             <div className="mt-2 text-[12px] text-warning">
-              This file was saved post-mapinit. Grids should be saved before map
-              initialization; the game may misbehave loading this one.
+              This file was saved post-mapinit. Grids should be saved before map initialization; the game may misbehave
+              loading this one.
             </div>
           )}
         </div>
@@ -130,7 +138,7 @@ export const MapPropertiesModal: React.FC<Props> = ({
             <input
               type="text"
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value)}
               onBlur={commitIdentity}
               placeholder="Unnamed grid"
               className="w-full bg-transparent border border-subtle rounded-sm px-2 py-1 text-primary text-[13px]"
@@ -140,7 +148,7 @@ export const MapPropertiesModal: React.FC<Props> = ({
             <span className="text-muted block mb-0.5">Description</span>
             <textarea
               value={desc}
-              onChange={e => setDesc(e.target.value)}
+              onChange={(e) => setDesc(e.target.value)}
               onBlur={commitIdentity}
               rows={3}
               placeholder="Shown on examine and in shipyard listings that read MetaData."
@@ -151,14 +159,14 @@ export const MapPropertiesModal: React.FC<Props> = ({
 
         <div className="mb-4">
           <h3 className="text-[11px] uppercase tracking-wider text-muted mb-1.5 font-semibold">Ship switches</h3>
-          {SHIP_SWITCHES.map(sw => {
+          {SHIP_SWITCHES.map((sw) => {
             const enabled = gridProperties.components.includes(sw.type);
             return (
               <label key={sw.type} className="flex items-start gap-2 mb-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={enabled}
-                  onChange={e => onToggleComponent(sw.type, e.target.checked)}
+                  onChange={(e) => onToggleComponent(sw.type, e.target.checked)}
                   className="mt-0.5"
                 />
                 <span>
@@ -173,7 +181,7 @@ export const MapPropertiesModal: React.FC<Props> = ({
             <input
               type="checkbox"
               checked={hasBecomesStation}
-              onChange={e => {
+              onChange={(e) => {
                 if (e.target.checked) {
                   const id = stationId.trim() || name.trim() || gridProperties.name;
                   setStationId(id);
@@ -187,8 +195,8 @@ export const MapPropertiesModal: React.FC<Props> = ({
             <span>
               <span className="text-primary font-semibold">BecomesStation</span>
               <span className="text-muted block text-[12px]">
-                Applies station config (name, jobs) on gameMap load. The id must
-                match a key under the gameMap prototype's stations block.
+                Applies station config (name, jobs) on gameMap load. The id must match a key under the gameMap
+                prototype's stations block.
               </span>
             </span>
           </label>
@@ -198,7 +206,7 @@ export const MapPropertiesModal: React.FC<Props> = ({
               <input
                 type="text"
                 value={stationId}
-                onChange={e => setStationId(e.target.value)}
+                onChange={(e) => setStationId(e.target.value)}
                 onBlur={() => {
                   const id = stationId.trim();
                   if (id && id !== gridProperties.becomesStationId) onSetBecomesStation(id);
@@ -212,12 +220,11 @@ export const MapPropertiesModal: React.FC<Props> = ({
         {contamination.length > 0 && (
           <div className="mb-4 border border-subtle rounded p-2">
             <div className="text-[12px] text-warning mb-1.5">
-              This grid file carries map-entity components ({contamination.join(', ')}):
-              it was saved as a map at some point. Upstream maintainers require
-              removing these from ship grids.
+              This grid file carries map-entity components ({contamination.join(', ')}): it was saved as a map at some
+              point. Upstream maintainers require removing these from ship grids.
             </div>
             <button
-              onClick={() => contamination.forEach(t => onToggleComponent(t, false))}
+              onClick={() => contamination.forEach((t) => onToggleComponent(t, false))}
               className="text-[12px] border border-subtle rounded-sm px-2 py-1 text-primary hover:bg-hover cursor-pointer bg-transparent"
             >
               Remove map-entity components
@@ -230,11 +237,8 @@ export const MapPropertiesModal: React.FC<Props> = ({
             Other root components (read-only)
           </h3>
           <div className="flex flex-wrap gap-1">
-            {otherComponents.map(t => (
-              <span
-                key={t}
-                className="text-[11px] font-mono border border-subtle rounded-sm px-1.5 py-0.5 text-muted"
-              >
+            {otherComponents.map((t) => (
+              <span key={t} className="text-[11px] font-mono border border-subtle rounded-sm px-1.5 py-0.5 text-muted">
                 {t}
               </span>
             ))}

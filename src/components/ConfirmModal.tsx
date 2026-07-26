@@ -13,8 +13,13 @@ interface Props {
 }
 
 export const ConfirmModal: React.FC<Props> = ({
-  title, message, confirmLabel = 'Confirm', cancelLabel = 'Cancel',
-  danger = false, onConfirm, onCancel,
+  title,
+  message,
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
+  danger = false,
+  onConfirm,
+  onCancel,
 }) => {
   const confirmRef = useRef<HTMLButtonElement>(null);
 
@@ -31,26 +36,53 @@ export const ConfirmModal: React.FC<Props> = ({
   return (
     <div
       style={{
-        position: 'fixed', inset: 0, zIndex: 9999,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         backgroundColor: 'rgba(0,0,0,0.7)',
       }}
       onClick={onCancel}
     >
       <div
         style={{
-          backgroundColor: '#1a1a2e', border: '1px solid #2a2a4a',
-          borderRadius: 8, padding: '32px 40px', maxWidth: 480,
-          color: '#ccc', fontSize: 14, lineHeight: 1.7, textAlign: 'center',
+          backgroundColor: '#1a1a2e',
+          border: '1px solid #2a2a4a',
+          borderRadius: 8,
+          padding: '32px 40px',
+          maxWidth: 480,
+          color: '#ccc',
+          fontSize: 14,
+          lineHeight: 1.7,
+          textAlign: 'center',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         <img
           src="/images/chief_engineer.png"
           alt=""
-          style={{ height: 64, imageRendering: 'pixelated', marginBottom: 12, display: 'block', marginLeft: 'auto', marginRight: 'auto' }}
+          style={{
+            height: 64,
+            imageRendering: 'pixelated',
+            marginBottom: 12,
+            display: 'block',
+            marginLeft: 'auto',
+            marginRight: 'auto',
+          }}
         />
-        <h2 style={{ color: '#fff', margin: '0 0 16px', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+        <h2
+          style={{
+            color: '#fff',
+            margin: '0 0 16px',
+            fontSize: 20,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+          }}
+        >
           {danger && <FontAwesomeIcon icon={faTriangleExclamation} style={{ color: '#e8a33d', fontSize: 22 }} />}
           {title}
           {danger && <FontAwesomeIcon icon={faTriangleExclamation} style={{ color: '#e8a33d', fontSize: 22 }} />}
@@ -60,9 +92,13 @@ export const ConfirmModal: React.FC<Props> = ({
           <button
             onClick={onCancel}
             style={{
-              backgroundColor: '#2a2a4a', border: '1px solid #3a3a5a',
-              borderRadius: 4, color: '#ccc', fontSize: 14,
-              padding: '10px 24px', cursor: 'pointer',
+              backgroundColor: '#2a2a4a',
+              border: '1px solid #3a3a5a',
+              borderRadius: 4,
+              color: '#ccc',
+              fontSize: 14,
+              padding: '10px 24px',
+              cursor: 'pointer',
             }}
           >
             {cancelLabel}
@@ -73,8 +109,11 @@ export const ConfirmModal: React.FC<Props> = ({
             style={{
               backgroundColor: danger ? '#6b2020' : '#0f3460',
               border: `1px solid ${danger ? '#8b3030' : '#2a2a4a'}`,
-              borderRadius: 4, color: '#fff', fontSize: 14,
-              padding: '10px 24px', cursor: 'pointer',
+              borderRadius: 4,
+              color: '#fff',
+              fontSize: 14,
+              padding: '10px 24px',
+              cursor: 'pointer',
             }}
           >
             {confirmLabel}

@@ -17,22 +17,44 @@ function makeRegistry(): IPrototypeRegistry {
     getEntity: (id: string) => {
       if (id === 'WallSolid') {
         return {
-          id: 'WallSolid', name: 'Wall', description: '', suffix: '',
-          abstract: false, categories: [], placement: {},
+          id: 'WallSolid',
+          name: 'Wall',
+          description: '',
+          suffix: '',
+          abstract: false,
+          categories: [],
+          placement: {},
           components: [{ type: 'Occluder' }, { type: 'Transform' }],
-          spriteInfo: null, sourceCategory: '', raw: { type: 'entity' as const, id: 'WallSolid' },
+          spriteInfo: null,
+          sourceCategory: '',
+          raw: { type: 'entity' as const, id: 'WallSolid' },
         };
       }
       return {
-        id, name: id, description: '', suffix: '',
-        abstract: false, categories: [], placement: {},
+        id,
+        name: id,
+        description: '',
+        suffix: '',
+        abstract: false,
+        categories: [],
+        placement: {},
         components: [{ type: 'Transform' }],
-        spriteInfo: null, sourceCategory: '', raw: { type: 'entity' as const, id },
+        spriteInfo: null,
+        sourceCategory: '',
+        raw: { type: 'entity' as const, id },
       };
     },
-    getTile: () => null, getAllTiles: () => [], getAllEntities: () => [],
-    getEntitiesByCategory: () => [], getCategories: () => [],
-    getSpriteInfo: () => null, tileCount: 0, entityCount: 0, getDecal: () => null, getAllDecals: () => [], decalCount: 0,
+    getTile: () => null,
+    getAllTiles: () => [],
+    getAllEntities: () => [],
+    getEntitiesByCategory: () => [],
+    getCategories: () => [],
+    getSpriteInfo: () => null,
+    tileCount: 0,
+    entityCount: 0,
+    getDecal: () => null,
+    getAllDecals: () => [],
+    decalCount: 0,
   };
 }
 
@@ -65,8 +87,10 @@ describe('buildWallSegmentCache', () => {
   it('2x2 wall block has 4 merged segments', () => {
     // Each side of the 2x2 square merges into one segment
     const entities = [
-      makeWallEntity(1, 0, 0), makeWallEntity(2, 1, 0),
-      makeWallEntity(3, 0, 1), makeWallEntity(4, 1, 1),
+      makeWallEntity(1, 0, 0),
+      makeWallEntity(2, 1, 0),
+      makeWallEntity(3, 0, 1),
+      makeWallEntity(4, 1, 1),
     ];
     const cache = buildWallSegmentCache(entities, makeRegistry());
     expect(cache.segments).toHaveLength(4);
@@ -74,9 +98,7 @@ describe('buildWallSegmentCache', () => {
 
   it('merges colinear edges into longer segments', () => {
     // Row of 3 walls: top edge should merge into 1 segment, bottom into 1
-    const entities = [
-      makeWallEntity(1, 0, 0), makeWallEntity(2, 1, 0), makeWallEntity(3, 2, 0),
-    ];
+    const entities = [makeWallEntity(1, 0, 0), makeWallEntity(2, 1, 0), makeWallEntity(3, 2, 0)];
     const cache = buildWallSegmentCache(entities, makeRegistry());
     // Top: 1 merged, Bottom: 1 merged, Left: 1, Right: 1 = 4 total
     expect(cache.segments).toHaveLength(4);
@@ -125,7 +147,7 @@ describe('buildWallSegmentCache', () => {
     // Query at x=10, y=10.5 with small radius, the long merged segment should still be found
     const nearby = cache.getSegmentsInRadius(10, 10.5, 2);
     // Should include the long merged top edge (y=11, x=0..20) because it crosses through
-    const topEdge = nearby.find(s => s.y1 === 11 && s.y2 === 11);
+    const topEdge = nearby.find((s) => s.y1 === 11 && s.y2 === 11);
     expect(topEdge).toBeDefined();
     expect(topEdge!.x1).toBe(0);
     expect(topEdge!.x2).toBe(20);
@@ -136,10 +158,10 @@ describe('excludeTileEdges', () => {
   it('removes all 4 edges of a single-tile wall', () => {
     // Single wall at (5,5) produces 4 segments: bottom, top, left, right
     const segments: WallSegment[] = [
-      { x1: 5, y1: 5, x2: 6, y2: 5 },   // bottom
-      { x1: 5, y1: 6, x2: 6, y2: 6 },   // top
-      { x1: 5, y1: 5, x2: 5, y2: 6 },   // left
-      { x1: 6, y1: 5, x2: 6, y2: 6 },   // right
+      { x1: 5, y1: 5, x2: 6, y2: 5 }, // bottom
+      { x1: 5, y1: 6, x2: 6, y2: 6 }, // top
+      { x1: 5, y1: 5, x2: 5, y2: 6 }, // left
+      { x1: 6, y1: 5, x2: 6, y2: 6 }, // right
     ];
     const filtered = excludeTileEdges(segments, 5, 5);
     expect(filtered).toHaveLength(0);
@@ -148,9 +170,7 @@ describe('excludeTileEdges', () => {
   it('splits a merged horizontal segment around the excluded tile', () => {
     // Long merged segment at y=5 from x=3 to x=8
     // Exclude tile at (5,5), its bottom edge is y=5, x=5 to x=6
-    const segments: WallSegment[] = [
-      { x1: 3, y1: 5, x2: 8, y2: 5 },
-    ];
+    const segments: WallSegment[] = [{ x1: 3, y1: 5, x2: 8, y2: 5 }];
     const filtered = excludeTileEdges(segments, 5, 5);
     // Should split into (3,5)→(5,5) and (6,5)→(8,5)
     expect(filtered).toHaveLength(2);
@@ -161,9 +181,7 @@ describe('excludeTileEdges', () => {
   it('splits a merged vertical segment around the excluded tile', () => {
     // Vertical segment at x=5 from y=2 to y=9
     // Exclude tile at (5,5), left edge is x=5, y=5 to y=6
-    const segments: WallSegment[] = [
-      { x1: 5, y1: 2, x2: 5, y2: 9 },
-    ];
+    const segments: WallSegment[] = [{ x1: 5, y1: 2, x2: 5, y2: 9 }];
     const filtered = excludeTileEdges(segments, 5, 5);
     expect(filtered).toHaveLength(2);
     expect(filtered).toContainEqual({ x1: 5, y1: 2, x2: 5, y2: 5 });
@@ -172,8 +190,8 @@ describe('excludeTileEdges', () => {
 
   it('keeps segments not on the excluded tile edges', () => {
     const segments: WallSegment[] = [
-      { x1: 0, y1: 0, x2: 3, y2: 0 },   // far away horizontal
-      { x1: 10, y1: 0, x2: 10, y2: 5 },  // far away vertical
+      { x1: 0, y1: 0, x2: 3, y2: 0 }, // far away horizontal
+      { x1: 10, y1: 0, x2: 10, y2: 5 }, // far away vertical
     ];
     const filtered = excludeTileEdges(segments, 5, 5);
     expect(filtered).toHaveLength(2);
@@ -182,9 +200,7 @@ describe('excludeTileEdges', () => {
   it('handles segment ending at tile edge (left part only)', () => {
     // Segment from x=3 to x=6 at y=5, tile at (5,5)
     // Bottom edge overlap: x=5 to x=6, left remainder: x=3 to x=5
-    const segments: WallSegment[] = [
-      { x1: 3, y1: 5, x2: 6, y2: 5 },
-    ];
+    const segments: WallSegment[] = [{ x1: 3, y1: 5, x2: 6, y2: 5 }];
     const filtered = excludeTileEdges(segments, 5, 5);
     expect(filtered).toHaveLength(1);
     expect(filtered[0]).toEqual({ x1: 3, y1: 5, x2: 5, y2: 5 });

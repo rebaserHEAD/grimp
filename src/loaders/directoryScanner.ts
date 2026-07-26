@@ -63,7 +63,7 @@ export async function buildFileMapFromFileList(
     if (i > 0 && i % YIELD_INTERVAL === 0) {
       onProgress?.(i, total);
       // Yield to let React render progress updates
-      await new Promise(r => setTimeout(r, 0));
+      await new Promise((r) => setTimeout(r, 0));
     }
   }
   onProgress?.(total, total);
@@ -186,9 +186,7 @@ export function summarizeKeys(keys: Iterable<string>): RepositorySummary {
     }
 
     // Categorise by the first non-fork segment
-    const categorySegment = segments[0].startsWith('_') && segments.length > 1
-      ? segments[1]
-      : segments[0];
+    const categorySegment = segments[0].startsWith('_') && segments.length > 1 ? segments[1] : segments[0];
 
     switch (categorySegment) {
       case 'Tiles':

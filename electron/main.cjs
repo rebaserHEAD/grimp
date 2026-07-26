@@ -215,8 +215,7 @@ app.whenReady().then(() => {
     protocol.handle('http', (request) => {
       const url = new URL(request.url);
       const pathname = decodeURIComponent(url.pathname);
-      if (url.origin === devOrigin &&
-          (pathname === FORK_PREFIX || pathname.startsWith(FORK_PREFIX + '/'))) {
+      if (url.origin === devOrigin && (pathname === FORK_PREFIX || pathname.startsWith(FORK_PREFIX + '/'))) {
         return serveForkFile(pathname.slice(FORK_PREFIX.length) || '/');
       }
       return net.fetch(request, { bypassCustomProtocolHandlers: true });

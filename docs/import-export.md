@@ -18,16 +18,16 @@ tilemap:
   1: FloorSteel
 
 entities:
-- proto: ""           # Structural entities (map + grid)
-  entities:
-  - uid: 0            # Map entity
-    components: [MetaData, Transform, Map, Broadphase, OccluderTree]
-  - uid: 1            # Grid entity
-    components: [MetaData, Transform, MapGrid]
-- proto: APCBasic     # Placed entities grouped by prototype
-  entities:
-  - uid: 100
-    components: [Transform, Battery, ...]
+  - proto: '' # Structural entities (map + grid)
+    entities:
+      - uid: 0 # Map entity
+        components: [MetaData, Transform, Map, Broadphase, OccluderTree]
+      - uid: 1 # Grid entity
+        components: [MetaData, Transform, MapGrid]
+  - proto: APCBasic # Placed entities grouped by prototype
+    entities:
+      - uid: 100
+        components: [Transform, Battery, ...]
 ```
 
 ### Format 7 (additional top-level keys)
@@ -79,9 +79,9 @@ meta:
   category: Grid
 maps: []
 grids:
-- 1
+  - 1
 orphans:
-- 1
+  - 1
 nullspace: []
 ```
 
@@ -99,11 +99,11 @@ output shape.
 
 Tiles are stored in 16x16 chunks within the grid entity's `MapGrid` component. Each chunk is keyed by chunk coordinate (e.g., `"-1,0"`). Tile data is base64-encoded:
 
-| Format | Bytes/Tile | Layout |
-|--------|-----------|--------|
-| 6 | 6 | int32 LE typeId + uint8 flags + uint8 variant |
-| 7 | 7 | int32 LE typeId + uint8 flags + uint8 variant + uint8 rotationMirroring |
-| Legacy | 4 | uint32 LE typeId only |
+| Format | Bytes/Tile | Layout                                                                  |
+| ------ | ---------- | ----------------------------------------------------------------------- |
+| 6      | 6          | int32 LE typeId + uint8 flags + uint8 variant                           |
+| 7      | 7          | int32 LE typeId + uint8 flags + uint8 variant + uint8 rotationMirroring |
+| Legacy | 4          | uint32 LE typeId only                                                   |
 
 The `rotationMirroring` byte (format 7) encodes tile rotation: 0-3 = cardinal directions, 4-7 = mirrored variants.
 
@@ -142,9 +142,9 @@ ImportedMap
 ```typescript
 interface MapMeta {
   format: number;
-  postmapinit?: boolean;    // omitted by modern saves; absence = not yet initialized
-  category?: string;        // "Map" | "Grid"
-  engineVersion?: string;   // e.g., "272.0.0"
+  postmapinit?: boolean; // omitted by modern saves; absence = not yet initialized
+  category?: string; // "Map" | "Grid"
+  engineVersion?: string; // e.g., "272.0.0"
   forkId?: string;
   forkVersion?: string;
   time?: string;
@@ -156,24 +156,24 @@ interface MapMeta {
 interface ImportedMap {
   meta: MapMeta;
   tilemap: Record<number, string>;
-  grid: { width, height, offsetX, offsetY, cells: TileCell[] };
+  grid: { width; height; offsetX; offsetY; cells: TileCell[] };
   entities: ImportedEntity[];
   gridUid: number;
-  mapUid: number;                // -1 for grid documents (no map entity)
-  maps?: number[];               // Format 7+ top-level lists
+  mapUid: number; // -1 for grid documents (no map entity)
+  maps?: number[]; // Format 7+ top-level lists
   grids?: number[];
-  orphans?: number[];            // grid documents register their grid here
+  orphans?: number[]; // grid documents register their grid here
   nullspace?: number[];
-  gridDataList?: GridData[];     // one per grid, the multi-grid source of truth
+  gridDataList?: GridData[]; // one per grid, the multi-grid source of truth
   structuralEntityData?: Record<number, Record<string, unknown>[]>;
-  entityRawComponents?: Record<number, string[]>;  // verbatim YAML lines per entity
+  entityRawComponents?: Record<number, string[]>; // verbatim YAML lines per entity
   entityRawPreamble?: Record<number, string[]>;
 }
 
 interface TileCell {
   tileId: string;
-  flags?: number;            // Preserved from import
-  variant?: number;          // Preserved from import
+  flags?: number; // Preserved from import
+  variant?: number; // Preserved from import
   rotationMirroring?: number; // Format 7+ only
 }
 
@@ -182,7 +182,7 @@ interface ImportedEntity {
   prototype: string;
   position: { x: number; y: number };
   rotation: number;
-  components: Record<string, unknown>[];  // preserved verbatim
+  components: Record<string, unknown>[]; // preserved verbatim
 }
 ```
 
@@ -207,6 +207,7 @@ back on restores the original bytes exactly.
 ### SS14 YAML Tags
 
 SS14 uses custom YAML tags (`!type:SoundPathSpecifier`, `!type:Color`, etc.). These are handled by `SS14_SCHEMA` in `src/import/ss14Schema.ts`:
+
 - **Import**: Tags are parsed and wrapped with `_ss14Tag` metadata
 - **Export**: `stripInternalTags()` unwraps the metadata before emitting
 
@@ -236,12 +237,12 @@ Decals are stored in the grid entity's `DecalGrid` component. When decals on a g
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `src/import/mapImporter.ts` | YAML → ImportedMap (chunk decode inline) |
-| `src/import/ss14Schema.ts` | Custom js-yaml schema for `!type:` tags |
-| `src/export/mapExporter.ts` | ImportedMap → YAML (chunk encode inline) |
-| `src/export/decalExporter.ts` | DecalGrid re-serialization |
+| File                             | Purpose                                     |
+| -------------------------------- | ------------------------------------------- |
+| `src/import/mapImporter.ts`      | YAML → ImportedMap (chunk decode inline)    |
+| `src/import/ss14Schema.ts`       | Custom js-yaml schema for `!type:` tags     |
+| `src/export/mapExporter.ts`      | ImportedMap → YAML (chunk encode inline)    |
+| `src/export/decalExporter.ts`    | DecalGrid re-serialization                  |
 | `src/state/rawComponentPatch.ts` | Surgical edits to preserved structural YAML |
 
 ## Testing

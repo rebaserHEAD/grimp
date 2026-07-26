@@ -20,7 +20,7 @@ import { renderConnections } from '../connectionRenderer';
 import { Camera } from '../camera';
 
 // Access the mock helper
-const { __setEntities } = await import('../spatialIndex') as unknown as {
+const { __setEntities } = (await import('../spatialIndex')) as unknown as {
   __setEntities: (entities: ImportedEntity[]) => void;
 };
 
@@ -105,10 +105,12 @@ describe('connectionRenderer', () => {
   it('renders DeviceLinkSource connections as lines', () => {
     const ctx = makeCtx();
     const cam = makeCamera(1);
-    const source = makeEntity(1, 5, 5, [{
-      type: 'DeviceLinkSource',
-      linkedPorts: { '2': [['Pressed', 'Toggle']] },
-    }]);
+    const source = makeEntity(1, 5, 5, [
+      {
+        type: 'DeviceLinkSource',
+        linkedPorts: { '2': [['Pressed', 'Toggle']] },
+      },
+    ]);
     const target = makeEntity(2, 7, 5);
     const entities = [source, target];
     __setEntities(entities);
@@ -149,7 +151,7 @@ describe('connectionRenderer', () => {
     // With batching: 1 beginPath + 1 stroke for all DeviceList unselected lines
     // Without batching it would be 3 beginPath + 3 stroke calls
     const paths = (ctx as unknown as { __paths: string[] }).__paths;
-    const strokeCount = paths.filter(p => p === 'stroke').length;
+    const strokeCount = paths.filter((p) => p === 'stroke').length;
     // Exactly 1 stroke batch for DeviceList unselected (no selected, no DeviceLinkSource, no badges)
     expect(strokeCount).toBe(1);
   });
@@ -169,7 +171,7 @@ describe('connectionRenderer', () => {
     // 1 for dim unselected (empty), 1 for selected lines, 1 for arrows
     // At minimum the selected batch + arrows batch
     const paths = (ctx as unknown as { __paths: string[] }).__paths;
-    const strokeCount = paths.filter(p => p === 'stroke').length;
+    const strokeCount = paths.filter((p) => p === 'stroke').length;
     expect(strokeCount).toBeGreaterThanOrEqual(2); // selected lines + arrows
   });
 
@@ -189,14 +191,18 @@ describe('connectionRenderer', () => {
     // globalAlpha should have been set to 0.15 (dimmed) at some point
     const alphaValues: number[] = [];
     Object.defineProperty(ctx, 'globalAlpha', {
-      set(v: number) { alphaValues.push(v); },
-      get() { return alphaValues[alphaValues.length - 1] ?? 1; },
+      set(v: number) {
+        alphaValues.push(v);
+      },
+      get() {
+        return alphaValues[alphaValues.length - 1] ?? 1;
+      },
     });
 
     // Re-render to capture alpha values
     renderConnections(ctx, entities, cam, 800, 600, [3]);
     expect(alphaValues).toContain(0.15); // dimmed unselected
-    expect(alphaValues).toContain(1.0);  // bright selected
+    expect(alphaValues).toContain(1.0); // bright selected
   });
 
   it('draws badges when zoomed in enough', () => {

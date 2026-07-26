@@ -54,30 +54,32 @@ describe('edit isolation', () => {
     let state = editorReducer(createInitialState(), { type: 'LOAD_MAP', map });
 
     // Snapshot grid 1's tiles and entities before edit
-    const grid1TilesBefore = state.grids[1].grid.cells.map(c => c.tileId);
+    const grid1TilesBefore = state.grids[1].grid.cells.map((c) => c.tileId);
     const grid1EntityCountBefore = state.grids[1].entities.length;
 
     // Edit a tile on grid 0 (active grid)
     const g0 = state.grids[0].grid;
-    const firstNonSpaceIdx = g0.cells.findIndex(c => c.tileId !== 'Space');
+    const firstNonSpaceIdx = g0.cells.findIndex((c) => c.tileId !== 'Space');
     const cell = g0.cells[firstNonSpaceIdx >= 0 ? firstNonSpaceIdx : 0];
     const tileX = g0.offsetX + (firstNonSpaceIdx >= 0 ? firstNonSpaceIdx % g0.width : 0);
     const tileY = g0.offsetY + (firstNonSpaceIdx >= 0 ? Math.floor(firstNonSpaceIdx / g0.width) : 0);
 
     const command: Command = {
       label: 'test paint',
-      tileChanges: [{
-        x: tileX,
-        y: tileY,
-        before: { ...cell },
-        after: { tileId: cell.tileId === 'Plating' ? 'FloorSteel' : 'Plating' },
-      }],
+      tileChanges: [
+        {
+          x: tileX,
+          y: tileY,
+          before: { ...cell },
+          after: { tileId: cell.tileId === 'Plating' ? 'FloorSteel' : 'Plating' },
+        },
+      ],
       entityChanges: [],
     };
     state = editorReducer(state, { type: 'APPLY_COMMAND', command });
 
     // Verify grid 1 is untouched in state
-    const grid1TilesAfter = state.grids[1].grid.cells.map(c => c.tileId);
+    const grid1TilesAfter = state.grids[1].grid.cells.map((c) => c.tileId);
     expect(grid1TilesAfter).toEqual(grid1TilesBefore);
     expect(state.grids[1].entities.length).toBe(grid1EntityCountBefore);
 
@@ -86,13 +88,9 @@ describe('edit isolation', () => {
     const reimported = importMap(exported);
 
     // Grid 1 tiles should match original exactly
-    expect(reimported.gridDataList![1].grid.cells.length).toBe(
-      map.gridDataList![1].grid.cells.length
-    );
+    expect(reimported.gridDataList![1].grid.cells.length).toBe(map.gridDataList![1].grid.cells.length);
     for (let i = 0; i < reimported.gridDataList![1].grid.cells.length; i++) {
-      expect(reimported.gridDataList![1].grid.cells[i].tileId).toBe(
-        map.gridDataList![1].grid.cells[i].tileId
-      );
+      expect(reimported.gridDataList![1].grid.cells[i].tileId).toBe(map.gridDataList![1].grid.cells[i].tileId);
     }
 
     // Grid 1 entity count should match
@@ -107,13 +105,13 @@ describe('edit isolation', () => {
     let state = editorReducer(createInitialState(), { type: 'LOAD_MAP', map });
 
     // Snapshot grid 0
-    const grid0TilesBefore = state.grids[0].grid.cells.map(c => c.tileId);
+    const grid0TilesBefore = state.grids[0].grid.cells.map((c) => c.tileId);
     const grid0EntityCountBefore = state.grids[0].entities.length;
 
     // Switch to grid 1 and edit it
     state = editorReducer(state, { type: 'SET_ACTIVE_GRID', index: 1 });
     const g1 = state.grids[1].grid;
-    const firstNonSpaceIdx = g1.cells.findIndex(c => c.tileId !== 'Space');
+    const firstNonSpaceIdx = g1.cells.findIndex((c) => c.tileId !== 'Space');
     if (firstNonSpaceIdx < 0) return; // skip if grid 1 has no tiles
 
     const cell = g1.cells[firstNonSpaceIdx];
@@ -122,18 +120,20 @@ describe('edit isolation', () => {
 
     const command: Command = {
       label: 'test paint grid 1',
-      tileChanges: [{
-        x: tileX,
-        y: tileY,
-        before: { ...cell },
-        after: { tileId: cell.tileId === 'Plating' ? 'FloorSteel' : 'Plating' },
-      }],
+      tileChanges: [
+        {
+          x: tileX,
+          y: tileY,
+          before: { ...cell },
+          after: { tileId: cell.tileId === 'Plating' ? 'FloorSteel' : 'Plating' },
+        },
+      ],
       entityChanges: [],
     };
     state = editorReducer(state, { type: 'APPLY_COMMAND', command });
 
     // Verify grid 0 untouched in state
-    const grid0TilesAfter = state.grids[0].grid.cells.map(c => c.tileId);
+    const grid0TilesAfter = state.grids[0].grid.cells.map((c) => c.tileId);
     expect(grid0TilesAfter).toEqual(grid0TilesBefore);
     expect(state.grids[0].entities.length).toBe(grid0EntityCountBefore);
 
@@ -143,9 +143,7 @@ describe('edit isolation', () => {
 
     // Grid 0 tiles should match original
     for (let i = 0; i < reimported.gridDataList![0].grid.cells.length; i++) {
-      expect(reimported.gridDataList![0].grid.cells[i].tileId).toBe(
-        map.gridDataList![0].grid.cells[i].tileId
-      );
+      expect(reimported.gridDataList![0].grid.cells[i].tileId).toBe(map.gridDataList![0].grid.cells[i].tileId);
     }
     expect(reimported.gridDataList![0].entities.length).toBe(grid0EntityCountBefore);
   });

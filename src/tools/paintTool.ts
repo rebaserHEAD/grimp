@@ -34,8 +34,12 @@ export class PaintTool implements ITool {
     if (!this.painting) return;
     this.painting = false;
     if (this.tileChanges.length > 0 || this.entityChanges.length > 0 || this.decalChanges.length > 0) {
-      const label = this.decalChanges.length > 0 ? 'Paint decals'
-        : this.entityChanges.length > 0 ? 'Paint entities' : 'Paint tiles';
+      const label =
+        this.decalChanges.length > 0
+          ? 'Paint decals'
+          : this.entityChanges.length > 0
+            ? 'Paint entities'
+            : 'Paint tiles';
       ctx.dispatch({
         type: 'APPLY_COMMAND',
         command: {
@@ -52,12 +56,7 @@ export class PaintTool implements ITool {
     this.visited.clear();
   }
 
-  renderPreview(
-    canvasCtx: CanvasRenderingContext2D,
-    toolCtx: ToolContext,
-    cursorTileX: number,
-    cursorTileY: number,
-  ) {
+  renderPreview(canvasCtx: CanvasRenderingContext2D, toolCtx: ToolContext, cursorTileX: number, cursorTileY: number) {
     if (!toolCtx.paletteItem) return;
 
     const { camera, canvasW, canvasH } = toolCtx;

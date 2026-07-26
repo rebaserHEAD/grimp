@@ -5,6 +5,7 @@ The RSI (Robust Sprite Interface) loader handles loading and caching sprite imag
 ## RSI Format
 
 Each `.rsi` directory contains:
+
 - `meta.json`, describes sprite states, their direction counts, and animation frames
 - `<state>.png`, one PNG per state, containing all directions and frames
 
@@ -37,7 +38,7 @@ sy  = row * tileHeight
 For a 4-direction, 1-frame state with 32×32 tiles, the PNG is **64×64** (2×2 grid):
 
 | (0,0) South | (32,0) North |
-|-------------|--------------|
+| ----------- | ------------ |
 | (0,32) East | (32,32) West |
 
 For a 1-direction, 6-frame animation, the PNG wraps into rows (e.g. 96×64 = 3×2 grid).
@@ -47,12 +48,13 @@ Each cell is `size.x` × `size.y` pixels (typically 32×32).
 ### Direction Order
 
 SS14 RSI direction indices:
+
 | Index | Direction |
-|-------|-----------|
-| 0 | South |
-| 1 | North |
-| 2 | East |
-| 3 | West |
+| ----- | --------- |
+| 0     | South     |
+| 1     | North     |
+| 2     | East      |
+| 3     | West      |
 
 ## Architecture
 
@@ -78,35 +80,42 @@ Entity prototype (SpriteInfo)
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `src/loaders/rsiLoader.ts` | Meta parsing, image loading, sprite extraction |
-| `src/rendering/entityRenderer.ts` | Entity rendering using loaded sprites |
-| `src/rendering/gridRenderer.ts` | Tile rendering using loaded PNGs |
+| File                              | Purpose                                        |
+| --------------------------------- | ---------------------------------------------- |
+| `src/loaders/rsiLoader.ts`        | Meta parsing, image loading, sprite extraction |
+| `src/rendering/entityRenderer.ts` | Entity rendering using loaded sprites          |
+| `src/rendering/gridRenderer.ts`   | Tile rendering using loaded PNGs               |
 
 ## Key Functions
 
 ### `parseRsiMeta(raw)`
+
 Parses a meta.json into indexed state data with computed `yOffset` (cumulative row position in PNG) and `frameCount`.
 
 ### `getDirectionOffset(direction, numDirections)`
+
 Maps a cardinal direction to its row offset within a state. Returns 0 for single-direction sprites.
 
 ### `loadRsiMeta(rsiPath, baseUrl)`
+
 Fetches and parses a meta.json. Cached by URL, each RSI's meta is only fetched once.
 
 ### `loadImage(url)`
+
 Loads an HTMLImageElement. Cached by URL.
 
 ### `loadSprite(spriteInfo, direction, frame, baseUrl, stateOverride?)`
+
 Combines meta + image loading to return the source rectangle for `ctx.drawImage()`. Returns null if the state doesn't exist. An optional `stateOverride` parameter loads a different state from the same RSI, used for dynamic visualizers like cable connection states (e.g., `hvcable_5` instead of `hvcable_0`).
 
 ### `clearRsiCache()`
+
 Clears both meta and image caches.
 
 ## Caching Strategy
 
 Two-level caching:
+
 1. **Meta cache**, `Map<string, Promise<RsiMeta>>` keyed by meta.json URL
 2. **Image cache**, `Map<string, Promise<HTMLImageElement>>` keyed by PNG URL
 
@@ -115,11 +124,13 @@ Both use Promise-level caching to prevent duplicate fetches when multiple render
 ## Tile Sprites vs Entity Sprites
 
 **Tiles** use plain PNG files (not RSI):
+
 - Path: `/Textures/Tiles/steel.png`
 - Loaded directly via `loadImage()`
 - Variants laid out horizontally in a single PNG
 
 **Entities** use RSI directories:
+
 - Path: `Structures/Power/apc.rsi`
 - Loaded via `loadRsiMeta()` + `loadRsiStateImage()`
 - Directions and frames in structured PNG layout
@@ -143,6 +154,7 @@ Both use Promise-level caching to prevent duplicate fetches when multiple render
 ## Extending
 
 To support animated sprites (unlikely needed for editor):
+
 1. Track frame timing in a render-loop state
 2. Use `RsiState.frameCount` and delays from meta.json
 3. Cycle `sx` offset based on current frame index

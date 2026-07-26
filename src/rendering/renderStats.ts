@@ -5,19 +5,19 @@
 
 export interface RenderStats {
   fps: number;
-  frameTime: number;       // ms for the last render frame
-  drawCalls: number;       // drawImage + fillRect calls this frame
+  frameTime: number; // ms for the last render frame
+  drawCalls: number; // drawImage + fillRect calls this frame
   totalEntities: number;
   visibleEntities: number;
   selectedCount: number;
   zoom: number;
   pxPerTile: number;
   lodActive: boolean;
-  skippedFrames: number;   // consecutive frames skipped by dirty flags
-  tilesRedrawn: boolean;    // did tile layer re-render this frame?
+  skippedFrames: number; // consecutive frames skipped by dirty flags
+  tilesRedrawn: boolean; // did tile layer re-render this frame?
   entitiesRedrawn: boolean; // did entity layer re-render this frame?
-  compositeOnly: boolean;   // was this frame composite-only (no layer re-render)?
-  zoomDeferred: boolean;    // is zoom-deferred scaling active?
+  compositeOnly: boolean; // was this frame composite-only (no layer re-render)?
+  zoomDeferred: boolean; // is zoom-deferred scaling active?
 }
 
 const stats: RenderStats = {
@@ -72,16 +72,28 @@ export function statsFrameEnd(startTime: number): void {
   stats.frameTime = Math.round((performance.now() - startTime) * 100) / 100;
 }
 
-export function statsSetDrawCalls(n: number): void { stats.drawCalls = n; }
-export function statsAddDrawCalls(n: number): void { stats.drawCalls += n; }
-export function statsSetTotalEntities(n: number): void { stats.totalEntities = n; }
-export function statsSetVisibleEntities(n: number): void { stats.visibleEntities = n; }
-export function statsSetSelectedCount(n: number): void { stats.selectedCount = n; }
+export function statsSetDrawCalls(n: number): void {
+  stats.drawCalls = n;
+}
+export function statsAddDrawCalls(n: number): void {
+  stats.drawCalls += n;
+}
+export function statsSetTotalEntities(n: number): void {
+  stats.totalEntities = n;
+}
+export function statsSetVisibleEntities(n: number): void {
+  stats.visibleEntities = n;
+}
+export function statsSetSelectedCount(n: number): void {
+  stats.selectedCount = n;
+}
 export function statsSetCamera(zoom: number, pxPerTile: number): void {
   stats.zoom = zoom;
   stats.pxPerTile = pxPerTile;
 }
-export function statsSetLodActive(active: boolean): void { stats.lodActive = active; }
+export function statsSetLodActive(active: boolean): void {
+  stats.lodActive = active;
+}
 export function statsSetLayerRedraws(tiles: boolean, entities: boolean): void {
   stats.tilesRedrawn = tiles;
   stats.entitiesRedrawn = entities;

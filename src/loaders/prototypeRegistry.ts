@@ -22,16 +22,40 @@ export class PrototypeRegistry implements IPrototypeRegistry {
     }
   }
 
-  getTile(id: string): ResolvedTile | null { return this.tiles.get(id) ?? null; }
-  getEntity(id: string): ResolvedEntity | null { return this.entities.get(id) ?? null; }
-  getDecal(id: string): DecalPrototypeInfo | null { return this.decals.get(id) ?? null; }
-  getAllDecals(): DecalPrototypeInfo[] { return Array.from(this.decals.values()); }
-  getAllTiles(): ResolvedTile[] { return Array.from(this.tiles.values()); }
-  getAllEntities(): ResolvedEntity[] { return Array.from(this.entities.values()); }
-  getEntitiesByCategory(category: string): ResolvedEntity[] { return this.categoryIndex.get(category) ?? []; }
-  getCategories(): string[] { return Array.from(this.categoryIndex.keys()).sort(); }
-  getSpriteInfo(entityId: string): SpriteInfo | null { return this.entities.get(entityId)?.spriteInfo ?? null; }
-  get tileCount(): number { return this.tiles.size; }
-  get entityCount(): number { return this.entities.size; }
-  get decalCount(): number { return this.decals.size; }
+  getTile(id: string): ResolvedTile | null {
+    return this.tiles.get(id) ?? null;
+  }
+  getEntity(id: string): ResolvedEntity | null {
+    return this.entities.get(id) ?? null;
+  }
+  getDecal(id: string): DecalPrototypeInfo | null {
+    return this.decals.get(id) ?? null;
+  }
+  getAllDecals(): DecalPrototypeInfo[] {
+    return Array.from(this.decals.values());
+  }
+  getAllTiles(): ResolvedTile[] {
+    return Array.from(this.tiles.values());
+  }
+  getAllEntities(): ResolvedEntity[] {
+    return Array.from(this.entities.values());
+  }
+  getEntitiesByCategory(category: string): ResolvedEntity[] {
+    return this.categoryIndex.get(category) ?? [];
+  }
+  getCategories(): string[] {
+    return Array.from(this.categoryIndex.keys()).sort();
+  }
+  getSpriteInfo(entityId: string): SpriteInfo | null {
+    return this.entities.get(entityId)?.spriteInfo ?? null;
+  }
+  get tileCount(): number {
+    return this.tiles.size;
+  }
+  get entityCount(): number {
+    return this.entities.size;
+  }
+  get decalCount(): number {
+    return this.decals.size;
+  }
 }

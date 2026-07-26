@@ -18,7 +18,15 @@ function makeEntity(uid: number, proto: string, x: number, y: number, rotation =
 }
 
 function makeDecal(id: number, protoId: string, x: number, y: number): DecalInstance {
-  return { id, prototypeId: protoId, position: { x: x + 0.5, y: y + 0.5 }, color: null, angle: 0, zIndex: 0, cleanable: false };
+  return {
+    id,
+    prototypeId: protoId,
+    position: { x: x + 0.5, y: y + 0.5 },
+    color: null,
+    angle: 0,
+    zIndex: 0,
+    cleanable: false,
+  };
 }
 
 function makeMockRegistry(): IPrototypeRegistry {
@@ -43,9 +51,12 @@ function makeMockRegistry(): IPrototypeRegistry {
     getCategories: () => [],
     getSpriteInfo: (id: string) => {
       // Return appropriate drawDepth for layer filtering tests
-      if (id.includes('Wall') || id.includes('Window')) return { rsiPath: 'test.rsi', baseState: 'base', layers: [], drawDepth: 'WallTops' } as any;
-      if (id.includes('Cable') || id.includes('Pipe')) return { rsiPath: 'test.rsi', baseState: 'base', layers: [], drawDepth: 'ThickPipe' } as any;
-      if (id.includes('Airlock') || id.includes('Door')) return { rsiPath: 'test.rsi', baseState: 'base', layers: [], drawDepth: 'Doors' } as any;
+      if (id.includes('Wall') || id.includes('Window'))
+        return { rsiPath: 'test.rsi', baseState: 'base', layers: [], drawDepth: 'WallTops' } as any;
+      if (id.includes('Cable') || id.includes('Pipe'))
+        return { rsiPath: 'test.rsi', baseState: 'base', layers: [], drawDepth: 'ThickPipe' } as any;
+      if (id.includes('Airlock') || id.includes('Door'))
+        return { rsiPath: 'test.rsi', baseState: 'base', layers: [], drawDepth: 'Doors' } as any;
       return null;
     },
     tileCount: 0,
@@ -74,7 +85,7 @@ function makeToolContext(
   if (opts?.decals) {
     state.grids[0].decals = {
       decals: [...opts.decals],
-      nextDecalId: Math.max(0, ...opts.decals.map(d => d.id)) + 1,
+      nextDecalId: Math.max(0, ...opts.decals.map((d) => d.id)) + 1,
     };
   }
   const ctx: ToolContext = {
@@ -171,7 +182,7 @@ describe('EntitySelectTool', () => {
     tool.onMouseUp(ctx, 5, 5);
 
     // Click on entity: first clears selection, then selects on mouse-up
-    const selectAction = dispatched.filter(a => a.type === 'SELECT_ENTITY').pop();
+    const selectAction = dispatched.filter((a) => a.type === 'SELECT_ENTITY').pop();
     expect(selectAction).toBeDefined();
     expect(selectAction.uids).toHaveLength(1);
   });
@@ -185,7 +196,7 @@ describe('EntitySelectTool', () => {
     tool.onMouseUp(ctx, 5, 5);
     tool.onMouseDown(ctx, 5, 5, 2);
 
-    const deselectAction = dispatched.filter(a => a.type === 'SELECT_ENTITY').pop();
+    const deselectAction = dispatched.filter((a) => a.type === 'SELECT_ENTITY').pop();
     expect(deselectAction?.uids).toEqual([]);
   });
 
@@ -201,7 +212,7 @@ describe('EntitySelectTool', () => {
     tool.onMouseUp(ctx, 10, 10);
 
     // First deselects (empty space clears), then starts box select
-    const lastSelect = dispatched.filter(a => a.type === 'SELECT_ENTITY').pop();
+    const lastSelect = dispatched.filter((a) => a.type === 'SELECT_ENTITY').pop();
     expect(lastSelect?.uids).toEqual([]);
   });
 
@@ -219,9 +230,7 @@ describe('EntitySelectTool', () => {
     tool.onMouseMove(ctx, 7, 8);
     tool.onMouseUp(ctx, 7, 8);
 
-    const moveCmd = dispatched.find(a =>
-      a.type === 'APPLY_COMMAND' && a.command.label.includes('Move'),
-    );
+    const moveCmd = dispatched.find((a) => a.type === 'APPLY_COMMAND' && a.command.label.includes('Move'));
     expect(moveCmd).toBeDefined();
     const addedEntity = moveCmd.command.entityChanges.find((ec: any) => ec.action === 'add');
     expect(addedEntity.entity.position.x).toBeCloseTo(7.5);
@@ -240,13 +249,11 @@ describe('EntitySelectTool', () => {
     tool.onMouseUp(ctx, 8, 8);
 
     // Should NOT have a Move command
-    const moveCmd = dispatched.find(a =>
-      a.type === 'APPLY_COMMAND' && a.command.label.includes('Move'),
-    );
+    const moveCmd = dispatched.find((a) => a.type === 'APPLY_COMMAND' && a.command.label.includes('Move'));
     expect(moveCmd).toBeUndefined();
 
     // Should have selected both entities via box select
-    const selectAction = dispatched.filter(a => a.type === 'SELECT_ENTITY').pop();
+    const selectAction = dispatched.filter((a) => a.type === 'SELECT_ENTITY').pop();
     expect(selectAction).toBeDefined();
     expect(selectAction.uids).toContain(1);
     expect(selectAction.uids).toContain(2);
@@ -261,13 +268,11 @@ describe('EntitySelectTool', () => {
     tool.onMouseUp(ctx, 5, 5);
     tool.rotateSelected(ctx, 'cw');
 
-    const rotateCmd = dispatched.find(a =>
-      a.type === 'APPLY_COMMAND' && a.command.label.includes('Rotate'),
-    );
+    const rotateCmd = dispatched.find((a) => a.type === 'APPLY_COMMAND' && a.command.label.includes('Rotate'));
     expect(rotateCmd).toBeDefined();
     const added = rotateCmd.command.entityChanges.find((ec: any) => ec.action === 'add');
     // CW rotation from 0: 0 - π/2 normalized = 3π/2
-    expect(added.entity.rotation).toBeCloseTo(3 * Math.PI / 2);
+    expect(added.entity.rotation).toBeCloseTo((3 * Math.PI) / 2);
     // UID should be preserved
     expect(added.entity.uid).toBe(1);
     // Label indicates direction
@@ -283,9 +288,7 @@ describe('EntitySelectTool', () => {
     tool.onMouseUp(ctx, 5, 5);
     tool.rotateSelected(ctx, 'ccw');
 
-    const rotateCmd = dispatched.find(a =>
-      a.type === 'APPLY_COMMAND' && a.command.label.includes('Rotate'),
-    );
+    const rotateCmd = dispatched.find((a) => a.type === 'APPLY_COMMAND' && a.command.label.includes('Rotate'));
     expect(rotateCmd).toBeDefined();
     const added = rotateCmd.command.entityChanges.find((ec: any) => ec.action === 'add');
     // CCW rotation from 0: 0 + π/2 = π/2
@@ -303,13 +306,11 @@ describe('EntitySelectTool', () => {
     tool.onMouseUp(ctx, 5, 5);
     tool.deleteSelected(ctx);
 
-    const deleteCmd = dispatched.find(a =>
-      a.type === 'APPLY_COMMAND' && a.command.label.includes('Delete'),
-    );
+    const deleteCmd = dispatched.find((a) => a.type === 'APPLY_COMMAND' && a.command.label.includes('Delete'));
     expect(deleteCmd).toBeDefined();
     expect(deleteCmd.command.entityChanges[0].action).toBe('remove');
 
-    const lastSelect = dispatched.filter(a => a.type === 'SELECT_ENTITY').pop();
+    const lastSelect = dispatched.filter((a) => a.type === 'SELECT_ENTITY').pop();
     expect(lastSelect?.uids).toEqual([]);
   });
 
@@ -327,7 +328,7 @@ describe('EntitySelectTool', () => {
     tool.onMouseDownWithShift(ctx, 8, 8, 0);
     tool.onMouseUp(ctx, 8, 8);
 
-    const toggleAction = dispatched.find(a => a.type === 'TOGGLE_SELECT_ENTITY');
+    const toggleAction = dispatched.find((a) => a.type === 'TOGGLE_SELECT_ENTITY');
     expect(toggleAction).toBeDefined();
     expect(toggleAction.uid).toBe(2);
   });
@@ -344,7 +345,7 @@ describe('EntitySelectTool', () => {
     tool.onMouseMove(ctx, 6, 6);
     tool.onMouseUp(ctx, 6, 6);
 
-    const selectAction = dispatched.filter(a => a.type === 'SELECT_ENTITY').pop();
+    const selectAction = dispatched.filter((a) => a.type === 'SELECT_ENTITY').pop();
     expect(selectAction).toBeDefined();
     expect(selectAction.uids).toContain(1);
     expect(selectAction.uids).toContain(2);
@@ -362,9 +363,7 @@ describe('EntitySelectTool', () => {
     tool.onMouseMove(ctx, 8, 8);
     tool.onMouseUp(ctx, 8, 8);
 
-    const moveCmd = dispatched.find(a =>
-      a.type === 'APPLY_COMMAND' && a.command.label.includes('Move'),
-    );
+    const moveCmd = dispatched.find((a) => a.type === 'APPLY_COMMAND' && a.command.label.includes('Move'));
     expect(moveCmd).toBeDefined();
     expect(moveCmd.command.label).toContain('2 entities');
     // Should have 2 removes + 2 adds
@@ -407,10 +406,10 @@ describe('EntitySelectTool', () => {
 
     // After move: originals removed, new entities at new positions
     expect(state.entities).toHaveLength(2);
-    expect(state.entities.find(e => e.uid === 1)).toBeUndefined();
-    expect(state.entities.find(e => e.uid === 2)).toBeUndefined();
+    expect(state.entities.find((e) => e.uid === 1)).toBeUndefined();
+    expect(state.entities.find((e) => e.uid === 2)).toBeUndefined();
 
-    const movedWall = state.entities.find(e => e.prototype === 'WallSolid')!;
+    const movedWall = state.entities.find((e) => e.prototype === 'WallSolid')!;
     expect(movedWall.position.x).toBeCloseTo(8.5);
     expect(movedWall.position.y).toBeCloseTo(8.5);
 
@@ -419,13 +418,13 @@ describe('EntitySelectTool', () => {
 
     // After undo: original entities should be restored at original positions
     expect(state.entities).toHaveLength(2);
-    const restoredWall = state.entities.find(e => e.prototype === 'WallSolid')!;
+    const restoredWall = state.entities.find((e) => e.prototype === 'WallSolid')!;
     expect(restoredWall).toBeDefined();
     expect(restoredWall.uid).toBe(1);
     expect(restoredWall.position.x).toBeCloseTo(5.5);
     expect(restoredWall.position.y).toBeCloseTo(5.5);
 
-    const restoredAPC = state.entities.find(e => e.prototype === 'APC')!;
+    const restoredAPC = state.entities.find((e) => e.prototype === 'APC')!;
     expect(restoredAPC).toBeDefined();
     expect(restoredAPC.uid).toBe(2);
     expect(restoredAPC.position.x).toBeCloseTo(6.5);
@@ -523,7 +522,7 @@ describe('EntitySelectTool', () => {
     const pickerEntities = tool.getPickerState().entities;
     const expectedEntity = pickerEntities[1];
 
-    const selectAction = dispatched.filter(a => a.type === 'SELECT_ENTITY').pop();
+    const selectAction = dispatched.filter((a) => a.type === 'SELECT_ENTITY').pop();
     expect(selectAction).toBeDefined();
     expect(selectAction.uids).toEqual([expectedEntity.uid]);
   });
@@ -546,9 +545,7 @@ describe('EntitySelectTool', () => {
     tool.onMouseMove(ctx, 7, 7);
     tool.onMouseUp(ctx, 7, 7);
 
-    const moveCmd = dispatched.find(a =>
-      a.type === 'APPLY_COMMAND' && a.command.label.includes('Move'),
-    );
+    const moveCmd = dispatched.find((a) => a.type === 'APPLY_COMMAND' && a.command.label.includes('Move'));
     expect(moveCmd).toBeDefined();
   });
 
@@ -622,7 +619,7 @@ describe('EntitySelectTool', () => {
 
     // After CW rotate: entity should have 3π/2 rotation, same UID
     expect(state.entities).toHaveLength(1);
-    expect(state.entities[0].rotation).toBeCloseTo(3 * Math.PI / 2);
+    expect(state.entities[0].rotation).toBeCloseTo((3 * Math.PI) / 2);
     expect(state.entities[0].uid).toBe(1);
 
     // Undo
@@ -663,7 +660,7 @@ describe('EntitySelectTool', () => {
 
     // Rotate 1: 0 → 3π/2 (CW subtracts π/2, normalized)
     tool.rotateSelected(ctx);
-    expect(state.entities[0].rotation).toBeCloseTo(3 * Math.PI / 2);
+    expect(state.entities[0].rotation).toBeCloseTo((3 * Math.PI) / 2);
     expect(state.entities[0].uid).toBe(1);
 
     // Rotate 2: 3π/2 → π
@@ -707,7 +704,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseMove(ctx, 5.8, 10.7);
       tool.onMouseUp(ctx, 5.8, 10.7);
 
-      const cmd = dispatched.find(a => a.type === 'APPLY_COMMAND' && a.command.label.includes('Move'));
+      const cmd = dispatched.find((a) => a.type === 'APPLY_COMMAND' && a.command.label.includes('Move'));
       expect(cmd).toBeDefined();
       // Delta: (5.8 - 5.3, 10.7 - 10.2) = (0.5, 0.5)
       // New position: (5.5 + 0.5, 10.5 + 0.5) = (6.0, 11.0)
@@ -726,7 +723,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseDownWithShift(ctx, 5.3, 10.7, 0);
       tool.onMouseUp(ctx, 5.3, 10.7);
 
-      const toggleAction = dispatched.find(a => a.type === 'TOGGLE_SELECT_ENTITY');
+      const toggleAction = dispatched.find((a) => a.type === 'TOGGLE_SELECT_ENTITY');
       expect(toggleAction).toBeDefined();
     });
   });
@@ -757,7 +754,7 @@ describe('EntitySelectTool', () => {
     tool.onMouseMove(ctx, 6, 6);
     tool.onMouseUp(ctx, 6, 6);
 
-    const removeAction = dispatched.find(a => a.type === 'REMOVE_SELECT_ENTITIES');
+    const removeAction = dispatched.find((a) => a.type === 'REMOVE_SELECT_ENTITIES');
     expect(removeAction).toBeDefined();
     expect(removeAction.uids).toContain(2);
     expect(removeAction.uids).not.toContain(1);
@@ -774,7 +771,7 @@ describe('EntitySelectTool', () => {
     tool.onMouseMove(ctx, 4, 4);
     tool.onMouseUp(ctx, 4, 4);
 
-    const removeAction = dispatched.find(a => a.type === 'REMOVE_SELECT_ENTITIES');
+    const removeAction = dispatched.find((a) => a.type === 'REMOVE_SELECT_ENTITIES');
     expect(removeAction).toBeDefined();
     expect(removeAction.uids).toContain(1);
     expect(removeAction.uids).not.toContain(2);
@@ -804,16 +801,16 @@ describe('EntitySelectTool', () => {
       expect(clip!.height).toBe(4);
 
       // Relative offsets from min corner (3, 5)
-      const apc = clip!.entities.find(e => e.prototype === 'APC')!;
-      expect(apc.dx).toBeCloseTo(0.5);  // 3.5 - 3
-      expect(apc.dy).toBeCloseTo(0.5);  // 5.5 - 5
+      const apc = clip!.entities.find((e) => e.prototype === 'APC')!;
+      expect(apc.dx).toBeCloseTo(0.5); // 3.5 - 3
+      expect(apc.dy).toBeCloseTo(0.5); // 5.5 - 5
 
-      const table = clip!.entities.find(e => e.prototype === 'Table')!;
+      const table = clip!.entities.find((e) => e.prototype === 'Table')!;
       expect(table.dx).toBeCloseTo(3.5); // 6.5 - 3
       expect(table.dy).toBeCloseTo(3.5); // 8.5 - 5
 
       // Tiles should be all null (entity-only copy)
-      expect(clip!.tiles.every(t => t === null)).toBe(true);
+      expect(clip!.tiles.every((t) => t === null)).toBe(true);
     });
 
     it('does not copy when no entities selected', () => {
@@ -840,9 +837,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseDown(ctx, 10, 10, 0);
 
       expect(dispatched).toHaveLength(1);
-      const adds = dispatched[0].command.entityChanges.filter(
-        (ec: EntityChange) => ec.action === 'add',
-      );
+      const adds = dispatched[0].command.entityChanges.filter((ec: EntityChange) => ec.action === 'add');
       expect(adds).toHaveLength(1);
       expect(adds[0].entity.prototype).toBe('APC');
       expect(adds[0].entity.position.x).toBeCloseTo(10.5);
@@ -861,9 +856,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseMove(ctx, 10, 10);
       tool.onMouseDown(ctx, 10, 10, 0);
 
-      const adds = dispatched[0].command.entityChanges.filter(
-        (ec: EntityChange) => ec.action === 'add',
-      );
+      const adds = dispatched[0].command.entityChanges.filter((ec: EntityChange) => ec.action === 'add');
       expect(adds).toHaveLength(2);
 
       // APC offset (0.5, 0.5) → (10.5, 10.5)
@@ -889,9 +882,7 @@ describe('EntitySelectTool', () => {
       expect(clip!.entities).toHaveLength(1);
 
       // Should have delete command
-      const deleteCmd = dispatched.find(a =>
-        a.type === 'APPLY_COMMAND' && a.command.label.includes('Delete'),
-      );
+      const deleteCmd = dispatched.find((a) => a.type === 'APPLY_COMMAND' && a.command.label.includes('Delete'));
       expect(deleteCmd).toBeDefined();
     });
 
@@ -939,16 +930,14 @@ describe('EntitySelectTool', () => {
       tool.onMouseMove(ctx, 10, 10);
       tool.onMouseDown(ctx, 10, 10, 0);
 
-      const adds = dispatched[0].command.entityChanges.filter(
-        (ec: EntityChange) => ec.action === 'add',
-      );
+      const adds = dispatched[0].command.entityChanges.filter((ec: EntityChange) => ec.action === 'add');
       expect(adds[0].entity.spriteStateOverride).toBe('generic_open');
     });
 
     it('rotates paste preview and places at correct positions', () => {
       const tool = new EntitySelectTool();
-      const e1 = makeEntity(1, 'APC', 0, 0);   // (0.5, 0.5)
-      const e2 = makeEntity(2, 'Table', 2, 0);  // (2.5, 0.5)
+      const e1 = makeEntity(1, 'APC', 0, 0); // (0.5, 0.5)
+      const e2 = makeEntity(2, 'Table', 2, 0); // (2.5, 0.5)
       const { ctx, dispatched } = makeToolContext([e1, e2], [1, 2]);
 
       tool.copy(ctx);
@@ -964,20 +953,18 @@ describe('EntitySelectTool', () => {
       tool.onMouseMove(ctx, 5, 5);
       tool.onMouseDown(ctx, 5, 5, 0);
 
-      const adds = dispatched[0].command.entityChanges.filter(
-        (ec: EntityChange) => ec.action === 'add',
-      );
+      const adds = dispatched[0].command.entityChanges.filter((ec: EntityChange) => ec.action === 'add');
       expect(adds).toHaveLength(2);
 
       const apc = adds.find((ec: EntityChange) => ec.entity.prototype === 'APC')!;
       expect(apc.entity.position.x).toBeCloseTo(5.5);
       expect(apc.entity.position.y).toBeCloseTo(7.5);
-      expect(apc.entity.rotation).toBeCloseTo(3 * Math.PI / 2);
+      expect(apc.entity.rotation).toBeCloseTo((3 * Math.PI) / 2);
 
       const table = adds.find((ec: EntityChange) => ec.entity.prototype === 'Table')!;
       expect(table.entity.position.x).toBeCloseTo(5.5);
       expect(table.entity.position.y).toBeCloseTo(5.5);
-      expect(table.entity.rotation).toBeCloseTo(3 * Math.PI / 2);
+      expect(table.entity.rotation).toBeCloseTo((3 * Math.PI) / 2);
     });
 
     it('does not enter paste mode when clipboard has no entities', () => {
@@ -986,10 +973,12 @@ describe('EntitySelectTool', () => {
 
       // Set clipboard with tiles only, no entities
       setClipboard({
-        width: 2, height: 2,
+        width: 2,
+        height: 2,
         tiles: [{ tileId: 'FloorSteel' }, null, null, null],
         entities: [],
-        originX: 0, originY: 0,
+        originX: 0,
+        originY: 0,
       });
 
       tool.paste(ctx);
@@ -1011,7 +1000,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseMove(ctx, 6, 6);
       tool.onMouseUp(ctx, 6, 6);
 
-      const addAction = dispatched.find(a => a.type === 'ADD_SELECT_ENTITIES');
+      const addAction = dispatched.find((a) => a.type === 'ADD_SELECT_ENTITIES');
       expect(addAction).toBeDefined();
       expect(addAction.uids).toContain(2);
     });
@@ -1025,7 +1014,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseDownWithShift(ctx, 5, 5, 0);
       tool.onMouseUp(ctx, 5, 5);
 
-      const toggleAction = dispatched.find(a => a.type === 'TOGGLE_SELECT_ENTITY');
+      const toggleAction = dispatched.find((a) => a.type === 'TOGGLE_SELECT_ENTITY');
       expect(toggleAction).toBeDefined();
       expect(toggleAction.uid).toBe(1);
     });
@@ -1039,7 +1028,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseDownWithCtrl(ctx, 5, 5, 0);
       tool.onMouseUp(ctx, 5, 5);
 
-      const removeAction = dispatched.find(a => a.type === 'REMOVE_SELECT_ENTITIES');
+      const removeAction = dispatched.find((a) => a.type === 'REMOVE_SELECT_ENTITIES');
       expect(removeAction).toBeDefined();
       expect(removeAction.uids).toContain(1);
     });
@@ -1055,9 +1044,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseUp(ctx, 5.8, 5.7);
 
       // Should have a move command with fractional delta
-      const moveCmd = dispatched.find(a =>
-        a.type === 'APPLY_COMMAND' && a.command?.label?.includes('Move'),
-      );
+      const moveCmd = dispatched.find((a) => a.type === 'APPLY_COMMAND' && a.command?.label?.includes('Move'));
       expect(moveCmd).toBeDefined();
     });
   });
@@ -1074,7 +1061,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseUp(ctx, 5, 5);
 
       // Last SELECT_DECAL should be the one with the decal id (first one clears)
-      const selectAction = dispatched.filter(a => a.type === 'SELECT_DECAL').pop();
+      const selectAction = dispatched.filter((a) => a.type === 'SELECT_DECAL').pop();
       expect(selectAction).toBeDefined();
       expect(selectAction.ids).toEqual([100]);
     });
@@ -1089,12 +1076,12 @@ describe('EntitySelectTool', () => {
       tool.onMouseUp(ctx, 5, 5);
 
       // Should select entity, not decal
-      const entitySelect = dispatched.filter(a => a.type === 'SELECT_ENTITY').pop();
+      const entitySelect = dispatched.filter((a) => a.type === 'SELECT_ENTITY').pop();
       expect(entitySelect).toBeDefined();
       expect(entitySelect.uids).toEqual([1]);
 
       // Should not have a separate decal select with the decal id
-      const decalSelect = dispatched.filter(a => a.type === 'SELECT_DECAL' && a.ids.length > 0);
+      const decalSelect = dispatched.filter((a) => a.type === 'SELECT_DECAL' && a.ids.length > 0);
       expect(decalSelect).toHaveLength(0);
     });
 
@@ -1106,7 +1093,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseDownWithShift(ctx, 5, 5, 0);
       tool.onMouseUp(ctx, 5, 5);
 
-      const toggleAction = dispatched.find(a => a.type === 'TOGGLE_SELECT_DECAL');
+      const toggleAction = dispatched.find((a) => a.type === 'TOGGLE_SELECT_DECAL');
       expect(toggleAction).toBeDefined();
       expect(toggleAction.id).toBe(100);
     });
@@ -1119,7 +1106,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseDownWithCtrl(ctx, 5, 5, 0);
       tool.onMouseUp(ctx, 5, 5);
 
-      const removeAction = dispatched.find(a => a.type === 'REMOVE_SELECT_DECALS');
+      const removeAction = dispatched.find((a) => a.type === 'REMOVE_SELECT_DECALS');
       expect(removeAction).toBeDefined();
       expect(removeAction.ids).toContain(100);
     });
@@ -1135,7 +1122,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseMove(ctx, 6, 6);
       tool.onMouseUp(ctx, 6, 6);
 
-      const decalSelect = dispatched.filter(a => a.type === 'SELECT_DECAL').pop();
+      const decalSelect = dispatched.filter((a) => a.type === 'SELECT_DECAL').pop();
       expect(decalSelect).toBeDefined();
       expect(decalSelect.ids).toContain(100);
       expect(decalSelect.ids).toContain(101);
@@ -1152,10 +1139,10 @@ describe('EntitySelectTool', () => {
       tool.onMouseMove(ctx, 6, 6);
       tool.onMouseUp(ctx, 6, 6);
 
-      const entitySelect = dispatched.filter(a => a.type === 'SELECT_ENTITY').pop();
+      const entitySelect = dispatched.filter((a) => a.type === 'SELECT_ENTITY').pop();
       expect(entitySelect.uids).toContain(1);
 
-      const decalSelect = dispatched.filter(a => a.type === 'SELECT_DECAL').pop();
+      const decalSelect = dispatched.filter((a) => a.type === 'SELECT_DECAL').pop();
       expect(decalSelect.ids).toContain(100);
     });
 
@@ -1167,16 +1154,14 @@ describe('EntitySelectTool', () => {
 
       tool.deleteSelected(ctx);
 
-      const deleteCmd = dispatched.find(a =>
-        a.type === 'APPLY_COMMAND' && a.command.label.includes('Delete'),
-      );
+      const deleteCmd = dispatched.find((a) => a.type === 'APPLY_COMMAND' && a.command.label.includes('Delete'));
       expect(deleteCmd).toBeDefined();
       expect(deleteCmd.command.decalChanges).toHaveLength(1);
       expect(deleteCmd.command.decalChanges[0].action).toBe('remove');
       expect(deleteCmd.command.decalChanges[0].decal.id).toBe(100);
 
       // Should clear selection
-      const clearDecals = dispatched.find(a => a.type === 'SELECT_DECAL' && a.ids.length === 0);
+      const clearDecals = dispatched.find((a) => a.type === 'SELECT_DECAL' && a.ids.length === 0);
       expect(clearDecals).toBeDefined();
     });
 
@@ -1188,9 +1173,7 @@ describe('EntitySelectTool', () => {
 
       tool.deleteSelected(ctx);
 
-      const deleteCmd = dispatched.find(a =>
-        a.type === 'APPLY_COMMAND' && a.command.label.includes('Delete'),
-      );
+      const deleteCmd = dispatched.find((a) => a.type === 'APPLY_COMMAND' && a.command.label.includes('Delete'));
       expect(deleteCmd).toBeDefined();
       expect(deleteCmd.command.entityChanges).toHaveLength(1);
       expect(deleteCmd.command.entityChanges[0].action).toBe('remove');
@@ -1208,9 +1191,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseMove(ctx, 8, 8);
       tool.onMouseUp(ctx, 8, 8);
 
-      const moveCmd = dispatched.find(a =>
-        a.type === 'APPLY_COMMAND' && a.command.label.includes('Move'),
-      );
+      const moveCmd = dispatched.find((a) => a.type === 'APPLY_COMMAND' && a.command.label.includes('Move'));
       expect(moveCmd).toBeDefined();
       expect(moveCmd.command.decalChanges).toHaveLength(1);
 
@@ -1233,9 +1214,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseMove(ctx, 8, 8);
       tool.onMouseUp(ctx, 8, 8);
 
-      const moveCmd = dispatched.find(a =>
-        a.type === 'APPLY_COMMAND' && a.command.label.includes('Move'),
-      );
+      const moveCmd = dispatched.find((a) => a.type === 'APPLY_COMMAND' && a.command.label.includes('Move'));
       expect(moveCmd).toBeDefined();
       // Entity changes: remove + add
       expect(moveCmd.command.entityChanges).toHaveLength(2);
@@ -1252,7 +1231,7 @@ describe('EntitySelectTool', () => {
 
       tool.onMouseDown(ctx, 5, 5, 2);
 
-      const clearDecals = dispatched.find(a => a.type === 'SELECT_DECAL' && a.ids.length === 0);
+      const clearDecals = dispatched.find((a) => a.type === 'SELECT_DECAL' && a.ids.length === 0);
       expect(clearDecals).toBeDefined();
     });
   });
@@ -1272,7 +1251,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseUp(ctx, 5, 5);
 
       // Should not have selected the entity
-      const selectAction = dispatched.find(a => a.type === 'SELECT_ENTITY' && a.uids.length > 0);
+      const selectAction = dispatched.find((a) => a.type === 'SELECT_ENTITY' && a.uids.length > 0);
       expect(selectAction).toBeUndefined();
     });
 
@@ -1285,7 +1264,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseDown(ctx, 5, 5, 0);
       tool.onMouseUp(ctx, 5, 5);
 
-      const selectAction = dispatched.find(a => a.type === 'SELECT_ENTITY' && a.uids.includes(1));
+      const selectAction = dispatched.find((a) => a.type === 'SELECT_ENTITY' && a.uids.includes(1));
       expect(selectAction).toBeDefined();
     });
 
@@ -1302,7 +1281,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseUp(ctx, 7, 6);
 
       // Last SELECT_ENTITY is from finishBoxSelect (first one is the clear on mouseDown)
-      const selectActions = dispatched.filter(a => a.type === 'SELECT_ENTITY');
+      const selectActions = dispatched.filter((a) => a.type === 'SELECT_ENTITY');
       const boxSelectAction = selectActions[selectActions.length - 1];
       expect(boxSelectAction).toBeDefined();
       // e1 (objects, hidden) should be excluded, e2 (structures, visible) should be included
@@ -1320,7 +1299,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseUp(ctx, 5, 5);
 
       // Should not select the decal
-      const selectDecal = dispatched.find(a => a.type === 'SELECT_DECAL' && a.ids.length > 0);
+      const selectDecal = dispatched.find((a) => a.type === 'SELECT_DECAL' && a.ids.length > 0);
       expect(selectDecal).toBeUndefined();
     });
 
@@ -1334,7 +1313,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseMove(ctx, 7, 7);
       tool.onMouseUp(ctx, 7, 7);
 
-      const selectDecal = dispatched.find(a => a.type === 'SELECT_DECAL' && a.ids.length > 0);
+      const selectDecal = dispatched.find((a) => a.type === 'SELECT_DECAL' && a.ids.length > 0);
       expect(selectDecal).toBeUndefined();
     });
 
@@ -1346,7 +1325,7 @@ describe('EntitySelectTool', () => {
       tool.onMouseDown(ctx, 5, 5, 0);
       tool.onMouseUp(ctx, 5, 5);
 
-      const selectAction = dispatched.find(a => a.type === 'SELECT_ENTITY' && a.uids.includes(1));
+      const selectAction = dispatched.find((a) => a.type === 'SELECT_ENTITY' && a.uids.includes(1));
       expect(selectAction).toBeDefined();
     });
   });

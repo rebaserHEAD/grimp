@@ -12,8 +12,14 @@ interface Props {
 
 // Common structural tiles to always show at top
 const STRUCTURAL_TILES = [
-  'Plating', 'FloorSteel', 'FloorDark', 'FloorWhite', 'FloorWood',
-  'WallSolid', 'WallReinforced', 'Lattice',
+  'Plating',
+  'FloorSteel',
+  'FloorDark',
+  'FloorWhite',
+  'FloorWood',
+  'WallSolid',
+  'WallReinforced',
+  'Lattice',
 ];
 
 const PREVIEW_SIZE = 128;
@@ -24,16 +30,19 @@ export const TilePalette: React.FC<Props> = ({ registry, selectedItem, onSelect 
 
   const tileIds = useMemo(() => {
     if (!registry) return [];
-    const all = registry.getAllTiles().map(t => t.id).sort();
-    const structural = STRUCTURAL_TILES.filter(id => all.includes(id));
-    const rest = all.filter(id => !STRUCTURAL_TILES.includes(id));
+    const all = registry
+      .getAllTiles()
+      .map((t) => t.id)
+      .sort();
+    const structural = STRUCTURAL_TILES.filter((id) => all.includes(id));
+    const rest = all.filter((id) => !STRUCTURAL_TILES.includes(id));
     return [...structural, ...rest];
   }, [registry]);
 
   const filtered = useMemo(() => {
     if (!search) return tileIds;
     const lower = search.toLowerCase();
-    return tileIds.filter(id => id.toLowerCase().includes(lower));
+    return tileIds.filter((id) => id.toLowerCase().includes(lower));
   }, [tileIds, search]);
 
   return (
@@ -50,14 +59,14 @@ export const TilePalette: React.FC<Props> = ({ registry, selectedItem, onSelect 
         <input
           type="text"
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="Search tiles..."
           className="w-full px-2 py-1 bg-surface border border-subtle rounded-sm text-primary text-xs outline-none focus:border-accent"
         />
       </div>
 
       <div className="flex flex-wrap gap-1.5 p-2 overflow-y-auto flex-1 content-start">
-        {filtered.map(id => {
+        {filtered.map((id) => {
           const isSelected = selectedItem?.type === 'tile' && selectedItem.id === id;
           return (
             <TileButton
@@ -73,13 +82,9 @@ export const TilePalette: React.FC<Props> = ({ registry, selectedItem, onSelect 
         })}
       </div>
 
-      {hovered && registry && (
-        <TilePreviewPopup tileId={hovered.id} registry={registry} anchorRect={hovered.rect} />
-      )}
+      {hovered && registry && <TilePreviewPopup tileId={hovered.id} registry={registry} anchorRect={hovered.rect} />}
 
-      <div className="px-2 py-1 text-[10px] text-muted border-t border-subtle">
-        {filtered.length} tiles
-      </div>
+      <div className="px-2 py-1 text-[10px] text-muted border-t border-subtle">{filtered.length} tiles</div>
     </div>
   );
 };
@@ -120,11 +125,11 @@ const TileSwatch: React.FC<{ id: string; registry: IPrototypeRegistry | null }> 
         const octx = offscreen.getContext('2d')!;
         octx.drawImage(img, 0, 0, srcSize, img.height, 0, 0, 32, 32);
         swatchUrlCache.set(id, offscreen.toDataURL());
-        setLoaded(n => n + 1);
+        setLoaded((n) => n + 1);
       })
       .catch(() => {
         swatchUrlCache.set(id, null);
-        setLoaded(n => n + 1);
+        setLoaded((n) => n + 1);
       });
   }, [id, registry]);
 
@@ -158,7 +163,10 @@ function drawFallback(ctx: CanvasRenderingContext2D, id: string): void {
   ctx.font = '7px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  const label = id.replace(/^Floor/, '').replace(/^Wall/, 'W:').substring(0, 6);
+  const label = id
+    .replace(/^Floor/, '')
+    .replace(/^Wall/, 'W:')
+    .substring(0, 6);
   ctx.fillText(label, 16, 16);
 }
 
@@ -181,9 +189,7 @@ const TileButton: React.FC<{
       onMouseLeave={onHoverLeave}
       title={id}
       className={`w-12 h-12 rounded-sm border cursor-pointer p-0 overflow-hidden relative bg-panel shrink-0
-                  ${isSelected
-                    ? 'border-accent ring-1 ring-accent'
-                    : 'border-subtle hover:border-accent'}`}
+                  ${isSelected ? 'border-accent ring-1 ring-accent' : 'border-subtle hover:border-accent'}`}
     >
       <TileSwatch id={id} registry={registry} />
     </button>
@@ -197,15 +203,18 @@ function useTileHoverPreview(delay = 300) {
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
   const currentRef = useRef<string | null>(null);
 
-  const onHoverEnter = useCallback((id: string, el: HTMLElement) => {
-    currentRef.current = id;
-    clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      if (currentRef.current === id) {
-        setHovered({ id, rect: el.getBoundingClientRect() });
-      }
-    }, delay);
-  }, [delay]);
+  const onHoverEnter = useCallback(
+    (id: string, el: HTMLElement) => {
+      currentRef.current = id;
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        if (currentRef.current === id) {
+          setHovered({ id, rect: el.getBoundingClientRect() });
+        }
+      }, delay);
+    },
+    [delay],
+  );
 
   const onHoverLeave = useCallback(() => {
     currentRef.current = null;
@@ -224,7 +233,11 @@ const TilePreviewPopup: React.FC<{
   const tile = registry.getTile(tileId);
   const imgSrc = (() => {
     if (!tile?.sprite) return null;
-    try { return getActiveProvider().getImageUrl(tile.sprite); } catch { return null; }
+    try {
+      return getActiveProvider().getImageUrl(tile.sprite);
+    } catch {
+      return null;
+    }
   })();
 
   const left = anchorRect.left - PREVIEW_SIZE - 20;

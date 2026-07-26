@@ -2,13 +2,18 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { STAR_TINTS, STAR_DEPTH_LAYERS, getSpaceBgCache, resetSpaceBg } from '../gridRenderer';
 
 // Stub Image for node environment
-vi.stubGlobal('Image', class {
-  width = 0;
-  height = 0;
-  onload: (() => void) | null = null;
-  onerror: (() => void) | null = null;
-  set src(_: string) { /* no-op */ }
-});
+vi.stubGlobal(
+  'Image',
+  class {
+    width = 0;
+    height = 0;
+    onload: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    set src(_: string) {
+      /* no-op */
+    }
+  },
+);
 
 describe('space background', () => {
   beforeEach(() => {

@@ -18,7 +18,10 @@ export class DeviceLinkTool implements ITool {
   // ---- Component helpers ----
 
   /** Check entity instance components, then fall back to prototype definition. */
-  private getDeviceListComponent(entity: ImportedEntity, registry?: IPrototypeRegistry | null): Record<string, unknown> | null {
+  private getDeviceListComponent(
+    entity: ImportedEntity,
+    registry?: IPrototypeRegistry | null,
+  ): Record<string, unknown> | null {
     for (const comp of entity.components) {
       const c = comp as Record<string, unknown>;
       if (c.type === 'DeviceList') return c;
@@ -26,7 +29,7 @@ export class DeviceLinkTool implements ITool {
     // Check prototype, entity may not have the component on its instance
     if (registry) {
       const resolved = registry.getEntity(entity.prototype);
-      if (resolved?.components.some(c => c.type === 'DeviceList')) {
+      if (resolved?.components.some((c) => c.type === 'DeviceList')) {
         // Return a stub so the caller knows the prototype has it
         return { type: 'DeviceList', devices: [] };
       }
@@ -35,7 +38,10 @@ export class DeviceLinkTool implements ITool {
   }
 
   /** Check entity instance components, then fall back to prototype definition. */
-  private getDeviceLinkSourceComponent(entity: ImportedEntity, registry?: IPrototypeRegistry | null): Record<string, unknown> | null {
+  private getDeviceLinkSourceComponent(
+    entity: ImportedEntity,
+    registry?: IPrototypeRegistry | null,
+  ): Record<string, unknown> | null {
     for (const comp of entity.components) {
       const c = comp as Record<string, unknown>;
       if (c.type === 'DeviceLinkSource') return c;
@@ -43,7 +49,7 @@ export class DeviceLinkTool implements ITool {
     // Check prototype
     if (registry) {
       const resolved = registry.getEntity(entity.prototype);
-      if (resolved?.components.some(c => c.type === 'DeviceLinkSource')) {
+      if (resolved?.components.some((c) => c.type === 'DeviceLinkSource')) {
         return { type: 'DeviceLinkSource', linkedPorts: {} };
       }
     }
@@ -51,14 +57,16 @@ export class DeviceLinkTool implements ITool {
   }
 
   private isLinkableSource(entity: ImportedEntity, registry?: IPrototypeRegistry | null): boolean {
-    return this.getDeviceListComponent(entity, registry) !== null
-      || this.getDeviceLinkSourceComponent(entity, registry) !== null;
+    return (
+      this.getDeviceListComponent(entity, registry) !== null ||
+      this.getDeviceLinkSourceComponent(entity, registry) !== null
+    );
   }
 
   private addToDeviceList(source: ImportedEntity, targetUid: number): ImportedEntity {
-    const hasComp = source.components.some(c => (c as Record<string, unknown>).type === 'DeviceList');
+    const hasComp = source.components.some((c) => (c as Record<string, unknown>).type === 'DeviceList');
     if (hasComp) {
-      const newComponents = source.components.map(comp => {
+      const newComponents = source.components.map((comp) => {
         const c = comp as Record<string, unknown>;
         if (c.type !== 'DeviceList') return comp;
         const devices = Array.isArray(c.devices) ? [...c.devices] : [];
@@ -75,26 +83,25 @@ export class DeviceLinkTool implements ITool {
   }
 
   private removeFromDeviceList(source: ImportedEntity, targetUid: number): ImportedEntity {
-    const newComponents = source.components.map(comp => {
+    const newComponents = source.components.map((comp) => {
       const c = comp as Record<string, unknown>;
       if (c.type !== 'DeviceList') return comp;
-      const devices = Array.isArray(c.devices)
-        ? c.devices.filter((uid: unknown) => uid !== targetUid)
-        : [];
+      const devices = Array.isArray(c.devices) ? c.devices.filter((uid: unknown) => uid !== targetUid) : [];
       return { ...c, devices } as Record<string, unknown>;
     });
     return { ...source, components: newComponents };
   }
 
   private addToDeviceLinkSource(source: ImportedEntity, targetUid: number): ImportedEntity {
-    const hasComp = source.components.some(c => (c as Record<string, unknown>).type === 'DeviceLinkSource');
+    const hasComp = source.components.some((c) => (c as Record<string, unknown>).type === 'DeviceLinkSource');
     if (hasComp) {
-      const newComponents = source.components.map(comp => {
+      const newComponents = source.components.map((comp) => {
         const c = comp as Record<string, unknown>;
         if (c.type !== 'DeviceLinkSource') return comp;
-        const linkedPorts = (c.linkedPorts && typeof c.linkedPorts === 'object')
-          ? { ...(c.linkedPorts as Record<string, [string, string][]>) }
-          : {} as Record<string, [string, string][]>;
+        const linkedPorts =
+          c.linkedPorts && typeof c.linkedPorts === 'object'
+            ? { ...(c.linkedPorts as Record<string, [string, string][]>) }
+            : ({} as Record<string, [string, string][]>);
         const key = String(targetUid);
         if (!linkedPorts[key]) {
           linkedPorts[key] = [['Pressed', 'Toggle']];
@@ -106,15 +113,18 @@ export class DeviceLinkTool implements ITool {
     // Component exists on prototype but not on instance, add it
     return {
       ...source,
-      components: [...source.components, {
-        type: 'DeviceLinkSource',
-        linkedPorts: { [String(targetUid)]: [['Pressed', 'Toggle']] },
-      }],
+      components: [
+        ...source.components,
+        {
+          type: 'DeviceLinkSource',
+          linkedPorts: { [String(targetUid)]: [['Pressed', 'Toggle']] },
+        },
+      ],
     };
   }
 
   private removeFromDeviceLinkSource(source: ImportedEntity, targetUid: number): ImportedEntity {
-    const newComponents = source.components.map(comp => {
+    const newComponents = source.components.map((comp) => {
       const c = comp as Record<string, unknown>;
       if (c.type !== 'DeviceLinkSource') return comp;
       if (!c.linkedPorts || typeof c.linkedPorts !== 'object') return comp;
@@ -149,7 +159,7 @@ export class DeviceLinkTool implements ITool {
   /** Refresh the stored sourceEntity from current state (after a command mutates it). */
   private refreshSource(ctx: ToolContext): void {
     if (!this.sourceEntity) return;
-    const fresh = ctx.state.entities.find(e => e.uid === this.sourceEntity!.uid);
+    const fresh = ctx.state.entities.find((e) => e.uid === this.sourceEntity!.uid);
     if (fresh) {
       this.sourceEntity = fresh;
     }
@@ -204,13 +214,15 @@ export class DeviceLinkTool implements ITool {
       const existing = this.getLinkedTargetUids(source, this.linkType!);
       if (existing.has(target.uid)) return; // already linked
 
-      const modified = this.linkType === 'DeviceList'
-        ? this.addToDeviceList(source, target.uid)
-        : this.addToDeviceLinkSource(source, target.uid);
+      const modified =
+        this.linkType === 'DeviceList'
+          ? this.addToDeviceList(source, target.uid)
+          : this.addToDeviceLinkSource(source, target.uid);
 
-      const label = this.linkType === 'DeviceList'
-        ? `Link ${source.prototype} -> ${target.prototype} (DeviceList)`
-        : `Link ${source.prototype} -> ${target.prototype} (DeviceLinkSource)`;
+      const label =
+        this.linkType === 'DeviceList'
+          ? `Link ${source.prototype} -> ${target.prototype} (DeviceList)`
+          : `Link ${source.prototype} -> ${target.prototype} (DeviceLinkSource)`;
 
       ctx.dispatch({
         type: 'APPLY_COMMAND',
@@ -244,13 +256,15 @@ export class DeviceLinkTool implements ITool {
       const existing = this.getLinkedTargetUids(source, this.linkType!);
       if (!existing.has(target.uid)) return; // not linked
 
-      const modified = this.linkType === 'DeviceList'
-        ? this.removeFromDeviceList(source, target.uid)
-        : this.removeFromDeviceLinkSource(source, target.uid);
+      const modified =
+        this.linkType === 'DeviceList'
+          ? this.removeFromDeviceList(source, target.uid)
+          : this.removeFromDeviceLinkSource(source, target.uid);
 
-      const label = this.linkType === 'DeviceList'
-        ? `Unlink ${source.prototype} -x- ${target.prototype} (DeviceList)`
-        : `Unlink ${source.prototype} -x- ${target.prototype} (DeviceLinkSource)`;
+      const label =
+        this.linkType === 'DeviceList'
+          ? `Unlink ${source.prototype} -x- ${target.prototype} (DeviceList)`
+          : `Unlink ${source.prototype} -x- ${target.prototype} (DeviceLinkSource)`;
 
       ctx.dispatch({
         type: 'APPLY_COMMAND',

@@ -13,7 +13,7 @@ const mockLoadRsiMeta = vi.mocked(loadRsiMeta);
 
 function makeRegistry(spriteInfo: { rsiPath: string; baseState: string } | null): IPrototypeRegistry {
   return {
-    getSpriteInfo: () => spriteInfo ? { ...spriteInfo, layers: [] } : null,
+    getSpriteInfo: () => (spriteInfo ? { ...spriteInfo, layers: [] } : null),
     getTile: () => null,
     getEntity: () => null,
     getAllTiles: () => [],

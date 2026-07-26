@@ -63,8 +63,7 @@ describe('multi-grid structural integrity', () => {
         if (transform?.parent != null) {
           const isOwnGrid = transform.parent === gd.gridUid;
           const isContainerParent =
-            !map.gridDataList!.some(g => g.gridUid === transform.parent) &&
-            transform.parent !== map.mapUid;
+            !map.gridDataList!.some((g) => g.gridUid === transform.parent) && transform.parent !== map.mapUid;
           expect(isOwnGrid || isContainerParent).toBe(true);
         }
       }

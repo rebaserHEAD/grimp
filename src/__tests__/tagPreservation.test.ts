@@ -62,18 +62,24 @@ describe('YAML type tag preservation', () => {
     console.log(`Exported !type: tags: ${exportedTagCount}`);
 
     // Show lines with !type: in exported
-    const tagLines = exported.split('\n').filter(l => l.includes('!type:'));
+    const tagLines = exported.split('\n').filter((l) => l.includes('!type:'));
     console.log('Exported lines with !type::', tagLines.length);
-    tagLines.forEach(l => console.log('  ', l.trim()));
+    tagLines.forEach((l) => console.log('  ', l.trim()));
 
     // Also show lines where we'd expect tags
-    const containerLines = exported.split('\n').filter(l =>
-      l.includes('entity_storage:') || l.includes('storagebase:') ||
-      l.includes('paper_label:') || l.includes('machine_board:') ||
-      l.includes('charger_slot:') || l.includes('machine_parts:')
-    );
+    const containerLines = exported
+      .split('\n')
+      .filter(
+        (l) =>
+          l.includes('entity_storage:') ||
+          l.includes('storagebase:') ||
+          l.includes('paper_label:') ||
+          l.includes('machine_board:') ||
+          l.includes('charger_slot:') ||
+          l.includes('machine_parts:'),
+      );
     console.log('Container-related lines:', containerLines.length);
-    containerLines.forEach(l => console.log('  ', l.trim()));
+    containerLines.forEach((l) => console.log('  ', l.trim()));
 
     expect(exportedTagCount).toBe(origTagCount);
   });

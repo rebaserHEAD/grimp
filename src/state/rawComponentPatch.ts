@@ -17,10 +17,7 @@ import { formatPrimitive } from '../export/mapExporter';
 const COMPONENT_RE = /^ {4}- type: (.+?)\s*$/;
 const FIELD_INDENT = '      ';
 
-export function findComponentBlock(
-  rawLines: string[],
-  type: string,
-): { start: number; end: number } | null {
+export function findComponentBlock(rawLines: string[], type: string): { start: number; end: number } | null {
   for (let i = 0; i < rawLines.length; i++) {
     const m = COMPONENT_RE.exec(rawLines[i]);
     if (!m || m[1] !== type) continue;
@@ -41,12 +38,7 @@ export function hasComponent(rawLines: string[], type: string): boolean {
  * New fields insert alphabetically among top-level fields, matching the
  * engine serializer's field order.
  */
-export function setComponentField(
-  rawLines: string[],
-  type: string,
-  field: string,
-  value: string | null,
-): string[] {
+export function setComponentField(rawLines: string[], type: string, field: string, value: string | null): string[] {
   const out = [...rawLines];
   let block = findComponentBlock(out, type);
   if (!block) {

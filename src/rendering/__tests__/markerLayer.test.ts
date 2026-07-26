@@ -18,9 +18,7 @@ import type { IPrototypeRegistry } from '../../loaders/registryTypes';
 function fakeRegistry(componentsByProto: Record<string, string[]>): IPrototypeRegistry {
   return {
     getEntity: (id: string) =>
-      componentsByProto[id]
-        ? { id, components: componentsByProto[id].map(type => ({ type })) }
-        : undefined,
+      componentsByProto[id] ? { id, components: componentsByProto[id].map((type) => ({ type })) } : undefined,
   } as unknown as IPrototypeRegistry;
 }
 

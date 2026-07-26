@@ -9,7 +9,16 @@ const SAMPLE_META = {
   states: [
     { name: 'base', directions: 4 },
     { name: 'icon' },
-    { name: 'animated', directions: 4, delays: [[0.1, 0.2], [0.1, 0.2], [0.1, 0.2], [0.1, 0.2]] },
+    {
+      name: 'animated',
+      directions: 4,
+      delays: [
+        [0.1, 0.2],
+        [0.1, 0.2],
+        [0.1, 0.2],
+        [0.1, 0.2],
+      ],
+    },
   ],
 };
 

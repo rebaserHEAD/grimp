@@ -9,7 +9,7 @@ function makeToolContext(entities: ImportedEntity[] = []): { ctx: ToolContext; d
   const state = {
     ...createInitialState(),
     entities: [...entities],
-    nextEntityId: entities.length > 0 ? Math.max(...entities.map(e => e.uid)) + 1 : 1,
+    nextEntityId: entities.length > 0 ? Math.max(...entities.map((e) => e.uid)) + 1 : 1,
   };
   const ctx: ToolContext = {
     state,
@@ -22,7 +22,7 @@ function makeToolContext(entities: ImportedEntity[] = []): { ctx: ToolContext; d
             if (ec.entity.uid >= state.nextEntityId) state.nextEntityId = ec.entity.uid + 1;
           }
           if (ec.action === 'remove') {
-            const idx = state.entities.findIndex(e => e.uid === ec.entity.uid);
+            const idx = state.entities.findIndex((e) => e.uid === ec.entity.uid);
             if (idx >= 0) state.entities.splice(idx, 1);
           }
         }
@@ -76,8 +76,8 @@ describe('PipeDrawTool', () => {
     const adds = cmd.entityChanges.filter((ec: any) => ec.action === 'add');
 
     // Corner at (5,6) should be a bend
-    const corner = adds.find((ec: any) =>
-      Math.floor(ec.entity.position.x) === 5 && Math.floor(ec.entity.position.y) === 6,
+    const corner = adds.find(
+      (ec: any) => Math.floor(ec.entity.position.x) === 5 && Math.floor(ec.entity.position.y) === 6,
     );
     expect(corner).toBeDefined();
     expect(corner.entity.prototype).toBe('GasPipeBend');
@@ -176,7 +176,10 @@ describe('PipeDrawTool', () => {
       for (let dy = -1; dy <= 1; dy++) {
         for (let dx = -1; dx <= 1; dx++) {
           if (dx === 0 && dy === 0) continue;
-          if (posSet.has(`${p.x + dx},${p.y + dy}`)) { hasNeighbor = true; break; }
+          if (posSet.has(`${p.x + dx},${p.y + dy}`)) {
+            hasNeighbor = true;
+            break;
+          }
         }
         if (hasNeighbor) break;
       }
@@ -188,13 +191,17 @@ describe('PipeDrawTool', () => {
     // Existing vertical pipe at (5,4) and (5,5)
     const existing: ImportedEntity[] = [
       {
-        uid: 100, prototype: 'GasPipeStraight',
-        position: { x: 5.5, y: 4.5 }, rotation: 0,
+        uid: 100,
+        prototype: 'GasPipeStraight',
+        position: { x: 5.5, y: 4.5 },
+        rotation: 0,
         components: [{ type: 'AtmosPipeColor', color: '#0055CCFF' }],
       },
       {
-        uid: 101, prototype: 'GasPipeStraight',
-        position: { x: 5.5, y: 5.5 }, rotation: 0,
+        uid: 101,
+        prototype: 'GasPipeStraight',
+        position: { x: 5.5, y: 5.5 },
+        rotation: 0,
         components: [{ type: 'AtmosPipeColor', color: '#0055CCFF' }],
       },
     ];
@@ -218,8 +225,8 @@ describe('PipeDrawTool', () => {
     expect(adds.some((ec: any) => Math.floor(ec.entity.position.x) === 6)).toBe(true);
 
     // The refitted (5,5) should be a bend (has S from 5,4 and E from 6,5)
-    const refitted55 = adds.find((ec: any) =>
-      Math.floor(ec.entity.position.x) === 5 && Math.floor(ec.entity.position.y) === 5,
+    const refitted55 = adds.find(
+      (ec: any) => Math.floor(ec.entity.position.x) === 5 && Math.floor(ec.entity.position.y) === 5,
     );
     expect(refitted55).toBeDefined();
     expect(refitted55.entity.prototype).toBe('GasPipeBend');

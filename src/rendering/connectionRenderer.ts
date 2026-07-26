@@ -16,8 +16,10 @@ function getCachedSelectedSet(uids: number[]): Set<number> {
 
 /** A connection line segment to be batched. */
 interface ConnectionLine {
-  sx: number; sy: number;  // source screen coords
-  tx: number; ty: number;  // target screen coords
+  sx: number;
+  sy: number; // source screen coords
+  tx: number;
+  ty: number; // target screen coords
 }
 
 /**
@@ -78,7 +80,7 @@ export function renderConnections(
           deviceListCounts.set(entity.uid, (deviceListCounts.get(entity.uid) ?? 0) + count);
         }
 
-        const bucket = (hasSelection && isSelected) ? deviceListSelected : deviceListUnselected;
+        const bucket = hasSelection && isSelected ? deviceListSelected : deviceListUnselected;
         for (const targetUid of c.devices) {
           const targetEntity = spatialGetByUid(targetUid as number);
           if (!targetEntity) continue;
@@ -96,7 +98,7 @@ export function renderConnections(
           deviceLinkSourceCounts.set(entity.uid, (deviceLinkSourceCounts.get(entity.uid) ?? 0) + portKeys.length);
         }
 
-        const bucket = (hasSelection && isSelected) ? deviceLinkSelected : deviceLinkUnselected;
+        const bucket = hasSelection && isSelected ? deviceLinkSelected : deviceLinkUnselected;
         for (const targetUidStr of portKeys) {
           const targetUid = parseInt(targetUidStr, 10);
           if (isNaN(targetUid)) continue;
@@ -147,7 +149,18 @@ export function renderConnections(
     }
     for (const [uid, count] of deviceLinkSourceCounts) {
       const hasDeviceList = deviceListCounts.has(uid);
-      drawBadge(ctx, uid, count, '#ff8800', badgeRadius, camera, canvasW, canvasH, tileScreenSize, hasDeviceList ? badgeRadius * 2.2 : 0);
+      drawBadge(
+        ctx,
+        uid,
+        count,
+        '#ff8800',
+        badgeRadius,
+        camera,
+        canvasW,
+        canvasH,
+        tileScreenSize,
+        hasDeviceList ? badgeRadius * 2.2 : 0,
+      );
     }
   }
 
@@ -175,11 +188,7 @@ function drawBatch(
 }
 
 /** Draw directional arrows at midpoints of selected connection lines. */
-function drawArrows(
-  ctx: CanvasRenderingContext2D,
-  lines: ConnectionLine[],
-  color: string,
-): void {
+function drawArrows(ctx: CanvasRenderingContext2D, lines: ConnectionLine[], color: string): void {
   ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   ctx.globalAlpha = 1;
@@ -201,9 +210,13 @@ function drawArrows(
 /** Draw a connection count badge on an entity. */
 function drawBadge(
   ctx: CanvasRenderingContext2D,
-  uid: number, count: number, color: string,
+  uid: number,
+  count: number,
+  color: string,
   badgeRadius: number,
-  camera: Camera, canvasW: number, canvasH: number,
+  camera: Camera,
+  canvasW: number,
+  canvasH: number,
   tileScreenSize: number,
   yOffset: number = 0,
 ): void {

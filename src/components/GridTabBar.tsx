@@ -21,8 +21,18 @@ interface Props {
 }
 
 export const GridTabBar: React.FC<Props> = ({
-  grids, activeGridIndex, onSelectGrid, onAddGrid, onDeleteGrid, onRequestRename, onFocusGrid,
-  entities, registry, onSearchNavigate, searchInputRef, onValidate,
+  grids,
+  activeGridIndex,
+  onSelectGrid,
+  onAddGrid,
+  onDeleteGrid,
+  onRequestRename,
+  onFocusGrid,
+  entities,
+  registry,
+  onSearchNavigate,
+  searchInputRef,
+  onValidate,
 }) => {
   return (
     <div className="flex items-end bg-panel border-b border-subtle shrink-0">
@@ -34,9 +44,10 @@ export const GridTabBar: React.FC<Props> = ({
               key={gd.gridUid}
               data-active={isActive ? 'true' : 'false'}
               className={`group flex items-center gap-1.5 px-3 py-1.5 text-xs cursor-pointer select-none border-r border-subtle whitespace-nowrap
-                ${isActive
-                  ? 'bg-surface text-primary border-b-2 border-b-accent'
-                  : 'bg-panel text-muted hover:text-primary hover:bg-hover'
+                ${
+                  isActive
+                    ? 'bg-surface text-primary border-b-2 border-b-accent'
+                    : 'bg-panel text-muted hover:text-primary hover:bg-hover'
                 }`}
               onClick={() => onSelectGrid(idx)}
               onDoubleClick={() => onRequestRename(gd.gridUid, gd.name)}
@@ -53,7 +64,10 @@ export const GridTabBar: React.FC<Props> = ({
                 <button
                   className="ml-1 text-muted hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity"
                   title="Close grid"
-                  onClick={(e) => { e.stopPropagation(); onDeleteGrid(gd.gridUid); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteGrid(gd.gridUid);
+                  }}
                 >
                   ×
                 </button>

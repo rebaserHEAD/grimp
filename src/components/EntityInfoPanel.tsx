@@ -25,8 +25,18 @@ interface Props {
 }
 
 export const EntityInfoPanel: React.FC<Props> = ({
-  entities, allEntities, registry, onRotateCW, onRotateCCW, onDelete, onDeselect, onUpdateEntity,
-  containedEntities, onAddContainedEntity, onRemoveContainedEntity, grid,
+  entities,
+  allEntities,
+  registry,
+  onRotateCW,
+  onRotateCCW,
+  onDelete,
+  onDeselect,
+  onUpdateEntity,
+  containedEntities,
+  onAddContainedEntity,
+  onRemoveContainedEntity,
+  grid,
 }) => {
   const [showComponents, setShowComponents] = useState(true);
   const [addingComponent, setAddingComponent] = useState(false);
@@ -41,12 +51,16 @@ export const EntityInfoPanel: React.FC<Props> = ({
       <div className="p-3 text-xs">
         <div className="flex justify-between items-center mb-1.5">
           <span className="font-bold text-xs">{entities.length} Entities Selected</span>
-          <button onClick={onDeselect} className="bg-transparent border-none text-muted text-[16px] cursor-pointer px-1 leading-none" title="Deselect all">&times;</button>
+          <button
+            onClick={onDeselect}
+            className="bg-transparent border-none text-muted text-[16px] cursor-pointer px-1 leading-none"
+            title="Deselect all"
+          >
+            &times;
+          </button>
         </div>
 
-        <div className="text-muted text-[10px] mb-1.5">
-          {summarizePrototypes(entities)}
-        </div>
+        <div className="text-muted text-[10px] mb-1.5">{summarizePrototypes(entities)}</div>
 
         <div className="flex gap-1 mt-2">
           <ActionButton label="&#x21B6;" onClick={onRotateCCW} title="Rotate All CCW (Shift+R)" />
@@ -69,9 +83,7 @@ export const EntityInfoPanel: React.FC<Props> = ({
 
   const handleComponentChange = (index: number, updated: Record<string, unknown>) => {
     if (!onUpdateEntity) return;
-    const newComponents = entity.components.map((c, i) =>
-      i === index ? updated : c,
-    );
+    const newComponents = entity.components.map((c, i) => (i === index ? updated : c));
     onUpdateEntity({ ...entity, components: newComponents });
   };
 
@@ -93,7 +105,13 @@ export const EntityInfoPanel: React.FC<Props> = ({
     <div className="p-3 text-xs">
       <div className="flex justify-between items-center mb-1.5">
         <span className="font-bold text-xs">Entity Info</span>
-        <button onClick={onDeselect} className="bg-transparent border-none text-muted text-[16px] cursor-pointer px-1 leading-none" title="Deselect">&times;</button>
+        <button
+          onClick={onDeselect}
+          className="bg-transparent border-none text-muted text-[16px] cursor-pointer px-1 leading-none"
+          title="Deselect"
+        >
+          &times;
+        </button>
       </div>
 
       <InfoRow label="Name" value={suffix ? `${name} (${String(suffix)})` : name} />
@@ -103,19 +121,11 @@ export const EntityInfoPanel: React.FC<Props> = ({
       <InfoRow label="Rotation" value={`${rotDeg}°`} />
 
       {onUpdateEntity && registry && (
-        <SpriteStateSelector
-          entity={entity}
-          registry={registry}
-          onUpdateEntity={onUpdateEntity}
-        />
+        <SpriteStateSelector entity={entity} registry={registry} onUpdateEntity={onUpdateEntity} />
       )}
 
       <InfoRow label="Category" value={category} />
-      {description && (
-        <div className="text-muted text-[10px] mt-1 italic">
-          {description}
-        </div>
-      )}
+      {description && <div className="text-muted text-[10px] mt-1 italic">{description}</div>}
 
       <div className="flex gap-1 mt-2">
         <ActionButton label="&#x21B6;" onClick={onRotateCCW} title="Rotate CCW (Shift+R)" />
@@ -123,24 +133,20 @@ export const EntityInfoPanel: React.FC<Props> = ({
         <ActionButton label="Delete" onClick={onDelete} color="#c44" />
       </div>
 
-      {onAddContainedEntity && onRemoveContainedEntity && (
-        isContainerEntity(entity, registry) || (containedEntities?.[entity.uid]?.length ?? 0) > 0
-      ) && (
-        <ContainerContentsEditor
-          entity={entity}
-          containedEntities={containedEntities?.[entity.uid] ?? []}
-          registry={registry}
-          onAdd={onAddContainedEntity}
-          onRemove={onRemoveContainedEntity}
-        />
-      )}
+      {onAddContainedEntity &&
+        onRemoveContainedEntity &&
+        (isContainerEntity(entity, registry) || (containedEntities?.[entity.uid]?.length ?? 0) > 0) && (
+          <ContainerContentsEditor
+            entity={entity}
+            containedEntities={containedEntities?.[entity.uid] ?? []}
+            registry={registry}
+            onAdd={onAddContainedEntity}
+            onRemove={onRemoveContainedEntity}
+          />
+        )}
 
       {onUpdateEntity && hasPointLight(entity, registry) && (
-        <LightEditor
-          entity={entity}
-          registry={registry}
-          onUpdateEntity={onUpdateEntity}
-        />
+        <LightEditor entity={entity} registry={registry} onUpdateEntity={onUpdateEntity} />
       )}
 
       {onUpdateEntity && allEntities && grid && registry && hasDeviceList(entity) && (
@@ -162,9 +168,7 @@ export const EntityInfoPanel: React.FC<Props> = ({
           >
             Auto-link Room
           </button>
-          {linkMessage && (
-            <div className="text-success text-[9px] mt-0.5">{linkMessage}</div>
-          )}
+          {linkMessage && <div className="text-success text-[9px] mt-0.5">{linkMessage}</div>}
         </div>
       )}
 
@@ -201,15 +205,26 @@ export const EntityInfoPanel: React.FC<Props> = ({
                       onChange={(e) => setNewCompType(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') handleAddComponent();
-                        if (e.key === 'Escape') { setAddingComponent(false); setNewCompType(''); }
+                        if (e.key === 'Escape') {
+                          setAddingComponent(false);
+                          setNewCompType('');
+                        }
                       }}
                       placeholder="ComponentType"
                       className="bg-elevated border border-subtle rounded-sm text-primary text-[10px] px-1 py-0.5 flex-1"
                       autoFocus
                     />
-                    <button onClick={handleAddComponent} className="bg-active border border-subtle rounded-sm text-primary text-[10px] px-1.5 py-px cursor-pointer">+</button>
                     <button
-                      onClick={() => { setAddingComponent(false); setNewCompType(''); }}
+                      onClick={handleAddComponent}
+                      className="bg-active border border-subtle rounded-sm text-primary text-[10px] px-1.5 py-px cursor-pointer"
+                    >
+                      +
+                    </button>
+                    <button
+                      onClick={() => {
+                        setAddingComponent(false);
+                        setNewCompType('');
+                      }}
                       className="bg-active border border-subtle rounded-sm text-muted text-[10px] px-1.5 py-px cursor-pointer"
                     >
                       x
@@ -247,11 +262,21 @@ function summarizePrototypes(entities: ImportedEntity[]): string {
 const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div className="flex justify-between py-px">
     <span className="text-muted">{label}:</span>
-    <span className="text-primary max-w-[120px] overflow-hidden text-ellipsis whitespace-nowrap text-right" title={value}>{value}</span>
+    <span
+      className="text-primary max-w-[120px] overflow-hidden text-ellipsis whitespace-nowrap text-right"
+      title={value}
+    >
+      {value}
+    </span>
   </div>
 );
 
-const ActionButton: React.FC<{ label: string; onClick: () => void; color?: string; title?: string }> = ({ label, onClick, color, title }) => (
+const ActionButton: React.FC<{ label: string; onClick: () => void; color?: string; title?: string }> = ({
+  label,
+  onClick,
+  color,
+  title,
+}) => (
   <button
     onClick={onClick}
     title={title}
@@ -272,18 +297,26 @@ interface EditableComponentRowProps {
 }
 
 const EditableComponentRow: React.FC<EditableComponentRowProps> = ({
-  comp, compType, allEntities, onChange, onRemove, editable,
+  comp,
+  compType,
+  allEntities,
+  onChange,
+  onRemove,
+  editable,
 }) => {
   const [expanded, setExpanded] = useState(true);
   const fieldCount = Object.keys(comp).length - 1; // exclude 'type'
 
   const Editor = getComponentEditor(compType);
 
-  const handleEditorChange = useCallback((updated: Record<string, unknown>) => {
-    // Deep clone to avoid mutating undo stack objects
-    const cloned = JSON.parse(JSON.stringify(updated));
-    onChange(cloned);
-  }, [onChange]);
+  const handleEditorChange = useCallback(
+    (updated: Record<string, unknown>) => {
+      // Deep clone to avoid mutating undo stack objects
+      const cloned = JSON.parse(JSON.stringify(updated));
+      onChange(cloned);
+    },
+    [onChange],
+  );
 
   return (
     <div className="border-b border-surface py-0.5">
@@ -306,11 +339,7 @@ const EditableComponentRow: React.FC<EditableComponentRowProps> = ({
       </div>
       {expanded && editable && (
         <div className="my-0.5 ml-3">
-          <Editor
-            component={comp}
-            onChange={handleEditorChange}
-            allEntities={allEntities}
-          />
+          <Editor component={comp} onChange={handleEditorChange} allEntities={allEntities} />
         </div>
       )}
       {expanded && !editable && (
@@ -347,7 +376,9 @@ const SpriteStateSelector: React.FC<SpriteStateSelectorProps> = ({ entity, regis
       if (!cancelled) setAvailableStates(states);
     });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [entity.prototype, registry]);
 
   // Load thumbnails when states are loaded
@@ -361,34 +392,34 @@ const SpriteStateSelector: React.FC<SpriteStateSelectorProps> = ({ entity, regis
     const thumbMap = new Map<string, string>();
 
     const loadAll = async () => {
-      await Promise.all(availableStates.map(async (stateName) => {
-        if (cancelled) return;
-        try {
-          const drawInfo = await loadSprite(spriteInfo, 'south', 0, stateName);
-          if (drawInfo && !cancelled) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 24;
-            canvas.height = 24;
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              ctx.imageSmoothingEnabled = false;
-              ctx.drawImage(
-                drawInfo.image,
-                drawInfo.sx, drawInfo.sy, drawInfo.sw, drawInfo.sh,
-                0, 0, 24, 24,
-              );
-              thumbMap.set(stateName, canvas.toDataURL());
+      await Promise.all(
+        availableStates.map(async (stateName) => {
+          if (cancelled) return;
+          try {
+            const drawInfo = await loadSprite(spriteInfo, 'south', 0, stateName);
+            if (drawInfo && !cancelled) {
+              const canvas = document.createElement('canvas');
+              canvas.width = 24;
+              canvas.height = 24;
+              const ctx = canvas.getContext('2d');
+              if (ctx) {
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(drawInfo.image, drawInfo.sx, drawInfo.sy, drawInfo.sw, drawInfo.sh, 0, 0, 24, 24);
+                thumbMap.set(stateName, canvas.toDataURL());
+              }
             }
+          } catch {
+            // Skip failed thumbnails
           }
-        } catch {
-          // Skip failed thumbnails
-        }
-      }));
+        }),
+      );
       if (!cancelled) setThumbnails(new Map(thumbMap));
     };
 
     loadAll();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [availableStates, entity.prototype, registry]);
 
   // Close dropdown on outside click
@@ -458,7 +489,5 @@ const SpriteStateSelector: React.FC<SpriteStateSelectorProps> = ({ entity, regis
 };
 
 function hasDeviceList(entity: ImportedEntity): boolean {
-  return entity.components.some(
-    (c) => (c as Record<string, unknown>).type === 'DeviceList',
-  );
+  return entity.components.some((c) => (c as Record<string, unknown>).type === 'DeviceList');
 }

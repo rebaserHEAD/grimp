@@ -24,14 +24,16 @@ function syncStructMetaData(
   desc: string,
 ): Record<number, Record<string, unknown>[]> | undefined {
   if (!struct?.[gridUid]) return struct;
-  const components = struct[gridUid].map(c => ({ ...c }));
-  let meta = components.find(c => c.type === 'MetaData');
+  const components = struct[gridUid].map((c) => ({ ...c }));
+  let meta = components.find((c) => c.type === 'MetaData');
   if (!meta) {
     meta = { type: 'MetaData' };
     components.push(meta);
   }
-  if (name.length > 0) meta.name = name; else delete meta.name;
-  if (desc.length > 0) meta.desc = desc; else delete meta.desc;
+  if (name.length > 0) meta.name = name;
+  else delete meta.name;
+  if (desc.length > 0) meta.desc = desc;
+  else delete meta.desc;
   return { ...struct, [gridUid]: components };
 }
 
@@ -44,11 +46,9 @@ function syncStructComponent(
 ): Record<number, Record<string, unknown>[]> | undefined {
   if (!struct?.[gridUid]) return struct;
   const components = struct[gridUid];
-  const has = components.some(c => c.type === componentType);
+  const has = components.some((c) => c.type === componentType);
   if (enabled === has) return struct;
-  const next = enabled
-    ? [...components, { type: componentType }]
-    : components.filter(c => c.type !== componentType);
+  const next = enabled ? [...components, { type: componentType }] : components.filter((c) => c.type !== componentType);
   return { ...struct, [gridUid]: next };
 }
 
@@ -62,14 +62,15 @@ function syncStructComponentField(
   value: string | null,
 ): Record<number, Record<string, unknown>[]> | undefined {
   if (!struct?.[gridUid]) return struct;
-  const components = struct[gridUid].map(c => ({ ...c }));
-  let comp = components.find(c => c.type === componentType);
+  const components = struct[gridUid].map((c) => ({ ...c }));
+  let comp = components.find((c) => c.type === componentType);
   if (!comp) {
     if (value === null) return struct;
     comp = { type: componentType };
     components.push(comp);
   }
-  if (value === null) delete comp[field]; else comp[field] = value;
+  if (value === null) delete comp[field];
+  else comp[field] = value;
   return { ...struct, [gridUid]: components };
 }
 
@@ -91,7 +92,10 @@ function applyTileChanges(grid: ReturnType<typeof Object.assign>, changes: TileC
   if (changes.length === 0) return grid;
 
   // Compute bounding box
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
   for (const tc of changes) {
     if (tc.x < minX) minX = tc.x;
     if (tc.x > maxX) maxX = tc.x;
@@ -102,9 +106,7 @@ function applyTileChanges(grid: ReturnType<typeof Object.assign>, changes: TileC
   // Expand grid to fit
   const expanded = ensureGridContainsBounds(grid, minX, minY, maxX, maxY, 0);
   // If expanded, use the new grid; if not, shallow-copy cells for immutability
-  const result = expanded !== grid
-    ? expanded
-    : { ...grid, cells: [...grid.cells] };
+  const result = expanded !== grid ? expanded : { ...grid, cells: [...grid.cells] };
 
   // Apply changes using world coordinates
   for (const tc of changes) {
@@ -126,7 +128,7 @@ function applyContainedEntityChanges(
       list.push(change.entity);
       result[change.parentUid] = list;
     } else {
-      result[change.parentUid] = list.filter(e => e.uid !== change.entity.uid);
+      result[change.parentUid] = list.filter((e) => e.uid !== change.entity.uid);
       if (result[change.parentUid].length === 0) {
         delete result[change.parentUid];
       }
@@ -151,7 +153,7 @@ function applyCommand(state: EditorState, command: Command): EditorState {
   // Determine target grid
   const activeGrid = getActiveGrid(state.grids, state.activeGridIndex);
   const targetGridUid = command.gridUid ?? activeGrid.gridUid;
-  const targetIndex = state.grids.findIndex(g => g.gridUid === targetGridUid);
+  const targetIndex = state.grids.findIndex((g) => g.gridUid === targetGridUid);
   if (targetIndex < 0) return state; // grid not found
 
   const targetGrid = state.grids[targetIndex];
@@ -187,7 +189,7 @@ function applyCommand(state: EditorState, command: Command): EditorState {
   // Single-pass filter for removals, then append adds
   let entities: ImportedEntity[];
   if (removeUids.size > 0) {
-    entities = targetGrid.entities.filter(e => !removeUids.has(e.uid));
+    entities = targetGrid.entities.filter((e) => !removeUids.has(e.uid));
   } else {
     entities = [...targetGrid.entities];
   }
@@ -209,10 +211,10 @@ function applyCommand(state: EditorState, command: Command): EditorState {
 
   // Update parent entity ContainerContainer ents for contained entity changes
   for (const cec of command.containedEntityChanges ?? []) {
-    const pIdx = entities.findIndex(e => e.uid === cec.parentUid);
+    const pIdx = entities.findIndex((e) => e.uid === cec.parentUid);
     if (pIdx < 0) continue;
     const parent = entities[pIdx];
-    const newComponents = parent.components.map(c => ({ ...c }));
+    const newComponents = parent.components.map((c) => ({ ...c }));
     let ccIdx = newComponents.findIndex((c: any) => c.type === 'ContainerContainer');
     if (cec.action === 'add') {
       if (ccIdx < 0) {
@@ -249,9 +251,9 @@ function applyCommand(state: EditorState, command: Command): EditorState {
         decals.push(dc.decal);
         if (dc.decal.id >= nextDecalId) nextDecalId = dc.decal.id + 1;
       } else if (dc.action === 'remove') {
-        decals = decals.filter(d => d.id !== dc.decal.id);
+        decals = decals.filter((d) => d.id !== dc.decal.id);
       } else if (dc.action === 'update') {
-        decals = decals.map(d => d.id === dc.decal.id ? dc.decal : d);
+        decals = decals.map((d) => (d.id === dc.decal.id ? dc.decal : d));
       }
     }
   }
@@ -270,9 +272,10 @@ function applyCommand(state: EditorState, command: Command): EditorState {
   newGrids[targetIndex] = updatedGrid;
 
   // Store gridUid on command for undo targeting
-  const storedCommand: Command = cascadeChanges.length > 0
-    ? { ...command, containedEntityChanges: allContainedChanges, gridUid: targetGridUid }
-    : { ...command, gridUid: targetGridUid };
+  const storedCommand: Command =
+    cascadeChanges.length > 0
+      ? { ...command, containedEntityChanges: allContainedChanges, gridUid: targetGridUid }
+      : { ...command, gridUid: targetGridUid };
 
   const undoStack = [...state.undoStack, storedCommand];
   if (undoStack.length > MAX_UNDO) {
@@ -302,22 +305,26 @@ function applyCommand(state: EditorState, command: Command): EditorState {
 function reverseCommand(command: Command): Command {
   return {
     label: `Undo ${command.label}`,
-    tileChanges: command.tileChanges.map(tc => ({
+    tileChanges: command.tileChanges.map((tc) => ({
       x: tc.x,
       y: tc.y,
       before: tc.after,
       after: tc.before,
     })),
-    entityChanges: command.entityChanges.map(ec => ({
-      action: ec.action === 'add' ? 'remove' as const : 'add' as const,
-      entity: ec.entity,
-    })).reverse(),
-    decalChanges: command.decalChanges?.map(dc => {
-      if (dc.action === 'add') return { action: 'remove' as const, decal: dc.decal };
-      if (dc.action === 'remove') return { action: 'add' as const, decal: dc.decal };
-      // update: swap decal and previousDecal
-      return { action: 'update' as const, decal: dc.previousDecal!, previousDecal: dc.decal };
-    }).reverse(),
+    entityChanges: command.entityChanges
+      .map((ec) => ({
+        action: ec.action === 'add' ? ('remove' as const) : ('add' as const),
+        entity: ec.entity,
+      }))
+      .reverse(),
+    decalChanges: command.decalChanges
+      ?.map((dc) => {
+        if (dc.action === 'add') return { action: 'remove' as const, decal: dc.decal };
+        if (dc.action === 'remove') return { action: 'add' as const, decal: dc.decal };
+        // update: swap decal and previousDecal
+        return { action: 'update' as const, decal: dc.previousDecal!, previousDecal: dc.decal };
+      })
+      .reverse(),
     gridUid: command.gridUid,
   };
 }
@@ -340,9 +347,9 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
 
         if (undoCmd.type === 'ADD_GRID') {
           // Undo add = remove the grid
-          const newGrids = state.grids.filter(g => g.gridUid !== undoCmd.gridData.gridUid);
+          const newGrids = state.grids.filter((g) => g.gridUid !== undoCmd.gridData.gridUid);
           let newActiveIndex = state.activeGridIndex;
-          const removedIdx = state.grids.findIndex(g => g.gridUid === undoCmd.gridData.gridUid);
+          const removedIdx = state.grids.findIndex((g) => g.gridUid === undoCmd.gridData.gridUid);
           if (removedIdx >= 0) {
             if (removedIdx === state.activeGridIndex) {
               newActiveIndex = Math.min(newActiveIndex, newGrids.length - 1);
@@ -352,8 +359,12 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
             }
           }
           return syncLegacyFields({
-            ...state, grids: newGrids, activeGridIndex: newActiveIndex,
-            undoStack: newUndoStack, redoStack: newRedoStack, dirty: true,
+            ...state,
+            grids: newGrids,
+            activeGridIndex: newActiveIndex,
+            undoStack: newUndoStack,
+            redoStack: newRedoStack,
+            dirty: true,
           });
         } else if (undoCmd.type === 'REMOVE_GRID') {
           // Undo remove = re-insert the grid at its original index
@@ -365,12 +376,16 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
             newActiveIndex++;
           }
           return syncLegacyFields({
-            ...state, grids: newGrids, activeGridIndex: newActiveIndex,
-            undoStack: newUndoStack, redoStack: newRedoStack, dirty: true,
+            ...state,
+            grids: newGrids,
+            activeGridIndex: newActiveIndex,
+            undoStack: newUndoStack,
+            redoStack: newRedoStack,
+            dirty: true,
           });
         } else {
           // RENAME_GRID, restore previousName
-          const gridIdx = state.grids.findIndex(g => g.gridUid === undoCmd.gridData.gridUid);
+          const gridIdx = state.grids.findIndex((g) => g.gridUid === undoCmd.gridData.gridUid);
           if (gridIdx < 0) return state;
           const newGrids = [...state.grids];
           newGrids[gridIdx] = { ...newGrids[gridIdx], name: undoCmd.previousName! };
@@ -383,9 +398,8 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
 
       // Determine target grid by the stored gridUid on the command
       const targetGridUid = command.gridUid;
-      const targetIndex = targetGridUid != null
-        ? state.grids.findIndex(g => g.gridUid === targetGridUid)
-        : state.activeGridIndex;
+      const targetIndex =
+        targetGridUid != null ? state.grids.findIndex((g) => g.gridUid === targetGridUid) : state.activeGridIndex;
       if (targetIndex < 0) return state;
 
       const targetGrid = state.grids[targetIndex];
@@ -406,7 +420,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       // Single-pass filter for removals, then append adds
       let entities: ImportedEntity[];
       if (undoRemoveUids.size > 0) {
-        entities = targetGrid.entities.filter(e => !undoRemoveUids.has(e.uid));
+        entities = targetGrid.entities.filter((e) => !undoRemoveUids.has(e.uid));
       } else {
         entities = [...targetGrid.entities];
       }
@@ -426,16 +440,18 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       let containedEntities = targetGrid.containedEntities;
       const cec = command.containedEntityChanges;
       if (cec && cec.length > 0) {
-        const reversedContained: ContainedEntityChange[] = cec.map(c => ({
-          ...c,
-          action: c.action === 'add' ? 'remove' as const : 'add' as const,
-        })).reverse();
+        const reversedContained: ContainedEntityChange[] = cec
+          .map((c) => ({
+            ...c,
+            action: c.action === 'add' ? ('remove' as const) : ('add' as const),
+          }))
+          .reverse();
         containedEntities = applyContainedEntityChanges(containedEntities, reversedContained);
 
         // Restore parent components if previousParentComponents was saved
         for (const c of cec) {
           if (c.previousParentComponents) {
-            const idx = entities.findIndex(e => e.uid === c.parentUid);
+            const idx = entities.findIndex((e) => e.uid === c.parentUid);
             if (idx >= 0) {
               entities = [...entities];
               entities[idx] = { ...entities[idx], components: c.previousParentComponents };
@@ -454,9 +470,9 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
             undoDecals.push(dc.decal);
             if (dc.decal.id >= undoNextDecalId) undoNextDecalId = dc.decal.id + 1;
           } else if (dc.action === 'remove') {
-            undoDecals = undoDecals.filter(d => d.id !== dc.decal.id);
+            undoDecals = undoDecals.filter((d) => d.id !== dc.decal.id);
           } else if (dc.action === 'update') {
-            undoDecals = undoDecals.map(d => d.id === dc.decal.id ? dc.decal : d);
+            undoDecals = undoDecals.map((d) => (d.id === dc.decal.id ? dc.decal : d));
           }
         }
       }
@@ -508,13 +524,15 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
           return syncLegacyFields({
             ...state,
             grids: [...state.grids, redoCmd.gridData],
-            undoStack: newUndoStack, redoStack: newRedoStack, dirty: true,
+            undoStack: newUndoStack,
+            redoStack: newRedoStack,
+            dirty: true,
           });
         } else if (redoCmd.type === 'REMOVE_GRID') {
           // Redo remove = remove the grid again
-          const removeIdx = state.grids.findIndex(g => g.gridUid === redoCmd.gridData.gridUid);
+          const removeIdx = state.grids.findIndex((g) => g.gridUid === redoCmd.gridData.gridUid);
           if (removeIdx < 0) return state;
-          const newGrids = state.grids.filter(g => g.gridUid !== redoCmd.gridData.gridUid);
+          const newGrids = state.grids.filter((g) => g.gridUid !== redoCmd.gridData.gridUid);
           let newActiveIndex = state.activeGridIndex;
           if (removeIdx === state.activeGridIndex) {
             newActiveIndex = Math.min(newActiveIndex, newGrids.length - 1);
@@ -523,12 +541,16 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
             newActiveIndex--;
           }
           return syncLegacyFields({
-            ...state, grids: newGrids, activeGridIndex: newActiveIndex,
-            undoStack: newUndoStack, redoStack: newRedoStack, dirty: true,
+            ...state,
+            grids: newGrids,
+            activeGridIndex: newActiveIndex,
+            undoStack: newUndoStack,
+            redoStack: newRedoStack,
+            dirty: true,
           });
         } else {
           // RENAME_GRID, apply the new name from gridData
-          const gridIdx = state.grids.findIndex(g => g.gridUid === redoCmd.gridData.gridUid);
+          const gridIdx = state.grids.findIndex((g) => g.gridUid === redoCmd.gridData.gridUid);
           if (gridIdx < 0) return state;
           const newGrids = [...state.grids];
           newGrids[gridIdx] = { ...newGrids[gridIdx], name: redoCmd.gridData.name };
@@ -555,19 +577,22 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       const { map } = action;
 
       // Build grids array from gridDataList if available, else fallback to legacy single-grid
-      const parsedGrids: GridData[] = map.gridDataList && map.gridDataList.length > 0
-        ? map.gridDataList
-        : [{
-          gridUid: map.gridUid,
-          name: 'Grid 1',
-          grid: map.grid,
-          entities: map.entities,
-          containedEntities: map.containedEntities ?? {},
-          worldPosition: { x: 0, y: 0 },
-          structuralComponents: [],
-          chunkKeyOrder: map.chunkKeyOrder ?? [],
-          decals: { decals: [], nextDecalId: 0 },
-        }];
+      const parsedGrids: GridData[] =
+        map.gridDataList && map.gridDataList.length > 0
+          ? map.gridDataList
+          : [
+              {
+                gridUid: map.gridUid,
+                name: 'Grid 1',
+                grid: map.grid,
+                entities: map.entities,
+                containedEntities: map.containedEntities ?? {},
+                worldPosition: { x: 0, y: 0 },
+                structuralComponents: [],
+                chunkKeyOrder: map.chunkKeyOrder ?? [],
+                decals: { decals: [], nextDecalId: 0 },
+              },
+            ];
 
       // Display-name fallback: the file's MetaData name is authoritative, but
       // many saved grids carry no name or only the engine default "grid".
@@ -576,11 +601,13 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       const sourceBase = action.sourceName?.replace(/\.ya?ml$/i, '').trim();
       const isUnnamed = (n: string) => n.trim() === '' || n.trim().toLowerCase() === 'grid';
       let unnamedSeen = 0;
-      const grids = parsedGrids.map(g => {
+      const grids = parsedGrids.map((g) => {
         if (!isUnnamed(g.name)) return g;
         unnamedSeen++;
         const label = sourceBase
-          ? (unnamedSeen === 1 ? sourceBase : `${sourceBase} (${unnamedSeen})`)
+          ? unnamedSeen === 1
+            ? sourceBase
+            : `${sourceBase} (${unnamedSeen})`
           : `Grid ${g.gridUid}`;
         return { ...g, name: label };
       });
@@ -661,7 +688,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         lineEnding: undefined,
         hasDocumentTerminator: undefined,
         entityOrder: undefined,
-        nextEntityId: 2,  // UIDs 0 (map) and 1 (grid) reserved for structural entities
+        nextEntityId: 2, // UIDs 0 (map) and 1 (grid) reserved for structural entities
         undoStack: [],
         redoStack: [],
         selectedDecalIds: [],
@@ -697,7 +724,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         lineEnding: undefined,
         hasDocumentTerminator: undefined,
         entityOrder: undefined,
-        nextEntityId: 2,  // UID 1 reserved for the grid root
+        nextEntityId: 2, // UID 1 reserved for the grid root
         undoStack: [],
         redoStack: [],
         selectedDecalIds: [],
@@ -733,9 +760,9 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       // From-scratch document: stash on the GridData; export synthesis emits it.
       return {
         ...state,
-        grids: state.grids.map(g => g.gridUid === gridUid
-          ? { ...g, identity: { name: name || undefined, desc: desc || undefined } }
-          : g),
+        grids: state.grids.map((g) =>
+          g.gridUid === gridUid ? { ...g, identity: { name: name || undefined, desc: desc || undefined } } : g,
+        ),
         dirty: true,
       };
     }
@@ -761,13 +788,15 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       }
       return {
         ...state,
-        grids: state.grids.map(g => {
+        grids: state.grids.map((g) => {
           if (g.gridUid !== gridUid) return g;
           const current = g.extraRootComponents ?? [];
-          const has = current.some(c => c.type === componentType);
+          const has = current.some((c) => c.type === componentType);
           const next = enabled
-            ? (has ? current : [...current, { type: componentType }])
-            : current.filter(c => c.type !== componentType);
+            ? has
+              ? current
+              : [...current, { type: componentType }]
+            : current.filter((c) => c.type !== componentType);
           return { ...g, extraRootComponents: next };
         }),
         dirty: true,
@@ -780,31 +809,45 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       if (raw) {
         return {
           ...state,
-          entityRawComponents: { ...state.entityRawComponents, [gridUid]: setComponentField(raw, componentType, field, value) },
-          structuralEntityData: syncStructComponentField(state.structuralEntityData, gridUid, componentType, field, value),
+          entityRawComponents: {
+            ...state.entityRawComponents,
+            [gridUid]: setComponentField(raw, componentType, field, value),
+          },
+          structuralEntityData: syncStructComponentField(
+            state.structuralEntityData,
+            gridUid,
+            componentType,
+            field,
+            value,
+          ),
           dirty: true,
         };
       }
       if (state.structuralEntityData?.[gridUid]) {
         return {
           ...state,
-          structuralEntityData: syncStructComponentField(state.structuralEntityData, gridUid, componentType, field, value),
+          structuralEntityData: syncStructComponentField(
+            state.structuralEntityData,
+            gridUid,
+            componentType,
+            field,
+            value,
+          ),
           dirty: true,
         };
       }
       return {
         ...state,
-        grids: state.grids.map(g => {
+        grids: state.grids.map((g) => {
           if (g.gridUid !== gridUid) return g;
           const current = g.extraRootComponents ?? [];
-          const existing = current.find(c => c.type === componentType);
+          const existing = current.find((c) => c.type === componentType);
           if (!existing && value === null) return g;
           const fields = { ...(existing?.fields ?? {}) };
-          if (value === null) delete fields[field]; else fields[field] = value;
+          if (value === null) delete fields[field];
+          else fields[field] = value;
           const entry = { type: componentType, fields };
-          const next = existing
-            ? current.map(c => (c.type === componentType ? entry : c))
-            : [...current, entry];
+          const next = existing ? current.map((c) => (c.type === componentType ? entry : c)) : [...current, entry];
           return { ...g, extraRootComponents: next };
         }),
         dirty: true,
@@ -832,9 +875,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       const idx = uids.indexOf(action.uid);
       return {
         ...state,
-        selectedEntityUids: idx >= 0
-          ? uids.filter(u => u !== action.uid)
-          : [...uids, action.uid],
+        selectedEntityUids: idx >= 0 ? uids.filter((u) => u !== action.uid) : [...uids, action.uid],
       };
     }
 
@@ -842,7 +883,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       markOverlayDirty();
       markConnectionsDirty();
       const existing = new Set(state.selectedEntityUids);
-      const newUids = action.uids.filter(u => !existing.has(u));
+      const newUids = action.uids.filter((u) => !existing.has(u));
       return {
         ...state,
         selectedEntityUids: [...state.selectedEntityUids, ...newUids],
@@ -855,7 +896,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       const removeSet = new Set(action.uids);
       return {
         ...state,
-        selectedEntityUids: state.selectedEntityUids.filter(uid => !removeSet.has(uid)),
+        selectedEntityUids: state.selectedEntityUids.filter((uid) => !removeSet.has(uid)),
       };
     }
 
@@ -868,7 +909,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       markOverlayDirty();
       const idx = state.selectedDecalIds.indexOf(action.id);
       if (idx >= 0) {
-        return { ...state, selectedDecalIds: state.selectedDecalIds.filter(id => id !== action.id) };
+        return { ...state, selectedDecalIds: state.selectedDecalIds.filter((id) => id !== action.id) };
       }
       return { ...state, selectedDecalIds: [...state.selectedDecalIds, action.id] };
     }
@@ -876,7 +917,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
     case 'ADD_SELECT_DECALS': {
       markOverlayDirty();
       const existing = new Set(state.selectedDecalIds);
-      const newIds = action.ids.filter(id => !existing.has(id));
+      const newIds = action.ids.filter((id) => !existing.has(id));
       if (newIds.length === 0) return state;
       return { ...state, selectedDecalIds: [...state.selectedDecalIds, ...newIds] };
     }
@@ -884,7 +925,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
     case 'REMOVE_SELECT_DECALS': {
       markOverlayDirty();
       const removeSet = new Set(action.ids);
-      return { ...state, selectedDecalIds: state.selectedDecalIds.filter(id => !removeSet.has(id)) };
+      return { ...state, selectedDecalIds: state.selectedDecalIds.filter((id) => !removeSet.has(id)) };
     }
 
     case 'SET_LIGHTING_ENABLED':
@@ -935,7 +976,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
     case 'REMOVE_GRID': {
       if (state.grids.length <= 1) return state; // Can't remove last grid
       markAllDirty();
-      const removeIndex = state.grids.findIndex(g => g.gridUid === action.gridUid);
+      const removeIndex = state.grids.findIndex((g) => g.gridUid === action.gridUid);
       if (removeIndex < 0) return state;
 
       const removedGrid = state.grids[removeIndex];
@@ -943,7 +984,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       const removeUndoStack = [...state.undoStack, gridCmd];
       if (removeUndoStack.length > MAX_UNDO) removeUndoStack.shift();
 
-      const newGrids = state.grids.filter(g => g.gridUid !== action.gridUid);
+      const newGrids = state.grids.filter((g) => g.gridUid !== action.gridUid);
       let newActiveIndex = state.activeGridIndex;
       if (removeIndex === state.activeGridIndex) {
         newActiveIndex = Math.min(newActiveIndex, newGrids.length - 1);
@@ -964,7 +1005,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
     }
 
     case 'RENAME_GRID': {
-      const renameIdx = state.grids.findIndex(g => g.gridUid === action.gridUid);
+      const renameIdx = state.grids.findIndex((g) => g.gridUid === action.gridUid);
       if (renameIdx < 0) return state;
       const previousName = state.grids[renameIdx].name;
       const renamedGrid = { ...state.grids[renameIdx], name: action.name };
@@ -979,7 +1020,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
     case 'ADD_CONTAINED_ENTITY': {
       markSceneDirty();
       const activeGrid = getActiveGrid(state.grids, state.activeGridIndex);
-      const parentIdx = activeGrid.entities.findIndex(e => e.uid === action.parentUid);
+      const parentIdx = activeGrid.entities.findIndex((e) => e.uid === action.parentUid);
       if (parentIdx < 0) return state;
 
       const childUid = state.nextEntityId;
@@ -996,8 +1037,8 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
 
       // Deep clone parent entity and update ContainerContainer
       const parent = activeGrid.entities[parentIdx];
-      const previousParentComponents = parent.components.map(c => ({ ...c }));
-      const newComponents = parent.components.map(c => ({ ...c }));
+      const previousParentComponents = parent.components.map((c) => ({ ...c }));
+      const newComponents = parent.components.map((c) => ({ ...c }));
       let ccIdx = newComponents.findIndex((c: any) => c.type === 'ContainerContainer');
       if (ccIdx < 0) {
         newComponents.push({
@@ -1020,22 +1061,21 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
 
       // Add to containedEntities
       const containedEntities = { ...activeGrid.containedEntities };
-      containedEntities[action.parentUid] = [
-        ...(containedEntities[action.parentUid] ?? []),
-        childEntity,
-      ];
+      containedEntities[action.parentUid] = [...(containedEntities[action.parentUid] ?? []), childEntity];
 
       // Build command for undo
       const command: Command = {
         label: `Add ${action.prototypeId} to container`,
         tileChanges: [],
         entityChanges: [],
-        containedEntityChanges: [{
-          action: 'add',
-          parentUid: action.parentUid,
-          entity: childEntity,
-          previousParentComponents,
-        }],
+        containedEntityChanges: [
+          {
+            action: 'add',
+            parentUid: action.parentUid,
+            entity: childEntity,
+            previousParentComponents,
+          },
+        ],
         gridUid: activeGrid.gridUid,
       };
 
@@ -1077,14 +1117,14 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       const activeGrid = getActiveGrid(state.grids, state.activeGridIndex);
       const parentList = activeGrid.containedEntities[action.parentUid];
       if (!parentList) return state;
-      const childIdx = parentList.findIndex(e => e.uid === action.entityUid);
+      const childIdx = parentList.findIndex((e) => e.uid === action.entityUid);
       if (childIdx < 0) return state;
 
       const removedEntity = parentList[childIdx];
 
       // Update containedEntities
       const containedEntities = { ...activeGrid.containedEntities };
-      const newList = parentList.filter(e => e.uid !== action.entityUid);
+      const newList = parentList.filter((e) => e.uid !== action.entityUid);
       if (newList.length === 0) {
         delete containedEntities[action.parentUid];
       } else {
@@ -1092,13 +1132,13 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       }
 
       // Update parent entity's ContainerContainer ents
-      const parentIdx = activeGrid.entities.findIndex(e => e.uid === action.parentUid);
+      const parentIdx = activeGrid.entities.findIndex((e) => e.uid === action.parentUid);
       let entities = activeGrid.entities;
       let previousParentComponents: Record<string, unknown>[] | undefined;
       if (parentIdx >= 0) {
         const parent = activeGrid.entities[parentIdx];
-        previousParentComponents = parent.components.map(c => ({ ...c }));
-        const newComponents = parent.components.map(c => ({ ...c }));
+        previousParentComponents = parent.components.map((c) => ({ ...c }));
+        const newComponents = parent.components.map((c) => ({ ...c }));
         const ccCompIdx = newComponents.findIndex((c: any) => c.type === 'ContainerContainer');
         if (ccCompIdx >= 0) {
           const cc2 = { ...newComponents[ccCompIdx] } as any;
@@ -1119,12 +1159,14 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         label: `Remove ${removedEntity.prototype} from container`,
         tileChanges: [],
         entityChanges: [],
-        containedEntityChanges: [{
-          action: 'remove',
-          parentUid: action.parentUid,
-          entity: removedEntity,
-          previousParentComponents,
-        }],
+        containedEntityChanges: [
+          {
+            action: 'remove',
+            parentUid: action.parentUid,
+            entity: removedEntity,
+            previousParentComponents,
+          },
+        ],
         gridUid: activeGrid.gridUid,
       };
 

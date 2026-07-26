@@ -23,7 +23,7 @@ const FALLBACK_COLORS: Record<string, string> = {
 
 export const STAR_TINTS = [
   { r: 100, g: 150, b: 255 }, // deep blue
-  { r: 255, g: 170, b: 80 },  // orange-gold
+  { r: 255, g: 170, b: 80 }, // orange-gold
   { r: 220, g: 100, b: 255 }, // bright violet
 ];
 
@@ -35,7 +35,7 @@ export const STAR_DEPTH_LAYERS = [
 
 interface SpaceBgCache {
   dustCanvas: HTMLCanvasElement | null;
-  starCanvases: HTMLCanvasElement[];  // pre-blurred, tiled, one per depth layer
+  starCanvases: HTMLCanvasElement[]; // pre-blurred, tiled, one per depth layer
   cachedW: number;
   cachedH: number;
 }
@@ -60,8 +60,10 @@ export function bakeTintedStars(src: HTMLImageElement): void {
 /** Bake a tiled+blurred pattern fill into an offscreen canvas. */
 function bakePatternLayer(
   src: HTMLImageElement | HTMLCanvasElement,
-  w: number, h: number,
-  scale: number, blur: number,
+  w: number,
+  h: number,
+  scale: number,
+  blur: number,
 ): HTMLCanvasElement {
   const c = document.createElement('canvas');
   c.width = w;
@@ -99,10 +101,20 @@ export function loadSpaceBg(): void {
   spaceBgLoading = true;
   const dust = new Image();
   const stars = new Image();
-  dust.onload = () => { spaceDustImg = dust; spaceBgCache.dustCanvas = null; markSceneDirty(); };
-  stars.onload = () => { spaceStarsImg = stars; spaceBgCache.starCanvases = []; markSceneDirty(); };
-  dust.onerror = () => { spaceBgLoading = false; };
-  stars.onerror = () => { };
+  dust.onload = () => {
+    spaceDustImg = dust;
+    spaceBgCache.dustCanvas = null;
+    markSceneDirty();
+  };
+  stars.onload = () => {
+    spaceStarsImg = stars;
+    spaceBgCache.starCanvases = [];
+    markSceneDirty();
+  };
+  dust.onerror = () => {
+    spaceBgLoading = false;
+  };
+  stars.onerror = () => {};
   dust.src = '/images/space-bg.png';
   stars.src = '/images/space-stars.png';
 }
@@ -123,7 +135,7 @@ export function getSpaceBgCache(w: number, h: number): SpaceBgCache | null {
     spaceBgCache.dustCanvas = bakePatternLayer(spaceDustImg, w, h, 0.5, 4);
 
     if (spaceStarsImg) {
-      spaceBgCache.starCanvases = STAR_DEPTH_LAYERS.map(layer => {
+      spaceBgCache.starCanvases = STAR_DEPTH_LAYERS.map((layer) => {
         const tinted = tintStars(spaceStarsImg!, STAR_TINTS[layer.tint % STAR_TINTS.length]);
         // Bake at larger size to allow parallax offset without gaps
         const margin = 200;
@@ -132,7 +144,7 @@ export function getSpaceBgCache(w: number, h: number): SpaceBgCache | null {
     }
   } else if (spaceStarsImg && spaceBgCache.starCanvases.length === 0) {
     // Stars loaded after dust, rebuild star layers only
-    spaceBgCache.starCanvases = STAR_DEPTH_LAYERS.map(layer => {
+    spaceBgCache.starCanvases = STAR_DEPTH_LAYERS.map((layer) => {
       const tinted = tintStars(spaceStarsImg!, STAR_TINTS[layer.tint % STAR_TINTS.length]);
       const margin = 200;
       return bakePatternLayer(tinted, w + margin * 2, h + margin * 2, layer.scale, layer.blur);
@@ -164,10 +176,7 @@ export function clearTileImageCache(): void {
  * If the image hasn't been requested yet, kicks off an async load and
  * returns null (the next render frame will pick it up once loaded).
  */
-function getTileImage(
-  tileId: string,
-  registry: IPrototypeRegistry,
-): HTMLImageElement | null {
+function getTileImage(tileId: string, registry: IPrototypeRegistry): HTMLImageElement | null {
   if (tileImageCache.has(tileId)) return tileImageCache.get(tileId)!;
 
   const tile = registry.getTile(tileId);
@@ -252,16 +261,10 @@ export function renderGrid(
         // Determine variant count from registry
         const tile = registry!.getTile(cell.tileId);
         const variants = tile ? tile.variants : 1;
-        const variant = variants > 1
-          ? ((x * 7 + y * 13) & 0x7fffffff) % variants
-          : 0;
+        const variant = variants > 1 ? ((x * 7 + y * 13) & 0x7fffffff) % variants : 0;
         const srcSize = img.width / variants;
 
-        ctx.drawImage(
-          img,
-          variant * srcSize, 0, srcSize, img.height,
-          drawX, drawY, tileScreenSize, tileScreenSize,
-        );
+        ctx.drawImage(img, variant * srcSize, 0, srcSize, img.height, drawX, drawY, tileScreenSize, tileScreenSize);
       } else {
         // Fallback: solid color fill
         ctx.fillStyle = getFallbackColor(cell.tileId);

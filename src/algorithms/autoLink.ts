@@ -16,7 +16,7 @@ function isWallEntity(prototype: string, registry: IPrototypeRegistry): boolean 
   if (prototype.includes('Wall')) return true;
   const resolved = registry.getEntity(prototype);
   if (resolved) {
-    return resolved.components.some(c => c.type === 'Occluder');
+    return resolved.components.some((c) => c.type === 'Occluder');
   }
   return false;
 }
@@ -32,8 +32,10 @@ function isDoorEntity(prototype: string): boolean {
  * and tiles beyond maxDistance from the start.
  */
 export function floodFillRoom(
-  startX: number, startY: number,
-  grid: TileGrid, entities: ImportedEntity[],
+  startX: number,
+  startY: number,
+  grid: TileGrid,
+  entities: ImportedEntity[],
   registry: IPrototypeRegistry,
   maxTiles: number = 200,
   maxDistance: number = 8,
@@ -58,8 +60,10 @@ export function floodFillRoom(
   visited.add(startKey);
   const seedPositions: [number, number][] = [
     [startX, startY],
-    [startX + 1, startY], [startX - 1, startY],
-    [startX, startY + 1], [startX, startY - 1],
+    [startX + 1, startY],
+    [startX - 1, startY],
+    [startX, startY + 1],
+    [startX, startY - 1],
   ];
   const queue: [number, number][] = [];
   for (const [sx, sy] of seedPositions) {
@@ -93,8 +97,13 @@ export function floodFillRoom(
     let isWall = false;
     let isDoor = false;
     for (const e of tileEntities) {
-      if (isWallEntity(e.prototype, registry)) { isWall = true; break; }
-      if (isDoorEntity(e.prototype)) { isDoor = true; }
+      if (isWallEntity(e.prototype, registry)) {
+        isWall = true;
+        break;
+      }
+      if (isDoorEntity(e.prototype)) {
+        isDoor = true;
+      }
     }
 
     if (isWall || isDoor) {
@@ -105,7 +114,12 @@ export function floodFillRoom(
     roomTiles.add(key);
 
     // Expand to 4-directional neighbors
-    for (const [dx, dy] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+    for (const [dx, dy] of [
+      [0, 1],
+      [0, -1],
+      [1, 0],
+      [-1, 0],
+    ]) {
       const nx = x + dx;
       const ny = y + dy;
       const nk = `${nx},${ny}`;
@@ -143,23 +157,18 @@ export function autoLinkDeviceList(
   }
 
   // 2. Check for DeviceList, instance first, then prototype
-  let deviceListIndex = entity.components.findIndex(
-    c => (c as Record<string, unknown>).type === 'DeviceList',
-  );
+  let deviceListIndex = entity.components.findIndex((c) => (c as Record<string, unknown>).type === 'DeviceList');
   const hasProtoDeviceList = (() => {
     const resolved = registry.getEntity(entity.prototype);
-    return resolved?.components.some(c => c.type === 'DeviceList') ?? false;
+    return resolved?.components.some((c) => c.type === 'DeviceList') ?? false;
   })();
 
   if (deviceListIndex === -1 && !hasProtoDeviceList) return null;
 
   // 3. Get existing devices
-  const deviceListComp = deviceListIndex >= 0
-    ? entity.components[deviceListIndex] as Record<string, unknown>
-    : null;
-  const existingDevices: number[] = deviceListComp && Array.isArray(deviceListComp.devices)
-    ? (deviceListComp.devices as number[])
-    : [];
+  const deviceListComp = deviceListIndex >= 0 ? (entity.components[deviceListIndex] as Record<string, unknown>) : null;
+  const existingDevices: number[] =
+    deviceListComp && Array.isArray(deviceListComp.devices) ? (deviceListComp.devices as number[]) : [];
   const existingSet = new Set(existingDevices);
 
   // 4. Flood fill room from entity position
@@ -168,14 +177,13 @@ export function autoLinkDeviceList(
   const { roomTiles, boundaryTiles } = floodFillRoom(startX, startY, grid, allEntities, registry);
   const searchTiles = useRoomTiles ? roomTiles : boundaryTiles;
 
-
   // 5. Find matching entities in the room/boundary
   const newDeviceUids: number[] = [];
   for (const other of allEntities) {
     if (other.uid === entity.uid) continue;
     if (existingSet.has(other.uid)) continue;
 
-    const matches = targetPatterns.some(p => other.prototype.includes(p));
+    const matches = targetPatterns.some((p) => other.prototype.includes(p));
     if (!matches) continue;
 
     const otherKey = `${Math.floor(other.position.x)},${Math.floor(other.position.y)}`;
@@ -195,9 +203,7 @@ export function autoLinkDeviceList(
 
   let updatedComponents: Record<string, unknown>[];
   if (deviceListIndex >= 0) {
-    updatedComponents = entity.components.map((c, i) =>
-      i === deviceListIndex ? updatedDeviceList : c,
-    );
+    updatedComponents = entity.components.map((c, i) => (i === deviceListIndex ? updatedDeviceList : c));
   } else {
     updatedComponents = [...entity.components, updatedDeviceList];
   }

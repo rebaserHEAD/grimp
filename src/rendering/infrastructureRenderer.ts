@@ -61,10 +61,7 @@ const CABLE_COLORS: Record<string, { color: string; width: number }> = {
   CableApcExtension: { color: '#22cc44', width: 1 },
 };
 
-function tileToScreen(
-  tx: number, ty: number,
-  camera: Camera, canvasW: number, canvasH: number,
-): [number, number] {
+function tileToScreen(tx: number, ty: number, camera: Camera, canvasW: number, canvasH: number): [number, number] {
   const tileScreenSize = TILE_SIZE * camera.zoom;
   const screenOffsetX = canvasW / 2 - camera.x * tileScreenSize;
   const screenOffsetY = canvasH / 2 - camera.y * tileScreenSize;
@@ -146,13 +143,7 @@ export function renderInfrastructure(
   }
 }
 
-function drawPathLine(
-  ctx: CanvasRenderingContext2D,
-  tiles: Point[],
-  camera: Camera,
-  canvasW: number,
-  canvasH: number,
-) {
+function drawPathLine(ctx: CanvasRenderingContext2D, tiles: Point[], camera: Camera, canvasW: number, canvasH: number) {
   if (tiles.length < 2) return;
   ctx.beginPath();
   const [sx, sy] = tileToScreen(tiles[0].x + 0.5, tiles[0].y + 0.5, camera, canvasW, canvasH);

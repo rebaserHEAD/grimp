@@ -1,6 +1,4 @@
-import type {
-  TileGrid, TileCell, ToolType, PaletteItem, UndoableCommand,
-} from '../types';
+import type { TileGrid, TileCell, ToolType, PaletteItem, UndoableCommand } from '../types';
 import type { ImportedEntity, MapMeta } from '../import/mapImporter';
 import type { IPrototypeRegistry } from '../loaders/registryTypes';
 import type { GridData } from './gridData';
@@ -52,7 +50,7 @@ export interface EditorState {
   // Entity selection (supports multi-select)
   selectedEntityUids: number[];
   selectedDecalIds: number[];
-  decalsDirty: Set<number>;  // grid UIDs with modified decals
+  decalsDirty: Set<number>; // grid UIDs with modified decals
 
   // Lighting preview
   lightingEnabled: boolean;
@@ -65,14 +63,19 @@ export interface EditorState {
 
 /** Expand grid to contain the given world-coordinate bounding box. */
 export function ensureGridContainsBounds(
-  grid: TileGrid, minWX: number, minWY: number, maxWX: number, maxWY: number, padding = 16,
+  grid: TileGrid,
+  minWX: number,
+  minWY: number,
+  maxWX: number,
+  maxWY: number,
+  padding = 16,
 ): TileGrid {
   if (grid.width === 0) {
     // Empty grid, create new one centered around the bounds
     const newOffsetX = minWX - padding;
     const newOffsetY = minWY - padding;
-    const newWidth = (maxWX - minWX + 1) + padding * 2;
-    const newHeight = (maxWY - minWY + 1) + padding * 2;
+    const newWidth = maxWX - minWX + 1 + padding * 2;
+    const newHeight = maxWY - minWY + 1 + padding * 2;
     const cells: TileCell[] = new Array(newWidth * newHeight);
     for (let i = 0; i < cells.length; i++) cells[i] = { tileId: 'Space' };
     return { width: newWidth, height: newHeight, offsetX: newOffsetX, offsetY: newOffsetY, cells };
@@ -84,10 +87,22 @@ export function ensureGridContainsBounds(
   let newMaxY = grid.offsetY + grid.height;
   let changed = false;
 
-  if (minWX < grid.offsetX) { newOffsetX = minWX - padding; changed = true; }
-  if (minWY < grid.offsetY) { newOffsetY = minWY - padding; changed = true; }
-  if (maxWX >= grid.offsetX + grid.width) { newMaxX = maxWX + 1 + padding; changed = true; }
-  if (maxWY >= grid.offsetY + grid.height) { newMaxY = maxWY + 1 + padding; changed = true; }
+  if (minWX < grid.offsetX) {
+    newOffsetX = minWX - padding;
+    changed = true;
+  }
+  if (minWY < grid.offsetY) {
+    newOffsetY = minWY - padding;
+    changed = true;
+  }
+  if (maxWX >= grid.offsetX + grid.width) {
+    newMaxX = maxWX + 1 + padding;
+    changed = true;
+  }
+  if (maxWY >= grid.offsetY + grid.height) {
+    newMaxY = maxWY + 1 + padding;
+    changed = true;
+  }
 
   if (!changed) return grid;
 
@@ -99,8 +114,8 @@ export function ensureGridContainsBounds(
   // Copy old cells
   for (let y = 0; y < grid.height; y++) {
     for (let x = 0; x < grid.width; x++) {
-      const nx = (grid.offsetX + x) - newOffsetX;
-      const ny = (grid.offsetY + y) - newOffsetY;
+      const nx = grid.offsetX + x - newOffsetX;
+      const ny = grid.offsetY + y - newOffsetY;
       cells[ny * newWidth + nx] = grid.cells[y * grid.width + x];
     }
   }
@@ -166,22 +181,22 @@ export function getGridProperties(
 ): GridProperties {
   const struct = state.structuralEntityData?.[gridUid];
   if (struct) {
-    const meta = struct.find(c => c.type === 'MetaData') as { name?: unknown; desc?: unknown } | undefined;
-    const becomes = struct.find(c => c.type === 'BecomesStation') as { id?: unknown } | undefined;
+    const meta = struct.find((c) => c.type === 'MetaData') as { name?: unknown; desc?: unknown } | undefined;
+    const becomes = struct.find((c) => c.type === 'BecomesStation') as { id?: unknown } | undefined;
     return {
       name: typeof meta?.name === 'string' ? meta.name : '',
       desc: typeof meta?.desc === 'string' ? meta.desc : '',
-      components: struct.map(c => String(c.type)),
+      components: struct.map((c) => String(c.type)),
       becomesStationId: typeof becomes?.id === 'string' ? becomes.id : undefined,
     };
   }
-  const gridData = state.grids.find(g => g.gridUid === gridUid);
+  const gridData = state.grids.find((g) => g.gridUid === gridUid);
   const extras = gridData?.extraRootComponents ?? [];
   return {
     name: gridData?.identity?.name ?? '',
     desc: gridData?.identity?.desc ?? '',
-    components: ['MetaData', 'Transform', 'MapGrid', ...extras.map(c => c.type)],
-    becomesStationId: extras.find(c => c.type === 'BecomesStation')?.fields?.id,
+    components: ['MetaData', 'Transform', 'MapGrid', ...extras.map((c) => c.type)],
+    becomesStationId: extras.find((c) => c.type === 'BecomesStation')?.fields?.id,
   };
 }
 
@@ -196,7 +211,7 @@ export function createInitialState(): EditorState {
     containedEntities: emptyGrid.containedEntities,
     activeTool: 'pan',
     selectedPaletteItem: { type: 'tile', id: 'Plating' },
-    nextEntityId: 2,  // UIDs 0 (map) and 1 (grid) are reserved for structural entities
+    nextEntityId: 2, // UIDs 0 (map) and 1 (grid) are reserved for structural entities
     selectedEntityUids: [],
     selectedDecalIds: [],
     decalsDirty: new Set(),

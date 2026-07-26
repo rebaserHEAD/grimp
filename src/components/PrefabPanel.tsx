@@ -63,8 +63,8 @@ export const PrefabPanel: React.FC<Props> = ({ onSelectPrefab }) => {
         }
       }
       // Merge with locally-imported prefabs (folder === '') so they aren't lost on refresh
-      setPrefabs(prev => {
-        const localPrefabs = prev.filter(p => p.folder === '');
+      setPrefabs((prev) => {
+        const localPrefabs = prev.filter((p) => p.folder === '');
         return [...loaded, ...localPrefabs];
       });
     } finally {
@@ -80,11 +80,11 @@ export const PrefabPanel: React.FC<Props> = ({ onSelectPrefab }) => {
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    file.text().then(json => {
+    file.text().then((json) => {
       try {
         const data = parsePrefabJson(json);
-        setPrefabs(prev => {
-          const filtered = prev.filter(p => !(p.filename === file.name && p.folder === ''));
+        setPrefabs((prev) => {
+          const filtered = prev.filter((p) => !(p.filename === file.name && p.folder === ''));
           return [...filtered, { data, filename: file.name, folder: '' }];
         });
       } catch (err) {
@@ -94,13 +94,16 @@ export const PrefabPanel: React.FC<Props> = ({ onSelectPrefab }) => {
     e.target.value = '';
   }, []);
 
-  const handleSelect = useCallback((prefab: LoadedPrefab) => {
-    setSelectedName(prefab.data.name);
-    onSelectPrefab(prefab.data);
-  }, [onSelectPrefab]);
+  const handleSelect = useCallback(
+    (prefab: LoadedPrefab) => {
+      setSelectedName(prefab.data.name);
+      onSelectPrefab(prefab.data);
+    },
+    [onSelectPrefab],
+  );
 
   const toggleFolder = useCallback((folder: string) => {
-    setCollapsedFolders(prev => {
+    setCollapsedFolders((prev) => {
       const next = new Set(prev);
       if (next.has(folder)) next.delete(folder);
       else next.add(folder);
@@ -154,16 +157,16 @@ export const PrefabPanel: React.FC<Props> = ({ onSelectPrefab }) => {
       <div className="flex-1 overflow-y-auto">
         {prefabs.length === 0 && !loading ? (
           <div className="text-muted text-xs p-3 italic text-center leading-relaxed">
-            No prefabs found.<br />
-            Save .prefab.json files to<br />
+            No prefabs found.
+            <br />
+            Save .prefab.json files to
+            <br />
             <span className="text-primary">public/prefabs/</span>
           </div>
         ) : loading ? (
-          <div className="text-muted text-xs p-3 italic text-center">
-            Loading...
-          </div>
+          <div className="text-muted text-xs p-3 italic text-center">Loading...</div>
         ) : (
-          sortedFolders.map(folder => {
+          sortedFolders.map((folder) => {
             const items = folders.get(folder)!;
             const isCollapsed = collapsedFolders.has(folder);
 
@@ -182,20 +185,21 @@ export const PrefabPanel: React.FC<Props> = ({ onSelectPrefab }) => {
                 )}
 
                 {/* Prefab entries */}
-                {!isCollapsed && items.map((p, i) => (
-                  <div
-                    key={`${p.folder}/${p.filename}-${i}`}
-                    onClick={() => handleSelect(p)}
-                    className={`px-3 py-1 text-xs cursor-pointer border-b border-subtle ${folder ? 'pl-4' : ''
-                      } ${selectedName === p.data.name ? 'bg-active' : 'hover:bg-hover'
+                {!isCollapsed &&
+                  items.map((p, i) => (
+                    <div
+                      key={`${p.folder}/${p.filename}-${i}`}
+                      onClick={() => handleSelect(p)}
+                      className={`px-3 py-1 text-xs cursor-pointer border-b border-subtle ${folder ? 'pl-4' : ''} ${
+                        selectedName === p.data.name ? 'bg-active' : 'hover:bg-hover'
                       }`}
-                  >
-                    <div className="text-primary text-xs">{p.data.name}</div>
-                    <div className="text-muted text-[10px]">
-                      {p.data.width}&times;{p.data.height}
+                    >
+                      <div className="text-primary text-xs">{p.data.name}</div>
+                      <div className="text-muted text-[10px]">
+                        {p.data.width}&times;{p.data.height}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             );
           })

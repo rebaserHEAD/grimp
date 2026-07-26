@@ -96,24 +96,33 @@ export function importMap(yamlContent: string): ImportedMap {
 
   const meta = parseMeta(doc.meta);
   const tilemap = parseTilemap(doc.tilemap);
-  const { mapUid, gridUid, chunks, chunkKeyOrder, structuralEntities, structuralEntityData, gridParseDataMap, gridOrder } = parseStructuralEntities(doc.entities);
+  const {
+    mapUid,
+    gridUid,
+    chunks,
+    chunkKeyOrder,
+    structuralEntities,
+    structuralEntityData,
+    gridParseDataMap,
+    gridOrder,
+  } = parseStructuralEntities(doc.entities);
 
   // Build the set of all grid UIDs for entity assignment
   const gridUidSet = new Set(gridOrder);
 
   // Parse entities with per-grid assignment
-  const { entities, containedEntities, entityOrder, perGridEntities, perGridContainedEntities } = parseNonStructuralEntities(doc.entities, structuralEntities, gridUidSet, mapUid, gridUid);
+  const { entities, containedEntities, entityOrder, perGridEntities, perGridContainedEntities } =
+    parseNonStructuralEntities(doc.entities, structuralEntities, gridUidSet, mapUid, gridUid);
 
   // Build grid for legacy compat (first grid)
   const grid = buildGrid(chunks, tilemap, meta.format);
 
   // Build gridDataList, one GridData per grid
-  const gridDataList: GridData[] = gridOrder.map(gUid => {
+  const gridDataList: GridData[] = gridOrder.map((gUid) => {
     const parseData = gridParseDataMap.get(gUid)!;
     const gridTiles = buildGrid(parseData.chunks, tilemap, meta.format);
-    const decalGridComp = parseData.structuralComponents.find(
-      (c: any) => c.type === 'DecalGrid'
-    ) as Record<string, unknown> | undefined;
+    const decalGridComp = parseData.structuralComponents.find((c: any) => c.type === 'DecalGrid') as
+      Record<string, unknown> | undefined;
     const decalData = decalGridComp ? parseDecalGrid(decalGridComp) : { decals: [], nextDecalId: 0 };
     return {
       gridUid: gUid,
@@ -130,8 +139,7 @@ export function importMap(yamlContent: string): ImportedMap {
 
   // Preserve format 7+ top-level keys. A bare `key:` parses as null; treat it
   // as an explicit empty list so grid files (maps: []) round-trip faithfully.
-  const uidList = (v: unknown): number[] | undefined =>
-    Array.isArray(v) ? v : v === null ? [] : undefined;
+  const uidList = (v: unknown): number[] | undefined => (Array.isArray(v) ? v : v === null ? [] : undefined);
   const maps = 'maps' in doc ? uidList(doc.maps) : undefined;
   const grids = 'grids' in doc ? uidList(doc.grids) : undefined;
   const orphans = 'orphans' in doc ? uidList(doc.orphans) : undefined;
@@ -160,7 +168,29 @@ export function importMap(yamlContent: string): ImportedMap {
   // Whether the file ends with a newline (some game-saved ships end at `...`)
   const trailingNewline = /\r?\n$/.test(yamlContent);
 
-  return { meta, tilemap, grid, entities, containedEntities, gridUid, mapUid, maps, grids, orphans, nullspace, leadingLines: leadingLines.length > 0 ? leadingLines : undefined, structuralEntityData, chunkKeyOrder, lineEnding, entityRawComponents, entityRawPreamble, hasDocumentTerminator, trailingNewline, entityOrder, gridDataList };
+  return {
+    meta,
+    tilemap,
+    grid,
+    entities,
+    containedEntities,
+    gridUid,
+    mapUid,
+    maps,
+    grids,
+    orphans,
+    nullspace,
+    leadingLines: leadingLines.length > 0 ? leadingLines : undefined,
+    structuralEntityData,
+    chunkKeyOrder,
+    lineEnding,
+    entityRawComponents,
+    entityRawPreamble,
+    hasDocumentTerminator,
+    trailingNewline,
+    entityOrder,
+    gridDataList,
+  };
 }
 
 // ---- Meta ----
@@ -168,9 +198,7 @@ export function importMap(yamlContent: string): ImportedMap {
 function parseMeta(raw: any): MapMeta {
   return {
     format: raw?.format ?? 6,
-    postmapinit: raw?.postmapinit != null
-      ? (raw.postmapinit === true || raw.postmapinit === 'True')
-      : undefined,
+    postmapinit: raw?.postmapinit != null ? raw.postmapinit === true || raw.postmapinit === 'True' : undefined,
     category: raw?.category ?? undefined,
     engineVersion: raw?.engineVersion ?? undefined,
     forkId: raw?.forkId ?? undefined,
@@ -297,22 +325,29 @@ function parseStructuralEntities(entityGroups: any[]): {
   const chunks = firstGrid?.chunks ?? [];
   const chunkKeyOrder = firstGrid?.chunkKeyOrder ?? [];
 
-  return { mapUid, gridUid: firstGridUid, chunks, chunkKeyOrder, structuralEntities, structuralEntityData, gridParseDataMap, gridOrder };
+  return {
+    mapUid,
+    gridUid: firstGridUid,
+    chunks,
+    chunkKeyOrder,
+    structuralEntities,
+    structuralEntityData,
+    gridParseDataMap,
+    gridOrder,
+  };
 }
 
 // ---- Grid building ----
 
-function buildGrid(
-  chunks: ChunkData[],
-  tilemap: Record<number, string>,
-  format: number,
-): ImportedMap['grid'] {
+function buildGrid(chunks: ChunkData[], tilemap: Record<number, string>, format: number): ImportedMap['grid'] {
   if (chunks.length === 0) {
     return { width: 0, height: 0, offsetX: 0, offsetY: 0, cells: [] };
   }
 
-  let minCX = Infinity, maxCX = -Infinity;
-  let minCY = Infinity, maxCY = -Infinity;
+  let minCX = Infinity,
+    maxCX = -Infinity;
+  let minCY = Infinity,
+    maxCY = -Infinity;
   for (const c of chunks) {
     if (c.cx < minCX) minCX = c.cx;
     if (c.cx > maxCX) maxCX = c.cx;
@@ -475,7 +510,8 @@ function parseNonStructuralEntities(
       entityOrder.push(entity.uid);
 
       // Determine which grid this entity belongs to
-      const isContained = parentUid != null && !gridUids.has(parentUid) && parentUid !== mapUid && !structuralEntities.has(parentUid);
+      const isContained =
+        parentUid != null && !gridUids.has(parentUid) && parentUid !== mapUid && !structuralEntities.has(parentUid);
 
       if (isContained) {
         // Contained entity, find which grid the container belongs to
@@ -511,7 +547,7 @@ function parseNonStructuralEntities(
     // Find which grid the container is in
     let ownerGridUid = firstGridUid;
     for (const [gridUid, ents] of perGridEntities) {
-      if (ents.some(e => e.uid === containerUidNum)) {
+      if (ents.some((e) => e.uid === containerUidNum)) {
         ownerGridUid = gridUid;
         break;
       }
@@ -566,9 +602,10 @@ function parseRotation(rot: unknown): number {
  * This preserves exact formatting that JavaScript object parsing would alter
  * (e.g., integer key ordering, null vs empty values, quoting styles).
  */
-function extractAllEntityRawComponents(
-  yamlContent: string,
-): { components: Record<number, string[]>; preambles: Record<number, string[]> } {
+function extractAllEntityRawComponents(yamlContent: string): {
+  components: Record<number, string[]>;
+  preambles: Record<number, string[]>;
+} {
   const components: Record<number, string[]> = {};
   const preambles: Record<number, string[]> = {};
   const rawLines = yamlContent.split(/\r?\n/);
@@ -655,11 +692,7 @@ function trimTrailingEmpty(lines: string[]): void {
   }
 }
 
-function saveRawComponents(
-  result: Record<number, string[]>,
-  uid: number | null,
-  lines: string[],
-): void {
+function saveRawComponents(result: Record<number, string[]>, uid: number | null, lines: string[]): void {
   if (uid === null) return;
   // Preserve all lines including trailing empty lines for byte-exact roundtrip
   // (trailing empty lines can be part of block scalars like Paper content)
@@ -668,14 +701,10 @@ function saveRawComponents(
   }
 }
 
-function saveRawPreamble(
-  result: Record<number, string[]>,
-  uid: number | null,
-  lines: string[],
-): void {
+function saveRawPreamble(result: Record<number, string[]>, uid: number | null, lines: string[]): void {
   if (uid === null || lines.length === 0) return;
   // Only save if there are non-empty lines
-  const nonEmpty = lines.filter(l => l.trim().length > 0);
+  const nonEmpty = lines.filter((l) => l.trim().length > 0);
   if (nonEmpty.length > 0) {
     result[uid] = [...lines];
   }

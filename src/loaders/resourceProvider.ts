@@ -45,7 +45,9 @@ export class HttpResourceProvider implements ResourceProvider {
     try {
       const res = await fetch(listUrl);
       if (res.ok) return await res.json();
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
 
     const name = manifestName(dir);
     if (!name) return [];
@@ -66,7 +68,7 @@ export class HttpResourceProvider implements ResourceProvider {
     return `${this.baseUrl}/resources${normalized}`;
   }
 
-  dispose(): void { }
+  dispose(): void {}
 }
 
 export class FileSystemResourceProvider implements ResourceProvider {

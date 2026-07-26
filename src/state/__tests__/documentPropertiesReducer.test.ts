@@ -123,7 +123,10 @@ describe('SET_GRID_IDENTITY on an imported grid file', () => {
     const before = exportMap(stateToExportInput(state));
 
     const renamed = editorReducer(state, {
-      type: 'SET_GRID_IDENTITY', gridUid: 42, name: 'Warspite', desc: 'A fine ship.',
+      type: 'SET_GRID_IDENTITY',
+      gridUid: 42,
+      name: 'Warspite',
+      desc: 'A fine ship.',
     });
     const after = exportMap(stateToExportInput(renamed));
 
@@ -131,14 +134,21 @@ describe('SET_GRID_IDENTITY on an imported grid file', () => {
     expect(after).toContain('      desc: A fine ship.');
     expect(renamed.dirty).toBe(true);
     // Surgical: removing the identity lines from both exports yields identical text
-    const strip = (s: string) => s.split('\n').filter(l => !/^ {6}(name|desc):/.test(l)).join('\n');
+    const strip = (s: string) =>
+      s
+        .split('\n')
+        .filter((l) => !/^ {6}(name|desc):/.test(l))
+        .join('\n');
     expect(strip(after)).toBe(strip(before));
   });
 
   it('empty name removes the field', () => {
     const state = loadIntoState(gridFileYaml());
     const cleared = editorReducer(state, {
-      type: 'SET_GRID_IDENTITY', gridUid: 42, name: '', desc: '',
+      type: 'SET_GRID_IDENTITY',
+      gridUid: 42,
+      name: '',
+      desc: '',
     });
     const out = exportMap(stateToExportInput(cleared));
     expect(out).not.toContain('name: oldname');
@@ -148,9 +158,12 @@ describe('SET_GRID_IDENTITY on an imported grid file', () => {
   it('mirrors into structuralEntityData', () => {
     const state = loadIntoState(gridFileYaml());
     const renamed = editorReducer(state, {
-      type: 'SET_GRID_IDENTITY', gridUid: 42, name: 'Warspite', desc: '',
+      type: 'SET_GRID_IDENTITY',
+      gridUid: 42,
+      name: 'Warspite',
+      desc: '',
     });
-    const meta = renamed.structuralEntityData![42].find(c => c.type === 'MetaData') as any;
+    const meta = renamed.structuralEntityData![42].find((c) => c.type === 'MetaData') as any;
     expect(meta.name).toBe('Warspite');
     expect(meta.desc).toBeUndefined();
   });
@@ -162,7 +175,10 @@ describe('SET_ROOT_COMPONENT on an imported grid file', () => {
     const before = exportMap(stateToExportInput(state));
 
     const withShuttle = editorReducer(state, {
-      type: 'SET_ROOT_COMPONENT', gridUid: 42, componentType: 'Shuttle', enabled: true,
+      type: 'SET_ROOT_COMPONENT',
+      gridUid: 42,
+      componentType: 'Shuttle',
+      enabled: true,
     });
     const after = exportMap(stateToExportInput(withShuttle));
     const beforeLines = before.split('\n');
@@ -171,7 +187,10 @@ describe('SET_ROOT_COMPONENT on an imported grid file', () => {
     expect(afterLines.length).toBe(beforeLines.length + 1);
 
     const removed = editorReducer(withShuttle, {
-      type: 'SET_ROOT_COMPONENT', gridUid: 42, componentType: 'Shuttle', enabled: false,
+      type: 'SET_ROOT_COMPONENT',
+      gridUid: 42,
+      componentType: 'Shuttle',
+      enabled: false,
     });
     expect(exportMap(stateToExportInput(removed))).toBe(before);
   });
@@ -183,7 +202,11 @@ describe('SET_ROOT_COMPONENT_FIELD (BecomesStation) on an imported grid file', (
     const before = exportMap(stateToExportInput(state));
 
     const withStation = editorReducer(state, {
-      type: 'SET_ROOT_COMPONENT_FIELD', gridUid: 42, componentType: 'BecomesStation', field: 'id', value: 'Warspite',
+      type: 'SET_ROOT_COMPONENT_FIELD',
+      gridUid: 42,
+      componentType: 'BecomesStation',
+      field: 'id',
+      value: 'Warspite',
     });
     const after = exportMap(stateToExportInput(withStation));
     // Matches the game-saved shape (e.g. archer.yml): block + scalar id
@@ -193,7 +216,10 @@ describe('SET_ROOT_COMPONENT_FIELD (BecomesStation) on an imported grid file', (
 
     // Removing the component restores the original bytes
     const removed = editorReducer(withStation, {
-      type: 'SET_ROOT_COMPONENT', gridUid: 42, componentType: 'BecomesStation', enabled: false,
+      type: 'SET_ROOT_COMPONENT',
+      gridUid: 42,
+      componentType: 'BecomesStation',
+      enabled: false,
     });
     expect(exportMap(stateToExportInput(removed))).toBe(before);
   });
@@ -201,15 +227,23 @@ describe('SET_ROOT_COMPONENT_FIELD (BecomesStation) on an imported grid file', (
   it('updates an existing id in place and mirrors into structural data', () => {
     let state = loadIntoState(gridFileYaml());
     state = editorReducer(state, {
-      type: 'SET_ROOT_COMPONENT_FIELD', gridUid: 42, componentType: 'BecomesStation', field: 'id', value: 'Warspite',
+      type: 'SET_ROOT_COMPONENT_FIELD',
+      gridUid: 42,
+      componentType: 'BecomesStation',
+      field: 'id',
+      value: 'Warspite',
     });
     state = editorReducer(state, {
-      type: 'SET_ROOT_COMPONENT_FIELD', gridUid: 42, componentType: 'BecomesStation', field: 'id', value: 'Renown',
+      type: 'SET_ROOT_COMPONENT_FIELD',
+      gridUid: 42,
+      componentType: 'BecomesStation',
+      field: 'id',
+      value: 'Renown',
     });
     const out = exportMap(stateToExportInput(state));
     expect(out).toContain('      id: Renown');
     expect(out).not.toContain('Warspite');
-    const becomes = state.structuralEntityData![42].find(c => c.type === 'BecomesStation') as any;
+    const becomes = state.structuralEntityData![42].find((c) => c.type === 'BecomesStation') as any;
     expect(becomes.id).toBe('Renown');
   });
 });
@@ -229,7 +263,10 @@ describe('map-entity contamination cleanup', () => {
     let state = loadIntoState(contaminated);
     for (const t of ['Map', 'PhysicsMap', 'GridTree', 'MovedGrids']) {
       state = editorReducer(state, {
-        type: 'SET_ROOT_COMPONENT', gridUid: 42, componentType: t, enabled: false,
+        type: 'SET_ROOT_COMPONENT',
+        gridUid: 42,
+        componentType: t,
+        enabled: false,
       });
     }
     const out = exportMap(stateToExportInput(state));
@@ -247,13 +284,22 @@ describe('Map Properties on a from-scratch grid document', () => {
   it('identity and ship switches reach the synthesized export', () => {
     let state = editorReducer(createInitialState(), { type: 'NEW_GRID' });
     state = editorReducer(state, {
-      type: 'SET_GRID_IDENTITY', gridUid: 1, name: 'Warspite', desc: 'A fine ship.',
+      type: 'SET_GRID_IDENTITY',
+      gridUid: 1,
+      name: 'Warspite',
+      desc: 'A fine ship.',
     });
     state = editorReducer(state, {
-      type: 'SET_ROOT_COMPONENT', gridUid: 1, componentType: 'Shuttle', enabled: true,
+      type: 'SET_ROOT_COMPONENT',
+      gridUid: 1,
+      componentType: 'Shuttle',
+      enabled: true,
     });
     state = editorReducer(state, {
-      type: 'SET_ROOT_COMPONENT', gridUid: 1, componentType: 'IFF', enabled: true,
+      type: 'SET_ROOT_COMPONENT',
+      gridUid: 1,
+      componentType: 'IFF',
+      enabled: true,
     });
 
     const out = exportMap(stateToExportInput(state));
@@ -268,10 +314,16 @@ describe('Map Properties on a from-scratch grid document', () => {
   it('toggling a switch off removes it from the export', () => {
     let state = editorReducer(createInitialState(), { type: 'NEW_GRID' });
     state = editorReducer(state, {
-      type: 'SET_ROOT_COMPONENT', gridUid: 1, componentType: 'Shuttle', enabled: true,
+      type: 'SET_ROOT_COMPONENT',
+      gridUid: 1,
+      componentType: 'Shuttle',
+      enabled: true,
     });
     state = editorReducer(state, {
-      type: 'SET_ROOT_COMPONENT', gridUid: 1, componentType: 'Shuttle', enabled: false,
+      type: 'SET_ROOT_COMPONENT',
+      gridUid: 1,
+      componentType: 'Shuttle',
+      enabled: false,
     });
     expect(exportMap(stateToExportInput(state))).not.toContain('Shuttle');
   });
@@ -279,7 +331,11 @@ describe('Map Properties on a from-scratch grid document', () => {
   it('BecomesStation with id reaches the synthesized export', () => {
     let state = editorReducer(createInitialState(), { type: 'NEW_GRID' });
     state = editorReducer(state, {
-      type: 'SET_ROOT_COMPONENT_FIELD', gridUid: 1, componentType: 'BecomesStation', field: 'id', value: 'Warspite',
+      type: 'SET_ROOT_COMPONENT_FIELD',
+      gridUid: 1,
+      componentType: 'BecomesStation',
+      field: 'id',
+      value: 'Warspite',
     });
     const out = exportMap(stateToExportInput(state));
     expect(out).toContain('    - type: BecomesStation');

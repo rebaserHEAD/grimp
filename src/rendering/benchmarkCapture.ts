@@ -6,31 +6,31 @@
 import { getStats } from './renderStats';
 
 interface FrameSample {
-  frameTime: number;    // ms
+  frameTime: number; // ms
   drawCalls: number;
   visibleEntities: number;
   tilesRedrawn: boolean;
   entitiesRedrawn: boolean;
-  skipped: boolean;     // frame was skipped (idle)
+  skipped: boolean; // frame was skipped (idle)
 }
 
 export interface BenchmarkResult {
   // Timing
   durationMs: number;
   totalFrames: number;
-  renderedFrames: number;   // non-skipped
+  renderedFrames: number; // non-skipped
   skippedFrames: number;
 
   // FPS
   avgFps: number;
-  minFps: number;           // 1-second window minimum
-  p1Fps: number;            // 1% low (worst 1% of 1-second windows)
+  minFps: number; // 1-second window minimum
+  p1Fps: number; // 1% low (worst 1% of 1-second windows)
 
   // Frame time (rendered frames only)
   avgFrameTime: number;
   medianFrameTime: number;
-  p95FrameTime: number;     // 95th percentile
-  p99FrameTime: number;     // 99th percentile
+  p95FrameTime: number; // 95th percentile
+  p99FrameTime: number; // 99th percentile
   maxFrameTime: number;
 
   // Draw calls (rendered frames only)
@@ -42,11 +42,11 @@ export interface BenchmarkResult {
   totalEntities: number;
 
   // Layer cache efficiency
-  tileRedrawRate: number;    // % of rendered frames that redrew tiles
-  entityRedrawRate: number;  // % of rendered frames that redrew entities
+  tileRedrawRate: number; // % of rendered frames that redrew tiles
+  entityRedrawRate: number; // % of rendered frames that redrew entities
 
   // Meta
-  startTime: string;         // ISO timestamp
+  startTime: string; // ISO timestamp
   zoom: number;
   pxPerTile: number;
 }
@@ -56,7 +56,7 @@ const BENCHMARK_DURATION_MS = 15_000; // 15 seconds
 let capturing = false;
 let samples: FrameSample[] = [];
 let startTimestamp = 0;
-let frameTimestamps: number[] = [];   // for computing FPS over time windows
+let frameTimestamps: number[] = []; // for computing FPS over time windows
 let autoStopTimer: ReturnType<typeof setTimeout> | null = null;
 let onAutoStop: (() => void) | null = null;
 
@@ -113,7 +113,10 @@ export function benchmarkSample(): void {
 export function stopBenchmark(): BenchmarkResult | null {
   if (!capturing) return null;
   capturing = false;
-  if (autoStopTimer) { clearTimeout(autoStopTimer); autoStopTimer = null; }
+  if (autoStopTimer) {
+    clearTimeout(autoStopTimer);
+    autoStopTimer = null;
+  }
   onAutoStop = null;
 
   const endTimestamp = performance.now();
@@ -124,32 +127,29 @@ export function stopBenchmark(): BenchmarkResult | null {
     return null;
   }
 
-  const rendered = samples.filter(f => !f.skipped);
+  const rendered = samples.filter((f) => !f.skipped);
   const skipped = samples.length - rendered.length;
 
   // Frame times (rendered only)
-  const frameTimes = rendered.map(f => f.frameTime).sort((a, b) => a - b);
-  const avgFrameTime = frameTimes.length > 0
-    ? frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length : 0;
+  const frameTimes = rendered.map((f) => f.frameTime).sort((a, b) => a - b);
+  const avgFrameTime = frameTimes.length > 0 ? frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length : 0;
   const medianFrameTime = percentile(frameTimes, 0.5);
   const p95FrameTime = percentile(frameTimes, 0.95);
   const p99FrameTime = percentile(frameTimes, 0.99);
   const maxFrameTime = frameTimes.length > 0 ? frameTimes[frameTimes.length - 1] : 0;
 
   // Draw calls
-  const drawCalls = rendered.map(f => f.drawCalls);
-  const avgDrawCalls = drawCalls.length > 0
-    ? drawCalls.reduce((a, b) => a + b, 0) / drawCalls.length : 0;
+  const drawCalls = rendered.map((f) => f.drawCalls);
+  const avgDrawCalls = drawCalls.length > 0 ? drawCalls.reduce((a, b) => a + b, 0) / drawCalls.length : 0;
   const maxDrawCalls = drawCalls.length > 0 ? Math.max(...drawCalls) : 0;
 
   // Visible entities
-  const visibleEnts = rendered.map(f => f.visibleEntities);
-  const avgVisibleEntities = visibleEnts.length > 0
-    ? visibleEnts.reduce((a, b) => a + b, 0) / visibleEnts.length : 0;
+  const visibleEnts = rendered.map((f) => f.visibleEntities);
+  const avgVisibleEntities = visibleEnts.length > 0 ? visibleEnts.reduce((a, b) => a + b, 0) / visibleEnts.length : 0;
 
   // Layer redraw rates
-  const tileRedraws = rendered.filter(f => f.tilesRedrawn).length;
-  const entityRedraws = rendered.filter(f => f.entitiesRedrawn).length;
+  const tileRedraws = rendered.filter((f) => f.tilesRedrawn).length;
+  const entityRedraws = rendered.filter((f) => f.entitiesRedrawn).length;
   const tileRedrawRate = rendered.length > 0 ? tileRedraws / rendered.length : 0;
   const entityRedrawRate = rendered.length > 0 ? entityRedraws / rendered.length : 0;
 

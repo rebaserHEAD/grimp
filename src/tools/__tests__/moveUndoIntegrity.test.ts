@@ -35,7 +35,7 @@ function syncGrids(state: EditorState): EditorState {
   };
   return {
     ...state,
-    grids: state.grids.map((g, i) => i === state.activeGridIndex ? updated : g),
+    grids: state.grids.map((g, i) => (i === state.activeGridIndex ? updated : g)),
   };
 }
 
@@ -87,7 +87,7 @@ function makeGrid(width: number, height: number, offsetX = 0, offsetY = 0) {
 /** Snapshot entity state for comparison. */
 function snapshotEntities(entities: ImportedEntity[]) {
   return entities
-    .map(e => ({ uid: e.uid, proto: e.prototype, x: e.position.x, y: e.position.y, rot: e.rotation }))
+    .map((e) => ({ uid: e.uid, proto: e.prototype, x: e.position.x, y: e.position.y, rot: e.rotation }))
     .sort((a, b) => a.uid - b.uid);
 }
 
@@ -148,8 +148,8 @@ describe('Move + Undo Integrity', () => {
       tool.onMouseUp(ctx, 8, 8);
 
       // Verify move happened
-      expect(state.entities.find(e => e.uid === 1)).toBeUndefined();
-      expect(state.entities.find(e => e.uid === 2)).toBeUndefined();
+      expect(state.entities.find((e) => e.uid === 1)).toBeUndefined();
+      expect(state.entities.find((e) => e.uid === 2)).toBeUndefined();
       expect(state.entities).toHaveLength(3); // 2 moved (new UIDs) + e3
       expect(state.undoStack).toHaveLength(1);
 
@@ -178,12 +178,12 @@ describe('Move + Undo Integrity', () => {
 
       // Verify spatialGetInRect returns correct entities
       const visibleEntities = spatialGetInRect(4, 4, 7, 7);
-      const visibleUids = visibleEntities.map(e => e.uid).sort();
+      const visibleUids = visibleEntities.map((e) => e.uid).sort();
       expect(visibleUids).toEqual([1, 2]); // originals at (5,5) and (6,5)
 
       // Verify no entities at the moved-to positions
       const movedAreaEntities = spatialGetInRect(7, 7, 10, 10);
-      const movedAreaUids = movedAreaEntities.map(e => e.uid).sort();
+      const movedAreaUids = movedAreaEntities.map((e) => e.uid).sort();
       expect(movedAreaUids).toEqual([3]); // only e3 at (10,10)
     });
 
@@ -230,8 +230,8 @@ describe('Move + Undo Integrity', () => {
 
       // Redo
       state = editorReducer(state, { type: 'REDO' });
-      expect(state.entities.find(e => e.uid === 1)).toBeUndefined();
-      expect(state.entities.find(e => e.uid === 2)).toBeUndefined();
+      expect(state.entities.find((e) => e.uid === 1)).toBeUndefined();
+      expect(state.entities.find((e) => e.uid === 2)).toBeUndefined();
       expect(state.entities).toHaveLength(2);
       expect(spatialSize()).toBe(2);
 
@@ -360,8 +360,8 @@ describe('Move + Undo Integrity', () => {
 
       // Verify move happened
       expect(state.undoStack).toHaveLength(1);
-      expect(state.entities.find(e => e.uid === 10)).toBeUndefined();
-      expect(state.entities.find(e => e.uid === 11)).toBeUndefined();
+      expect(state.entities.find((e) => e.uid === 10)).toBeUndefined();
+      expect(state.entities.find((e) => e.uid === 11)).toBeUndefined();
 
       // Source tiles should be Space now
       expect(getCell(state.grid, 3, 3)!.tileId).toBe('Space');
@@ -396,9 +396,9 @@ describe('Move + Undo Integrity', () => {
 
       // Verify no entities at moved-to positions in spatial index
       const atMovedWall = spatialGetAt(5, 6);
-      expect(atMovedWall.find(e => e.prototype === 'WallSolid')).toBeUndefined();
+      expect(atMovedWall.find((e) => e.prototype === 'WallSolid')).toBeUndefined();
       const atMovedDoor = spatialGetAt(6, 7);
-      expect(atMovedDoor.find(e => e.prototype === 'DoorNormal')).toBeUndefined();
+      expect(atMovedDoor.find((e) => e.prototype === 'DoorNormal')).toBeUndefined();
     });
   });
 
@@ -672,8 +672,8 @@ describe('Move + Undo Integrity', () => {
 
       // Comprehensive cell scan: collect ALL entities from ALL cells
       const allCellEntities = spatialGetInRect(-100, -100, 100, 100);
-      const cellUids = allCellEntities.map(e => e.uid).sort();
-      const arrayUids = state.entities.map(e => e.uid).sort();
+      const cellUids = allCellEntities.map((e) => e.uid).sort();
+      const arrayUids = state.entities.map((e) => e.uid).sort();
 
       // Must match exactly, no orphans
       expect(cellUids).toEqual(arrayUids);
@@ -684,7 +684,7 @@ describe('Move + Undo Integrity', () => {
         const tileX = Math.floor(entity.position.x);
         const tileY = Math.floor(entity.position.y);
         const atTile = spatialGetAt(tileX, tileY);
-        expect(atTile.find(e => e.uid === entity.uid)).toBeDefined();
+        expect(atTile.find((e) => e.uid === entity.uid)).toBeDefined();
       }
     });
   });

@@ -8,26 +8,26 @@ Defined in `src/state/editorState.ts`:
 
 ```typescript
 interface EditorState {
-  grid: TileGrid;                    // Tile data (flat array + offsets)
-  entities: ImportedEntity[];        // All placed entities
-  activeTool: ToolType;             // Current tool selection
+  grid: TileGrid; // Tile data (flat array + offsets)
+  entities: ImportedEntity[]; // All placed entities
+  activeTool: ToolType; // Current tool selection
   selectedPaletteItem: PaletteItem | null;
-  nextEntityId: number;             // Auto-increment for new entities
-  undoStack: Command[];             // Up to 200 commands
+  nextEntityId: number; // Auto-increment for new entities
+  undoStack: Command[]; // Up to 200 commands
   redoStack: Command[];
-  registry: IPrototypeRegistry | null;  // Game data (loaded once)
-  mapUid: number;                   // Preserved for roundtrip; -1 for grid documents (no map entity)
+  registry: IPrototypeRegistry | null; // Game data (loaded once)
+  mapUid: number; // Preserved for roundtrip; -1 for grid documents (no map entity)
   gridUid: number;
-  meta: MapMeta;                    // Full meta (format, category, engineVersion, etc.)
-  maps?: number[];                  // Format 7+ maps UIDs
-  grids?: number[];                 // Format 7+ grid UIDs
+  meta: MapMeta; // Full meta (format, category, engineVersion, etc.)
+  maps?: number[]; // Format 7+ maps UIDs
+  grids?: number[]; // Format 7+ grid UIDs
   structuralEntityData?: Record<number, Record<string, unknown>[]>;
-  entityRawComponents?: Record<number, string[]>;  // Verbatim YAML for export roundtrip
-  tilemap?: Record<number, string>;                // Tile index → ID mapping
-  chunkKeyOrder?: string[];                        // Original chunk ordering
-  lineEnding?: string;                             // Detected line ending style
-  selectedEntityUids: number[];                    // Multi-select entity UIDs
-  dirty: boolean;                   // Unsaved changes flag
+  entityRawComponents?: Record<number, string[]>; // Verbatim YAML for export roundtrip
+  tilemap?: Record<number, string>; // Tile index → ID mapping
+  chunkKeyOrder?: string[]; // Original chunk ordering
+  lineEnding?: string; // Detected line ending style
+  selectedEntityUids: number[]; // Multi-select entity UIDs
+  dirty: boolean; // Unsaved changes flag
 }
 ```
 
@@ -35,17 +35,17 @@ interface EditorState {
 
 Defined in `src/state/actions.ts`. Each action type maps to a specific state transition:
 
-| Action | Purpose |
-|--------|---------|
-| `APPLY_COMMAND` | Apply a tile/entity change with undo support |
-| `UNDO` | Pop from undo stack, apply reverse command |
-| `REDO` | Pop from redo stack, re-apply command |
-| `SET_TOOL` | Switch active editing tool |
-| `SET_PALETTE_ITEM` | Select a tile or entity in the palette |
-| `LOAD_MAP` | Replace all map data from an imported map (optional `sourceName` seeds the display name) |
-| `NEW_MAP` | Reset to an empty Map document (format 7, `category: Map`) |
-| `NEW_GRID` | Reset to an empty Grid document (format 7, `category: Grid`, no map entity) |
-| `SET_REGISTRY` | Store the loaded prototype registry |
+| Action             | Purpose                                                                                  |
+| ------------------ | ---------------------------------------------------------------------------------------- |
+| `APPLY_COMMAND`    | Apply a tile/entity change with undo support                                             |
+| `UNDO`             | Pop from undo stack, apply reverse command                                               |
+| `REDO`             | Pop from redo stack, re-apply command                                                    |
+| `SET_TOOL`         | Switch active editing tool                                                               |
+| `SET_PALETTE_ITEM` | Select a tile or entity in the palette                                                   |
+| `LOAD_MAP`         | Replace all map data from an imported map (optional `sourceName` seeds the display name) |
+| `NEW_MAP`          | Reset to an empty Map document (format 7, `category: Map`)                               |
+| `NEW_GRID`         | Reset to an empty Grid document (format 7, `category: Grid`, no map entity)              |
+| `SET_REGISTRY`     | Store the loaded prototype registry                                                      |
 
 ### Document property actions
 
@@ -54,10 +54,10 @@ grid root's structural data directly (imported files via surgical raw-YAML patch
 [import-export.md](import-export.md#surgical-property-edits); from-scratch documents via
 `GridData` fields the exporter synthesizes). Each sets `dirty: true`.
 
-| Action | Purpose |
-|--------|---------|
-| `SET_GRID_IDENTITY` | Set the grid root's MetaData name / description |
-| `SET_ROOT_COMPONENT` | Add or remove a bare root component (Shuttle, IFF, Roof, …) |
+| Action                     | Purpose                                                           |
+| -------------------------- | ----------------------------------------------------------------- |
+| `SET_GRID_IDENTITY`        | Set the grid root's MetaData name / description                   |
+| `SET_ROOT_COMPONENT`       | Add or remove a bare root component (Shuttle, IFF, Roof, …)       |
 | `SET_ROOT_COMPONENT_FIELD` | Set a scalar field on a root component (e.g. `BecomesStation.id`) |
 
 ## Command Pattern
@@ -66,13 +66,14 @@ Commands are the unit of undo/redo. Each command records what changed:
 
 ```typescript
 interface Command {
-  label: string;           // Human-readable description
-  tileChanges: TileChange[];    // Before/after for each tile
+  label: string; // Human-readable description
+  tileChanges: TileChange[]; // Before/after for each tile
   entityChanges: EntityChange[]; // Add/remove entities
 }
 
 interface TileChange {
-  x: number; y: number;
+  x: number;
+  y: number;
   before: TileCell;
   after: TileCell;
 }
@@ -94,6 +95,7 @@ The undo stack is capped at 200 entries (oldest entries are dropped).
 ### Prefab Placement Commands
 
 Prefab stamps produce a standard `Command` with:
+
 - `tileChanges`: before/after for each prefab tile at the target position
 - `entityChanges`: `remove` for existing entities in the footprint, then `add` for each prefab entity with a fresh UID
 
@@ -148,12 +150,12 @@ Legacy alias fields (`grid`, `entities`, `containedEntities`, `gridUid`) are kep
 
 ### Actions
 
-| Action | Purpose |
-|--------|---------|
+| Action            | Purpose                            |
+| ----------------- | ---------------------------------- |
 | `SET_ACTIVE_GRID` | Switch which grid tools operate on |
-| `ADD_GRID` | Create a new empty grid |
-| `REMOVE_GRID` | Delete a grid and its entities |
-| `RENAME_GRID` | Change a grid's display name |
+| `ADD_GRID`        | Create a new empty grid            |
+| `REMOVE_GRID`     | Delete a grid and its entities     |
+| `RENAME_GRID`     | Change a grid's display name       |
 
 All grid operations are undoable via the `GridCommand` type.
 
@@ -192,12 +194,12 @@ To add a new piece of editor state:
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `src/state/editorState.ts` | `EditorState` interface, grid helpers, initial state |
-| `src/state/actions.ts` | Action type union |
-| `src/state/editorReducer.ts` | Central reducer with undo/redo |
-| `src/types.ts` | `Command`, `TileChange`, `EntityChange`, `TileGrid` |
-| `src/state/clipboard.ts` | Clipboard data for copy/paste |
-| `src/prefab/prefabPlacer.ts` | Prefab stamp → Command generation |
-| `src/rendering/spatialIndex.ts` | Persistent spatial hash (reducer-maintained) |
+| File                            | Purpose                                              |
+| ------------------------------- | ---------------------------------------------------- |
+| `src/state/editorState.ts`      | `EditorState` interface, grid helpers, initial state |
+| `src/state/actions.ts`          | Action type union                                    |
+| `src/state/editorReducer.ts`    | Central reducer with undo/redo                       |
+| `src/types.ts`                  | `Command`, `TileChange`, `EntityChange`, `TileGrid`  |
+| `src/state/clipboard.ts`        | Clipboard data for copy/paste                        |
+| `src/prefab/prefabPlacer.ts`    | Prefab stamp → Command generation                    |
+| `src/rendering/spatialIndex.ts` | Persistent spatial hash (reducer-maintained)         |

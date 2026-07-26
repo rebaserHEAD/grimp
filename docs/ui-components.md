@@ -11,18 +11,18 @@ import { CollapsiblePanel } from './components/CollapsiblePanel';
 
 <CollapsiblePanel title="Entity Info" defaultOpen={true}>
   {/* panel content */}
-</CollapsiblePanel>
+</CollapsiblePanel>;
 ```
 
 ### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `title` | `string` | required | Header text |
-| `defaultOpen` | `boolean` | `true` | Initial expanded state |
-| `forceOpen` | `boolean` | `undefined` | When true, auto-expands the panel (e.g., on entity selection) |
-| `className` | `string` | `''` | Additional CSS classes on the outer container |
-| `children` | `ReactNode` | required | Panel content |
+| Prop          | Type        | Default     | Description                                                   |
+| ------------- | ----------- | ----------- | ------------------------------------------------------------- |
+| `title`       | `string`    | required    | Header text                                                   |
+| `defaultOpen` | `boolean`   | `true`      | Initial expanded state                                        |
+| `forceOpen`   | `boolean`   | `undefined` | When true, auto-expands the panel (e.g., on entity selection) |
+| `className`   | `string`    | `''`        | Additional CSS classes on the outer container                 |
+| `children`    | `ReactNode` | required    | Panel content                                                 |
 
 ### Behavior
 
@@ -35,6 +35,7 @@ import { CollapsiblePanel } from './components/CollapsiblePanel';
 ### Extending
 
 To create a new collapsible sidebar panel:
+
 1. Wrap your content in `<CollapsiblePanel>`
 2. Add it to the right sidebar in `App.tsx`
 3. Pass `forceOpen` if the panel should auto-expand based on some condition
@@ -48,26 +49,28 @@ Inline editor for viewing and modifying the contents of container entities (lock
 ```tsx
 import { ContainerContentsEditor, hasContainerComponent } from './components/ContainerContentsEditor';
 
-{hasContainerComponent(entity.components) && (
-  <ContainerContentsEditor
-    entity={entity}
-    containedEntities={containedEntities[entity.uid] ?? []}
-    registry={registry}
-    onAdd={(parentUid, prototypeId) => dispatch({ type: 'ADD_CONTAINED_ENTITY', parentUid, prototypeId })}
-    onRemove={(parentUid, entityUid) => dispatch({ type: 'REMOVE_CONTAINED_ENTITY', parentUid, entityUid })}
-  />
-)}
+{
+  hasContainerComponent(entity.components) && (
+    <ContainerContentsEditor
+      entity={entity}
+      containedEntities={containedEntities[entity.uid] ?? []}
+      registry={registry}
+      onAdd={(parentUid, prototypeId) => dispatch({ type: 'ADD_CONTAINED_ENTITY', parentUid, prototypeId })}
+      onRemove={(parentUid, entityUid) => dispatch({ type: 'REMOVE_CONTAINED_ENTITY', parentUid, entityUid })}
+    />
+  );
+}
 ```
 
 ### Props
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `entity` | `ImportedEntity` | The container entity |
-| `containedEntities` | `ImportedEntity[]` | Entities currently inside the container |
-| `registry` | `IPrototypeRegistry \| null` | Prototype registry for search and thumbnails |
-| `onAdd` | `(parentUid, prototypeId) => void` | Called when adding an item |
-| `onRemove` | `(parentUid, entityUid) => void` | Called when removing an item |
+| Prop                | Type                               | Description                                  |
+| ------------------- | ---------------------------------- | -------------------------------------------- |
+| `entity`            | `ImportedEntity`                   | The container entity                         |
+| `containedEntities` | `ImportedEntity[]`                 | Entities currently inside the container      |
+| `registry`          | `IPrototypeRegistry \| null`       | Prototype registry for search and thumbnails |
+| `onAdd`             | `(parentUid, prototypeId) => void` | Called when adding an item                   |
+| `onRemove`          | `(parentUid, entityUid) => void`   | Called when removing an item                 |
 
 ### Exported Helpers
 
@@ -85,20 +88,21 @@ A persistent search bar in the GridTabBar for finding placed entities on the act
 **Search fields:** Prototype ID and display name (case-insensitive substring match).
 
 **Components:**
+
 - `src/hooks/useEntitySearch.ts`, `filterEntities()` pure function + `useEntitySearch()` hook
 - `src/components/EntitySearchBar.tsx`, Search input, results dropdown, keyboard navigation
 
 **Interactions:**
 
-| Action | Result |
-|--------|--------|
-| Type query | Filters placed entities, shows dropdown (max 200 results) |
-| Click result | Pans camera to entity, selects it |
-| Arrow Up/Down | Navigate results list |
-| Enter | Jump to highlighted result |
-| Escape | Close dropdown / clear + blur |
-| Ctrl+F | Focus search bar |
-| × button | Clear query |
+| Action        | Result                                                    |
+| ------------- | --------------------------------------------------------- |
+| Type query    | Filters placed entities, shows dropdown (max 200 results) |
+| Click result  | Pans camera to entity, selects it                         |
+| Arrow Up/Down | Navigate results list                                     |
+| Enter         | Jump to highlighted result                                |
+| Escape        | Close dropdown / clear + blur                             |
+| Ctrl+F        | Focus search bar                                          |
+| × button      | Clear query                                               |
 
 **Result row shows:** Sprite thumbnail (24×24), display name, prototype ID, position (x,y), UID.
 
@@ -108,19 +112,19 @@ A persistent search bar in the GridTabBar for finding placed entities on the act
 
 Custom colors defined in `src/App.css` via `@theme`:
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `panel` | `#0d1b2a` | Darkest background (sidebar base) |
-| `surface` | `#16213e` | Panel headers, section backgrounds |
-| `elevated` | `#1a1a3e` | Buttons, inputs, modals |
-| `subtle` | `#2a2a4a` | Borders, separators |
-| `primary` | `#e0e0e0` | Main text |
-| `muted` | `#888888` | Secondary text, labels |
-| `accent` | `#4488ff` | Active states, highlights |
-| `active` | `#0f3460` | Active/selected backgrounds |
-| `hover` | `#1a2a4e` | Hover backgrounds |
-| `danger` | `#cc4444` | Delete buttons, errors |
-| `success` | `#88ff88` | Success indicators |
-| `warning` | `#ff8800` | Warning indicators |
+| Token      | Value     | Usage                              |
+| ---------- | --------- | ---------------------------------- |
+| `panel`    | `#0d1b2a` | Darkest background (sidebar base)  |
+| `surface`  | `#16213e` | Panel headers, section backgrounds |
+| `elevated` | `#1a1a3e` | Buttons, inputs, modals            |
+| `subtle`   | `#2a2a4a` | Borders, separators                |
+| `primary`  | `#e0e0e0` | Main text                          |
+| `muted`    | `#888888` | Secondary text, labels             |
+| `accent`   | `#4488ff` | Active states, highlights          |
+| `active`   | `#0f3460` | Active/selected backgrounds        |
+| `hover`    | `#1a2a4e` | Hover backgrounds                  |
+| `danger`   | `#cc4444` | Delete buttons, errors             |
+| `success`  | `#88ff88` | Success indicators                 |
+| `warning`  | `#ff8800` | Warning indicators                 |
 
 Use as Tailwind classes: `bg-panel`, `text-muted`, `border-subtle`, etc.

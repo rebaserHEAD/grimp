@@ -14,14 +14,16 @@ export async function initRegistry(
   providerOrBaseUrl: ResourceProvider | string = '',
   onProgress?: (message: string) => void,
 ): Promise<PrototypeRegistry> {
-  const provider: ResourceProvider = typeof providerOrBaseUrl === 'string'
-    ? new HttpResourceProvider(providerOrBaseUrl)
-    : providerOrBaseUrl;
+  const provider: ResourceProvider =
+    typeof providerOrBaseUrl === 'string' ? new HttpResourceProvider(providerOrBaseUrl) : providerOrBaseUrl;
 
   onProgress?.('Discovering prototypes...');
-  const { tiles: rawTiles, entities: rawEntities, decals: rawDecals } = await discoverPrototypes(
-    provider,
-    (loaded, total) => onProgress?.(`Loading prototypes: ${loaded}/${total} files`),
+  const {
+    tiles: rawTiles,
+    entities: rawEntities,
+    decals: rawDecals,
+  } = await discoverPrototypes(provider, (loaded, total) =>
+    onProgress?.(`Loading prototypes: ${loaded}/${total} files`),
   );
 
   onProgress?.(`Resolving ${rawTiles.length} tiles, ${rawEntities.length} entities, ${rawDecals.length} decals...`);

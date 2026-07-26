@@ -9,11 +9,11 @@ import {
 
 describe('normalizeRotation', () => {
   it('normalizes negative values', () => {
-    expect(normalizeRotation(-Math.PI / 2)).toBeCloseTo(3 * Math.PI / 2);
+    expect(normalizeRotation(-Math.PI / 2)).toBeCloseTo((3 * Math.PI) / 2);
   });
 
   it('normalizes values > 2π', () => {
-    expect(normalizeRotation(5 * Math.PI / 2)).toBeCloseTo(Math.PI / 2);
+    expect(normalizeRotation((5 * Math.PI) / 2)).toBeCloseTo(Math.PI / 2);
   });
 
   it('snaps to 90° increments within floating-point tolerance', () => {
@@ -55,9 +55,9 @@ describe('updateTransformRot', () => {
       { type: 'Transform', pos: '1.5,2.5', parent: 1, rot: '0 rad' },
       { type: 'Battery', startingCharge: 25000 },
     ];
-    const newRot = 3 * Math.PI / 2;
+    const newRot = (3 * Math.PI) / 2;
     const updated = updateTransformRot(components, newRot);
-    const transform = updated.find(c => c.type === 'Transform')!;
+    const transform = updated.find((c) => c.type === 'Transform')!;
     expect(transform.rot).toBe(`${newRot} rad`);
     expect(typeof transform.rot).toBe('string');
   });
@@ -67,7 +67,7 @@ describe('updateTransformRot', () => {
       { type: 'Transform', pos: '1.5,2.5', parent: 1, rot: '1.5707963267948966 rad' },
     ];
     const updated = updateTransformRot(components, 0);
-    const transform = updated.find(c => c.type === 'Transform')!;
+    const transform = updated.find((c) => c.type === 'Transform')!;
     expect(transform).not.toHaveProperty('rot');
   });
 
@@ -77,7 +77,7 @@ describe('updateTransformRot', () => {
       { type: 'Battery', startingCharge: 25000 },
     ];
     const updated = updateTransformRot(components, Math.PI);
-    const battery = updated.find(c => c.type === 'Battery')!;
+    const battery = updated.find((c) => c.type === 'Battery')!;
     expect(battery.startingCharge).toBe(25000);
   });
 });
@@ -89,13 +89,13 @@ describe('cloneComponentsWithPos', () => {
       { type: 'Battery', startingCharge: 25000 },
     ];
     const result = cloneComponentsWithPos(components, { x: 10.5, y: 20.5 });
-    const transform = result.find(c => c.type === 'Transform')!;
+    const transform = result.find((c) => c.type === 'Transform')!;
     expect(transform.pos).toBe('10.5,20.5');
     // Other Transform fields preserved
     expect(transform.rot).toBe('1.5707963267948966 rad');
     expect(transform.parent).toBe(1);
     // Non-Transform components cloned
-    const battery = result.find(c => c.type === 'Battery')!;
+    const battery = result.find((c) => c.type === 'Battery')!;
     expect(battery.startingCharge).toBe(25000);
   });
 
@@ -128,7 +128,7 @@ describe('cloneComponentsWithPosRot', () => {
     ];
     const rot = Math.PI / 2;
     const result = cloneComponentsWithPosRot(components, { x: 10.5, y: 20.5 }, rot);
-    const transform = result.find(c => c.type === 'Transform')!;
+    const transform = result.find((c) => c.type === 'Transform')!;
     expect(transform.pos).toBe('10.5,20.5');
     expect(transform.rot).toBe(`${rot} rad`);
   });
@@ -138,7 +138,7 @@ describe('cloneComponentsWithPosRot', () => {
       { type: 'Transform', pos: '1.5,2.5', parent: 1, rot: '1.5707963267948966 rad' },
     ];
     const result = cloneComponentsWithPosRot(components, { x: 5.5, y: 5.5 }, 0);
-    const transform = result.find(c => c.type === 'Transform')!;
+    const transform = result.find((c) => c.type === 'Transform')!;
     expect(transform).not.toHaveProperty('rot');
     expect(transform.pos).toBe('5.5,5.5');
   });

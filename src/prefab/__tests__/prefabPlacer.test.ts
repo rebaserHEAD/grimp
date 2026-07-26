@@ -154,10 +154,10 @@ describe('placePrefab', () => {
 
   it('removes existing entities within the prefab footprint', () => {
     const existing = [
-      makeEntity(1, 'TableFrame', 3, 5),   // inside footprint
-      makeEntity(2, 'Chair', 4, 6),         // inside footprint
-      makeEntity(3, 'WallSolid', 10, 10),   // outside footprint
-      makeEntity(4, 'Light', 2, 5),         // outside (x=2 < placeX=3)
+      makeEntity(1, 'TableFrame', 3, 5), // inside footprint
+      makeEntity(2, 'Chair', 4, 6), // inside footprint
+      makeEntity(3, 'WallSolid', 10, 10), // outside footprint
+      makeEntity(4, 'Light', 2, 5), // outside (x=2 < placeX=3)
     ];
 
     const result = placePrefab({
@@ -198,10 +198,16 @@ describe('placePrefab', () => {
 
     expect(result.resolvedDeviceLinks).toHaveLength(2);
     expect(result.resolvedDeviceLinks[0]).toEqual({
-      sourceUid: 200, targetUid: 201, port: 'Pressed', sink: 'Toggle',
+      sourceUid: 200,
+      targetUid: 201,
+      port: 'Pressed',
+      sink: 'Toggle',
     });
     expect(result.resolvedDeviceLinks[1]).toEqual({
-      sourceUid: 200, targetUid: 202, port: 'Pressed', sink: 'Toggle',
+      sourceUid: 200,
+      targetUid: 202,
+      port: 'Pressed',
+      sink: 'Toggle',
     });
   });
 
@@ -264,25 +270,33 @@ describe('placePrefab', () => {
   it('clones components so multiple stamps do not share references', () => {
     const sharedComponent = { type: 'Transform', pos: '0.5,0.5' };
     const prefab = makePrefab({
-      entities: [
-        { dx: 0, dy: 0, prototype: 'Window', rotation: 0, components: [sharedComponent] },
-      ],
+      entities: [{ dx: 0, dy: 0, prototype: 'Window', rotation: 0, components: [sharedComponent] }],
     });
 
     const grid = makeGrid(20, 20);
 
     // Stamp 1
     const result1 = placePrefab({
-      prefab, placeX: 5, placeY: 5, grid, entities: [], nextEntityId: 1,
+      prefab,
+      placeX: 5,
+      placeY: 5,
+      grid,
+      entities: [],
+      nextEntityId: 1,
     });
 
     // Stamp 2
     const result2 = placePrefab({
-      prefab, placeX: 10, placeY: 10, grid, entities: [], nextEntityId: 100,
+      prefab,
+      placeX: 10,
+      placeY: 10,
+      grid,
+      entities: [],
+      nextEntityId: 100,
     });
 
-    const entity1 = result1.command.entityChanges.find(ec => ec.action === 'add')!.entity;
-    const entity2 = result2.command.entityChanges.find(ec => ec.action === 'add')!.entity;
+    const entity1 = result1.command.entityChanges.find((ec) => ec.action === 'add')!.entity;
+    const entity2 = result2.command.entityChanges.find((ec) => ec.action === 'add')!.entity;
 
     // Components should be separate objects (not shared references)
     expect(entity1.components[0]).not.toBe(entity2.components[0]);
@@ -305,14 +319,24 @@ describe('placePrefab', () => {
     const grid = makeGrid(20, 20);
 
     const result1 = placePrefab({
-      prefab, placeX: 5, placeY: 5, grid, entities: [], nextEntityId: 1,
+      prefab,
+      placeX: 5,
+      placeY: 5,
+      grid,
+      entities: [],
+      nextEntityId: 1,
     });
     const result2 = placePrefab({
-      prefab, placeX: 10, placeY: 10, grid, entities: [], nextEntityId: 100,
+      prefab,
+      placeX: 10,
+      placeY: 10,
+      grid,
+      entities: [],
+      nextEntityId: 100,
     });
 
-    const adds1 = result1.command.entityChanges.filter(ec => ec.action === 'add');
-    const adds2 = result2.command.entityChanges.filter(ec => ec.action === 'add');
+    const adds1 = result1.command.entityChanges.filter((ec) => ec.action === 'add');
+    const adds2 = result2.command.entityChanges.filter((ec) => ec.action === 'add');
 
     // First stamp at (5,5)
     expect(adds1[0].entity.position).toEqual({ x: 5.5, y: 5.5 });
@@ -323,7 +347,7 @@ describe('placePrefab', () => {
     expect(adds2[1].entity.position).toEqual({ x: 11.5, y: 10.5 });
 
     // UIDs should not collide
-    const allUids = [...adds1, ...adds2].map(ec => ec.entity.uid);
+    const allUids = [...adds1, ...adds2].map((ec) => ec.entity.uid);
     expect(new Set(allUids).size).toBe(allUids.length);
   });
 });

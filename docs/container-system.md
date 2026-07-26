@@ -9,6 +9,7 @@ SS14 entities can contain other entities (lockers hold items, crates hold suppli
 In SS14 map YAML, container relationships are defined by three parts:
 
 1. **Parent entity** has a `ContainerContainer` component with an `entity_storage` container listing child UIDs:
+
    ```yaml
    - type: ContainerContainer
      containers:
@@ -16,11 +17,12 @@ In SS14 map YAML, container relationships are defined by three parts:
          showEnts: False
          occludes: True
          ents:
-         - 101
-         - 102
+           - 101
+           - 102
    ```
 
 2. **Child entities** have a Transform with `parent: <containerUID>` (no `pos` field) and `Physics { canCollide: False }`:
+
    ```yaml
    - type: Transform
      parent: 100
@@ -50,6 +52,7 @@ The `ImportedMap` type has: `containedEntities?: Record<number, ImportedEntity[]
 `EditorState` has a non-optional `containedEntities: Record<number, ImportedEntity[]>` field, initialized to `{}`.
 
 Two reducer actions manage container contents:
+
 - `ADD_CONTAINED_ENTITY { parentUid, prototypeId }`, creates a child entity, updates parent's `ContainerContainer` ents list, supports undo
 - `REMOVE_CONTAINED_ENTITY { parentUid, entityUid }`, removes a child, updates parent's ents, supports undo
 
@@ -66,6 +69,7 @@ Orphan contained entities (whose parent was deleted) are not exported.
 The `ContainerContentsEditor` component (`src/components/ContainerContentsEditor.tsx`) appears in the Entity Info Panel when the selected entity has a `ContainerContainer` component.
 
 Features:
+
 - **Item list**, shows each contained entity with a thumbnail, prototype name, and remove button
 - **Add search**, inline search input queries the prototype registry; clicking a result dispatches `ADD_CONTAINED_ENTITY`
 - **Runtime-fill note**, if `EntityTableContainerFill` is present, shows "Runtime-filled, items below are hand-placed additions"

@@ -19,20 +19,20 @@ interface KeyboardActions {
 }
 
 const TOOL_SHORTCUTS: Record<string, ToolType> = {
-  'b': 'paint',
-  'e': 'erase',
-  'i': 'eyedropper',
-  'h': 'pan',
-  'g': 'fill',
-  'r': 'rectangle',
-  'l': 'line',
-  'c': 'circle',
-  's': 'select',
-  'v': 'entitySelect',
-  'p': 'entityPlace',
-  'k': 'cableDraw',
-  'j': 'pipeDraw',
-  'd': 'deviceLink',
+  b: 'paint',
+  e: 'erase',
+  i: 'eyedropper',
+  h: 'pan',
+  g: 'fill',
+  r: 'rectangle',
+  l: 'line',
+  c: 'circle',
+  s: 'select',
+  v: 'entitySelect',
+  p: 'entityPlace',
+  k: 'cableDraw',
+  j: 'pipeDraw',
+  d: 'deviceLink',
 };
 
 export function useKeyboard(actions: KeyboardActions): { isSpaceHeld: boolean; isRHeld: boolean } {
@@ -112,11 +112,23 @@ export function useKeyboard(actions: KeyboardActions): { isSpaceHeld: boolean; i
       // R key: rotate entity/decal CW; Shift+R: rotate CCW (skip repeats to prevent rapid spinning)
       if (e.key.toLowerCase() === 'r' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.repeat) {
         if (e.shiftKey) {
-          if (actions.onRotateEntityCCW) { actions.onRotateEntityCCW(); return; }
-          if (actions.onCycleEntityRotationCCW) { actions.onCycleEntityRotationCCW(); return; }
+          if (actions.onRotateEntityCCW) {
+            actions.onRotateEntityCCW();
+            return;
+          }
+          if (actions.onCycleEntityRotationCCW) {
+            actions.onCycleEntityRotationCCW();
+            return;
+          }
         } else {
-          if (actions.onRotateEntityCW) { actions.onRotateEntityCW(); return; }
-          if (actions.onCycleEntityRotationCW) { actions.onCycleEntityRotationCW(); return; }
+          if (actions.onRotateEntityCW) {
+            actions.onRotateEntityCW();
+            return;
+          }
+          if (actions.onCycleEntityRotationCW) {
+            actions.onCycleEntityRotationCW();
+            return;
+          }
         }
       }
 

@@ -44,7 +44,7 @@ describe('EntityPlaceTool', () => {
 
     tool.onMouseDown(ctx, 5, 10, 0);
 
-    const cmd = dispatched.find(a => a.type === 'APPLY_COMMAND');
+    const cmd = dispatched.find((a) => a.type === 'APPLY_COMMAND');
     expect(cmd).toBeDefined();
     expect(cmd.command.label).toBe('Place APCBasic');
     const added = cmd.command.entityChanges[0];
@@ -63,9 +63,9 @@ describe('EntityPlaceTool', () => {
     tool.cycleRotation('cw');
     tool.onMouseDown(ctx, 5, 10, 0);
 
-    const cmd = dispatched.find(a => a.type === 'APPLY_COMMAND');
+    const cmd = dispatched.find((a) => a.type === 'APPLY_COMMAND');
     const added = cmd.command.entityChanges[0];
-    expect(added.entity.rotation).toBeCloseTo(3 * Math.PI / 2);
+    expect(added.entity.rotation).toBeCloseTo((3 * Math.PI) / 2);
   });
 
   it('cycles rotation CCW (0 → π/2 → π → 3π/2)', () => {
@@ -75,7 +75,7 @@ describe('EntityPlaceTool', () => {
     tool.cycleRotation('ccw');
     tool.onMouseDown(ctx, 5, 10, 0);
 
-    const cmd = dispatched.find(a => a.type === 'APPLY_COMMAND');
+    const cmd = dispatched.find((a) => a.type === 'APPLY_COMMAND');
     const added = cmd.command.entityChanges[0];
     expect(added.entity.rotation).toBeCloseTo(Math.PI / 2);
   });
@@ -103,7 +103,7 @@ describe('EntityPlaceTool', () => {
 
     tool.onMouseDown(ctx, 5, 10, 0);
 
-    const cmd = dispatched.find(a => a.type === 'APPLY_COMMAND');
+    const cmd = dispatched.find((a) => a.type === 'APPLY_COMMAND');
     const entity = cmd.command.entityChanges[0].entity;
     const transform = entity.components.find((c: Record<string, unknown>) => c.type === 'Transform');
     expect(transform).toBeDefined();
@@ -198,7 +198,7 @@ describe('EntityPlaceTool', () => {
 
       tool.onMouseDown(ctx, 5.3, 10.7, 0);
 
-      const cmd = dispatched.find(a => a.type === 'APPLY_COMMAND');
+      const cmd = dispatched.find((a) => a.type === 'APPLY_COMMAND');
       expect(cmd).toBeDefined();
       const added = cmd.command.entityChanges[0];
       expect(added.entity.position.x).toBeCloseTo(5.3);
@@ -212,7 +212,7 @@ describe('EntityPlaceTool', () => {
 
       tool.onMouseDown(ctx, 5, 10, 0);
 
-      const cmd = dispatched.find(a => a.type === 'APPLY_COMMAND');
+      const cmd = dispatched.find((a) => a.type === 'APPLY_COMMAND');
       const added = cmd.command.entityChanges[0];
       expect(added.entity.position.x).toBeCloseTo(5.5);
       expect(added.entity.position.y).toBeCloseTo(10.5);
@@ -225,11 +225,9 @@ describe('EntityPlaceTool', () => {
 
       tool.onMouseDown(ctx, 3.25, 7.8, 0);
 
-      const cmd = dispatched.find(a => a.type === 'APPLY_COMMAND');
+      const cmd = dispatched.find((a) => a.type === 'APPLY_COMMAND');
       const entity = cmd.command.entityChanges[0].entity;
-      const transform = entity.components.find(
-        (c: Record<string, unknown>) => c.type === 'Transform',
-      );
+      const transform = entity.components.find((c: Record<string, unknown>) => c.type === 'Transform');
       expect(transform).toBeDefined();
       expect(transform.pos).toBe('3.25,7.8');
     });
@@ -242,9 +240,9 @@ describe('EntityPlaceTool', () => {
       tool.cycleRotation('cw');
       tool.onMouseDown(ctx, 5.3, 10.7, 0);
 
-      const cmd = dispatched.find(a => a.type === 'APPLY_COMMAND');
+      const cmd = dispatched.find((a) => a.type === 'APPLY_COMMAND');
       const added = cmd.command.entityChanges[0];
-      expect(added.entity.rotation).toBeCloseTo(3 * Math.PI / 2);
+      expect(added.entity.rotation).toBeCloseTo((3 * Math.PI) / 2);
       expect(added.entity.position.x).toBeCloseTo(5.3);
       expect(added.entity.position.y).toBeCloseTo(10.7);
     });

@@ -63,8 +63,10 @@ const MenuDropdown: React.FC<{
         className={`px-3 py-1 text-xs text-primary cursor-pointer hover:bg-hover rounded-sm border-none h-full ${
           isOpen ? 'bg-active' : 'bg-transparent'
         }`}
-        onClick={() => isOpen ? onClose() : onOpen()}
-        onMouseEnter={() => { if (hoverOpen) onHoverOpen(); }}
+        onClick={() => (isOpen ? onClose() : onOpen())}
+        onMouseEnter={() => {
+          if (hoverOpen) onHoverOpen();
+        }}
       >
         {label}
       </button>
@@ -92,9 +94,7 @@ const MenuDropdown: React.FC<{
                   {item.checked !== undefined ? (item.checked ? '\u2713' : '') : ''}
                 </span>
                 <span className="flex-1">{item.label}</span>
-                {item.shortcut && (
-                  <span className="text-muted ml-4 text-[10px]">{item.shortcut}</span>
-                )}
+                {item.shortcut && <span className="text-muted ml-4 text-[10px]">{item.shortcut}</span>}
               </button>
             );
           })}
@@ -105,15 +105,37 @@ const MenuDropdown: React.FC<{
 };
 
 export const MenuBar: React.FC<Props> = ({
-  onNewMap, onNewGrid, documentKind, onShowMapProperties, onImport, onExport, onUndo, onRedo, canUndo, canRedo, dirty,
-  showGrid, onToggleGrid, showEntities, onToggleEntities,
-  showSpaceBackground, onToggleSpaceBackground,
-  showLighting, onToggleLighting,
-  showAtmosMarkers, onToggleAtmosMarkers,
-  showPerfHUD, onTogglePerfHUD,
-  showBenchmark, onToggleBenchmark,
-  showShortcuts, onShowShortcuts, onCloseShortcuts,
-  forkName, onSwitchFork, nativeMenus,
+  onNewMap,
+  onNewGrid,
+  documentKind,
+  onShowMapProperties,
+  onImport,
+  onExport,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
+  dirty,
+  showGrid,
+  onToggleGrid,
+  showEntities,
+  onToggleEntities,
+  showSpaceBackground,
+  onToggleSpaceBackground,
+  showLighting,
+  onToggleLighting,
+  showAtmosMarkers,
+  onToggleAtmosMarkers,
+  showPerfHUD,
+  onTogglePerfHUD,
+  showBenchmark,
+  onToggleBenchmark,
+  showShortcuts,
+  onShowShortcuts,
+  onCloseShortcuts,
+  forkName,
+  onSwitchFork,
+  nativeMenus,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -150,7 +172,7 @@ export const MenuBar: React.FC<Props> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    file.text().then(content => onImport(content, file.name));
+    file.text().then((content) => onImport(content, file.name));
     e.target.value = '';
   };
 
@@ -207,24 +229,27 @@ export const MenuBar: React.FC<Props> = ({
         GRIMP
       </span>
 
-      {!nativeMenus && menus.map(menu => (
-        <MenuDropdown
-          key={menu.name}
-          label={menu.name}
-          items={menu.items}
-          isOpen={openMenu === menu.name}
-          onOpen={() => openMenuFn(menu.name)}
-          onClose={closeMenu}
-          hoverOpen={openMenu !== null}
-          onHoverOpen={() => openMenuFn(menu.name)}
-        />
-      ))}
+      {!nativeMenus &&
+        menus.map((menu) => (
+          <MenuDropdown
+            key={menu.name}
+            label={menu.name}
+            items={menu.items}
+            isOpen={openMenu === menu.name}
+            onOpen={() => openMenuFn(menu.name)}
+            onClose={closeMenu}
+            hoverOpen={openMenu !== null}
+            onHoverOpen={() => openMenuFn(menu.name)}
+          />
+        ))}
 
       <span
         className="ml-2 text-[10px] uppercase tracking-wider text-muted border border-subtle rounded-sm px-1.5 py-0.5 select-none"
-        title={documentKind === 'Grid'
-          ? 'Grid document: loads onto an existing map (savegrid format)'
-          : 'Map document: a full map with its own map entity (savemap format)'}
+        title={
+          documentKind === 'Grid'
+            ? 'Grid document: loads onto an existing map (savegrid format)'
+            : 'Map document: a full map with its own map entity (savemap format)'
+        }
       >
         {documentKind}
       </span>
@@ -242,7 +267,10 @@ export const MenuBar: React.FC<Props> = ({
           {showForkMenu && (
             <div className="absolute left-0 top-full mt-1 bg-elevated border border-subtle rounded shadow-lg z-50 py-1 min-w-[160px]">
               <button
-                onClick={() => { setShowForkMenu(false); onSwitchFork?.(); }}
+                onClick={() => {
+                  setShowForkMenu(false);
+                  onSwitchFork?.();
+                }}
                 className="w-full text-left px-3 py-1.5 text-[11px] text-primary hover:bg-hover cursor-pointer bg-transparent border-none"
               >
                 Switch Fork...
@@ -254,9 +282,7 @@ export const MenuBar: React.FC<Props> = ({
 
       <div className="flex-1" />
 
-      {dirty && (
-        <span className="text-warning text-[10px]">Unsaved changes</span>
-      )}
+      {dirty && <span className="text-warning text-[10px]">Unsaved changes</span>}
 
       <input
         ref={fileInputRef}
@@ -352,7 +378,9 @@ const ShortcutsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     <div
       className="fixed inset-0 z-[9998] flex items-center justify-center"
       style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className="bg-elevated border border-subtle rounded-lg p-6 max-w-[560px] w-full max-h-[80vh] overflow-y-auto text-primary text-[13px]">
         <div className="flex items-center justify-between mb-4">
@@ -367,9 +395,7 @@ const ShortcutsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
         {SHORTCUT_SECTIONS.map((section) => (
           <div key={section.title} className="mb-4">
-            <h3 className="text-[11px] uppercase tracking-wider text-muted mb-1.5 font-semibold">
-              {section.title}
-            </h3>
+            <h3 className="text-[11px] uppercase tracking-wider text-muted mb-1.5 font-semibold">{section.title}</h3>
             <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-0.5">
               {section.rows.map(([key, desc]) => (
                 <React.Fragment key={key + desc}>

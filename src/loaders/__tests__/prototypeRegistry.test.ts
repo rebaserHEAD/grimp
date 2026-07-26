@@ -3,14 +3,31 @@ import { PrototypeRegistry } from '../prototypeRegistry';
 import type { ResolvedTile, ResolvedEntity } from '../registryTypes';
 
 function makeTile(id: string, sprite: string | null = null): ResolvedTile {
-  return { id, name: id, sprite, variants: 1, isSubfloor: false, isSpace: false, baseTurf: null, raw: { type: 'tile', id } };
+  return {
+    id,
+    name: id,
+    sprite,
+    variants: 1,
+    isSubfloor: false,
+    isSpace: false,
+    baseTurf: null,
+    raw: { type: 'tile', id },
+  };
 }
 
 function makeEntity(id: string, category: string): ResolvedEntity {
   return {
-    id, name: id, description: '', suffix: '', abstract: false,
-    categories: [], placement: {}, components: [], spriteInfo: null,
-    sourceCategory: category, raw: { type: 'entity', id },
+    id,
+    name: id,
+    description: '',
+    suffix: '',
+    abstract: false,
+    categories: [],
+    placement: {},
+    components: [],
+    spriteInfo: null,
+    sourceCategory: category,
+    raw: { type: 'entity', id },
   };
 }
 

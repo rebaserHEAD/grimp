@@ -4,7 +4,9 @@ import { parseDecalGrid, type DecalInstance } from '../../import/decalParser';
 import yaml from 'js-yaml';
 import { SS14_SCHEMA } from '../../import/ss14Schema';
 
-function makeDecal(overrides: Partial<DecalInstance> & { id: number; prototypeId: string; position: { x: number; y: number } }): DecalInstance {
+function makeDecal(
+  overrides: Partial<DecalInstance> & { id: number; prototypeId: string; position: { x: number; y: number } },
+): DecalInstance {
   return {
     color: null,
     angle: 0,
@@ -26,18 +28,16 @@ describe('serializeDecalGrid', () => {
   });
 
   it('serializes a single decal with default properties', () => {
-    const decals: DecalInstance[] = [
-      makeDecal({ id: 0, prototypeId: 'Arrows', position: { x: 5, y: 5 } }),
-    ];
+    const decals: DecalInstance[] = [makeDecal({ id: 0, prototypeId: 'Arrows', position: { x: 5, y: 5 } })];
     const lines = serializeDecalGrid(decals);
 
     expect(lines).toContain('    - type: DecalGrid');
     expect(lines).toContain('        nodes:');
     // No color, angle, zIndex, cleanable lines
-    expect(lines.find(l => l.includes('color:'))).toBeUndefined();
-    expect(lines.find(l => l.includes('angle:'))).toBeUndefined();
-    expect(lines.find(l => l.includes('zIndex:'))).toBeUndefined();
-    expect(lines.find(l => l.includes('cleanable:'))).toBeUndefined();
+    expect(lines.find((l) => l.includes('color:'))).toBeUndefined();
+    expect(lines.find((l) => l.includes('angle:'))).toBeUndefined();
+    expect(lines.find((l) => l.includes('zIndex:'))).toBeUndefined();
+    expect(lines.find((l) => l.includes('cleanable:'))).toBeUndefined();
     // Has id and decal entry
     expect(lines).toContain('            id: Arrows');
     expect(lines).toContain('            0: 5,5');
@@ -73,7 +73,7 @@ describe('serializeDecalGrid', () => {
     const lines = serializeDecalGrid(decals);
 
     // Should only have one "- node:" entry
-    const nodeLines = lines.filter(l => l.trim() === '- node:');
+    const nodeLines = lines.filter((l) => l.trim() === '- node:');
     expect(nodeLines).toHaveLength(1);
 
     // Both decal entries present
@@ -89,7 +89,7 @@ describe('serializeDecalGrid', () => {
     const lines = serializeDecalGrid(decals);
 
     // Should have two "- node:" entries
-    const nodeLines = lines.filter(l => l.trim() === '- node:');
+    const nodeLines = lines.filter((l) => l.trim() === '- node:');
     expect(nodeLines).toHaveLength(2);
 
     expect(lines).toContain('            id: Arrows');
@@ -160,8 +160,8 @@ describe('serializeDecalGrid', () => {
     ];
     const lines = serializeDecalGrid(decals);
 
-    const decalEntries = lines.filter(l => /^\s+\d+: /.test(l));
-    const ids = decalEntries.map(l => parseInt(l.trim().split(':')[0], 10));
+    const decalEntries = lines.filter((l) => /^\s+\d+: /.test(l));
+    const ids = decalEntries.map((l) => parseInt(l.trim().split(':')[0], 10));
     expect(ids).toEqual([10, 30, 50]);
   });
 

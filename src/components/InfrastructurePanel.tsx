@@ -14,7 +14,7 @@ export const InfrastructurePanel: React.FC<Props> = ({ selection, onChange }) =>
   return (
     <div className="p-3">
       <div className="text-muted text-[10px] uppercase tracking-wider mb-1">Cables</div>
-      {CABLES.map(type => {
+      {CABLES.map((type) => {
         const { label, color } = CABLE_DISPLAY[type];
         const active = selection.mode === 'cable' && selection.cableType === type;
         return (
@@ -25,17 +25,14 @@ export const InfrastructurePanel: React.FC<Props> = ({ selection, onChange }) =>
                         ${active ? 'border-accent ring-1 ring-accent' : 'border-subtle hover:border-muted'}`}
             style={{ backgroundColor: active ? '#0f3460' : 'transparent' }}
           >
-            <span
-              className="inline-block w-2 h-2 rounded-sm shrink-0"
-              style={{ backgroundColor: color }}
-            />
+            <span className="inline-block w-2 h-2 rounded-sm shrink-0" style={{ backgroundColor: color }} />
             {label}
           </button>
         );
       })}
 
       <div className="text-muted text-[10px] uppercase tracking-wider mb-1 mt-3">Pipes</div>
-      {PIPES.map(type => {
+      {PIPES.map((type) => {
         const { label, color } = PIPE_DISPLAY[type];
         const active = selection.mode === 'pipe' && selection.pipeType === type;
         return (
@@ -46,10 +43,7 @@ export const InfrastructurePanel: React.FC<Props> = ({ selection, onChange }) =>
                         ${active ? 'border-accent ring-1 ring-accent' : 'border-subtle hover:border-muted'}`}
             style={{ backgroundColor: active ? '#0f3460' : 'transparent' }}
           >
-            <span
-              className="inline-block w-2 h-2 rounded-sm shrink-0"
-              style={{ backgroundColor: color }}
-            />
+            <span className="inline-block w-2 h-2 rounded-sm shrink-0" style={{ backgroundColor: color }} />
             {label}
           </button>
         );

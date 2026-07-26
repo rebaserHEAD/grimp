@@ -17,9 +17,7 @@ describe('ContainerContentsEditor helpers', () => {
   });
 
   it('getContainedEntityUids extracts UIDs from entity_storage', () => {
-    const components = [
-      { type: 'ContainerContainer', containers: { entity_storage: { ents: [101, 102] } } },
-    ];
+    const components = [{ type: 'ContainerContainer', containers: { entity_storage: { ents: [101, 102] } } }];
     expect(getContainedEntityUids(components as any)).toEqual([101, 102]);
   });
 
@@ -29,30 +27,47 @@ describe('ContainerContentsEditor helpers', () => {
   });
 
   it('getContainedEntityUids handles missing ents array', () => {
-    const components = [
-      { type: 'ContainerContainer', containers: { entity_storage: {} } },
-    ];
+    const components = [{ type: 'ContainerContainer', containers: { entity_storage: {} } }];
     expect(getContainedEntityUids(components as any)).toEqual([]);
   });
 });
 
 describe('isContainerEntity', () => {
-  function makeMockRegistry(protoComponents: { type: string;[key: string]: unknown }[]): IPrototypeRegistry {
+  function makeMockRegistry(protoComponents: { type: string; [key: string]: unknown }[]): IPrototypeRegistry {
     return {
       getEntity: () => ({
-        id: 'LockerCaptain', name: 'Captain Locker', description: '', suffix: '',
-        abstract: false, categories: [], placement: {}, components: protoComponents,
-        spriteInfo: null, sourceCategory: '', raw: { type: 'entity', id: 'LockerCaptain' },
+        id: 'LockerCaptain',
+        name: 'Captain Locker',
+        description: '',
+        suffix: '',
+        abstract: false,
+        categories: [],
+        placement: {},
+        components: protoComponents,
+        spriteInfo: null,
+        sourceCategory: '',
+        raw: { type: 'entity', id: 'LockerCaptain' },
       }),
-      getTile: () => null, getAllTiles: () => [], getAllEntities: () => [],
-      getEntitiesByCategory: () => [], getCategories: () => [],
-      getSpriteInfo: () => null, tileCount: 0, entityCount: 0, getDecal: () => null, getAllDecals: () => [], decalCount: 0,
+      getTile: () => null,
+      getAllTiles: () => [],
+      getAllEntities: () => [],
+      getEntitiesByCategory: () => [],
+      getCategories: () => [],
+      getSpriteInfo: () => null,
+      tileCount: 0,
+      entityCount: 0,
+      getDecal: () => null,
+      getAllDecals: () => [],
+      decalCount: 0,
     };
   }
 
   it('returns true when entity components have ContainerContainer', () => {
     const entity = {
-      uid: 1, prototype: 'LockerCaptain', position: { x: 0, y: 0 }, rotation: 0,
+      uid: 1,
+      prototype: 'LockerCaptain',
+      position: { x: 0, y: 0 },
+      rotation: 0,
       components: [{ type: 'ContainerContainer' }] as any,
     };
     expect(isContainerEntity(entity, null)).toBe(true);
@@ -60,7 +75,10 @@ describe('isContainerEntity', () => {
 
   it('returns true when prototype defines ContainerContainer', () => {
     const entity = {
-      uid: 1, prototype: 'LockerCaptain', position: { x: 0, y: 0 }, rotation: 0,
+      uid: 1,
+      prototype: 'LockerCaptain',
+      position: { x: 0, y: 0 },
+      rotation: 0,
       components: [{ type: 'Transform' }] as any,
     };
     const registry = makeMockRegistry([{ type: 'ContainerContainer' }]);
@@ -69,7 +87,10 @@ describe('isContainerEntity', () => {
 
   it('returns false when neither entity nor prototype has ContainerContainer', () => {
     const entity = {
-      uid: 1, prototype: 'APCBasic', position: { x: 0, y: 0 }, rotation: 0,
+      uid: 1,
+      prototype: 'APCBasic',
+      position: { x: 0, y: 0 },
+      rotation: 0,
       components: [{ type: 'Transform' }] as any,
     };
     const registry = makeMockRegistry([{ type: 'Transform' }, { type: 'Battery' }]);

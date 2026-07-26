@@ -1,8 +1,16 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
-  needsRedraw, markClean, markSceneDirty, markCameraDirty,
-  markOverlayDirty, markConnectionsDirty, markAllDirty,
-  isSceneDirty, isCameraDirty, isOverlayDirty, isConnectionsDirty,
+  needsRedraw,
+  markClean,
+  markSceneDirty,
+  markCameraDirty,
+  markOverlayDirty,
+  markConnectionsDirty,
+  markAllDirty,
+  isSceneDirty,
+  isCameraDirty,
+  isOverlayDirty,
+  isConnectionsDirty,
 } from '../dirtyFlags';
 
 describe('dirtyFlags', () => {

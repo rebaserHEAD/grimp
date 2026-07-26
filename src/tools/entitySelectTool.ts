@@ -2,7 +2,13 @@ import type { ITool, ToolContext } from './toolTypes';
 import type { ImportedEntity } from '../import/mapImporter';
 import type { CardinalDirection, DecalChange } from '../types';
 import type { DecalInstance } from '../import/decalParser';
-import { getEntitiesAtTile, getEntitySprite, isNoRot, isLayerVisible, getCachedDrawDepth } from '../rendering/entityRenderer';
+import {
+  getEntitiesAtTile,
+  getEntitySprite,
+  isNoRot,
+  isLayerVisible,
+  getCachedDrawDepth,
+} from '../rendering/entityRenderer';
 import type { LayerVisibility } from '../rendering/entityRenderer';
 import type { SpriteDrawInfo } from '../loaders/rsiLoader';
 import { markOverlayDirty } from '../rendering/dirtyFlags';
@@ -23,7 +29,7 @@ function filterVisibleEntities(
   registry: import('../loaders/registryTypes').IPrototypeRegistry,
 ): ImportedEntity[] {
   if (!layers) return entities;
-  return entities.filter(e => {
+  return entities.filter((e) => {
     const depth = getCachedDrawDepth(e.prototype, registry);
     return isLayerVisible(depth, e.prototype, layers, registry);
   });
@@ -171,18 +177,14 @@ export class EntitySelectTool implements ITool {
     const selectedUidSet = selectedSet(state.selectedEntityUids);
     const selectedDecalSet = new Set(state.selectedDecalIds);
     const atTile = spatialGetAt(tileX, tileY);
-    const visibleAtTile = state.registry
-      ? filterVisibleEntities(atTile, ctx.layerVisibility, state.registry)
-      : atTile;
-    const hasSelectedEntityAtTile = visibleAtTile.some(e => selectedUidSet.has(e.uid));
+    const visibleAtTile = state.registry ? filterVisibleEntities(atTile, ctx.layerVisibility, state.registry) : atTile;
+    const hasSelectedEntityAtTile = visibleAtTile.some((e) => selectedUidSet.has(e.uid));
 
     const activeGrid = state.grids[state.activeGridIndex];
     const decalsAtTile = areDecalsVisible(ctx.layerVisibility)
-      ? activeGrid.decals.decals.filter(d =>
-        Math.floor(d.position.x) === tileX && Math.floor(d.position.y) === tileY
-      )
+      ? activeGrid.decals.decals.filter((d) => Math.floor(d.position.x) === tileX && Math.floor(d.position.y) === tileY)
       : [];
-    const hasSelectedDecalAtTile = decalsAtTile.some(d => selectedDecalSet.has(d.id));
+    const hasSelectedDecalAtTile = decalsAtTile.some((d) => selectedDecalSet.has(d.id));
 
     if (!hasSelectedEntityAtTile && !hasSelectedDecalAtTile) {
       this.closePicker();
@@ -309,9 +311,9 @@ export class EntitySelectTool implements ITool {
     // Check for decals at tile (only if decal layer visible)
     const activeGrid = state.grids[state.activeGridIndex];
     const decalsAtTile = areDecalsVisible(ctx.layerVisibility)
-      ? activeGrid.decals.decals.filter(d =>
-        Math.floor(d.position.x) === lookupX && Math.floor(d.position.y) === lookupY
-      )
+      ? activeGrid.decals.decals.filter(
+          (d) => Math.floor(d.position.x) === lookupX && Math.floor(d.position.y) === lookupY,
+        )
       : [];
 
     // Click on an already-selected entity or decal, start move drag
@@ -321,7 +323,7 @@ export class EntitySelectTool implements ITool {
       // Check selected entities first
       if (entitiesAtTile.length > 0) {
         const selectedUidSet = selectedSet(state.selectedEntityUids);
-        const clickedSelected = entitiesAtTile.find(e => selectedUidSet.has(e.uid));
+        const clickedSelected = entitiesAtTile.find((e) => selectedUidSet.has(e.uid));
         if (clickedSelected) {
           this.startMoveDrag(ctx, tileX, tileY);
           return;
@@ -330,7 +332,7 @@ export class EntitySelectTool implements ITool {
       // Then check selected decals (even if entities exist at tile)
       if (decalsAtTile.length > 0) {
         const selectedDecalSet = new Set(state.selectedDecalIds);
-        const clickedSelectedDecal = decalsAtTile.find(d => selectedDecalSet.has(d.id));
+        const clickedSelectedDecal = decalsAtTile.find((d) => selectedDecalSet.has(d.id));
         if (clickedSelectedDecal) {
           this.startMoveDrag(ctx, tileX, tileY);
           return;
@@ -381,7 +383,7 @@ export class EntitySelectTool implements ITool {
     // Snapshot selected decals for move
     const activeGrid = _ctx.state.grids[_ctx.state.activeGridIndex];
     const selectedDecalSet = new Set(_ctx.state.selectedDecalIds);
-    this.moveSnapshotDecals = activeGrid.decals.decals.filter(d => selectedDecalSet.has(d.id));
+    this.moveSnapshotDecals = activeGrid.decals.decals.filter((d) => selectedDecalSet.has(d.id));
   }
 
   onMouseMove(_ctx: ToolContext, tileX: number, tileY: number) {
@@ -442,21 +444,19 @@ export class EntitySelectTool implements ITool {
     // Find all entities within the box via spatial index (respecting layer visibility)
     const allInRect = spatialGetInRect(minX, minY, maxX, maxY);
     const registry = ctx.state.registry;
-    const visibleInRect = registry
-      ? filterVisibleEntities(allInRect, ctx.layerVisibility, registry)
-      : allInRect;
-    const uids: number[] = visibleInRect.map(e => e.uid);
+    const visibleInRect = registry ? filterVisibleEntities(allInRect, ctx.layerVisibility, registry) : allInRect;
+    const uids: number[] = visibleInRect.map((e) => e.uid);
 
     // Find all decals within the box (only if decal layer visible)
     const activeGrid = ctx.state.grids[ctx.state.activeGridIndex];
     const decalIds = areDecalsVisible(ctx.layerVisibility)
       ? activeGrid.decals.decals
-        .filter(d => {
-          const dx = Math.floor(d.position.x);
-          const dy = Math.floor(d.position.y);
-          return dx >= minX && dx <= maxX && dy >= minY && dy <= maxY;
-        })
-        .map(d => d.id)
+          .filter((d) => {
+            const dx = Math.floor(d.position.x);
+            const dy = Math.floor(d.position.y);
+            return dx >= minX && dx <= maxX && dy >= minY && dy <= maxY;
+          })
+          .map((d) => d.id)
       : [];
 
     if (this.shiftHeld) {
@@ -489,9 +489,9 @@ export class EntitySelectTool implements ITool {
           } else {
             const activeGrid = state.grids[state.activeGridIndex];
             const decalsAtTile = areDecalsVisible(ctx.layerVisibility)
-              ? activeGrid.decals.decals.filter(d =>
-                Math.floor(d.position.x) === lookupX && Math.floor(d.position.y) === lookupY
-              )
+              ? activeGrid.decals.decals.filter(
+                  (d) => Math.floor(d.position.x) === lookupX && Math.floor(d.position.y) === lookupY,
+                )
               : [];
             if (decalsAtTile.length > 0) {
               ctx.dispatch({ type: 'TOGGLE_SELECT_DECAL', id: decalsAtTile[0].id });
@@ -504,7 +504,7 @@ export class EntitySelectTool implements ITool {
 
     const { state } = ctx;
     const selectedUidSet = selectedSet(state.selectedEntityUids);
-    const selectedEntities = state.entities.filter(e => selectedUidSet.has(e.uid));
+    const selectedEntities = state.entities.filter((e) => selectedUidSet.has(e.uid));
 
     // Build decal changes from snapshot
     const decalChanges: DecalChange[] = [];
@@ -554,7 +554,12 @@ export class EntitySelectTool implements ITool {
 
     ctx.dispatch({
       type: 'APPLY_COMMAND',
-      command: { label, tileChanges: [], entityChanges, decalChanges: decalChanges.length > 0 ? decalChanges : undefined },
+      command: {
+        label,
+        tileChanges: [],
+        entityChanges,
+        decalChanges: decalChanges.length > 0 ? decalChanges : undefined,
+      },
     });
 
     // Update selection to track the new UIDs (decals keep same IDs via update)
@@ -576,11 +581,14 @@ export class EntitySelectTool implements ITool {
     if (state.selectedEntityUids.length === 0) return;
 
     const selectedUidSet = selectedSet(state.selectedEntityUids);
-    const selected = state.entities.filter(e => selectedUidSet.has(e.uid));
+    const selected = state.entities.filter((e) => selectedUidSet.has(e.uid));
     if (selected.length === 0) return;
 
     // Compute bounding box of selected entities
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
     for (const e of selected) {
       const tx = Math.floor(e.position.x);
       const ty = Math.floor(e.position.y);
@@ -593,21 +601,21 @@ export class EntitySelectTool implements ITool {
     const w = maxX - minX + 1;
     const h = maxY - minY + 1;
 
-    const clipEntities: ClipboardEntity[] = selected.map(e => ({
+    const clipEntities: ClipboardEntity[] = selected.map((e) => ({
       dx: e.position.x - minX,
       dy: e.position.y - minY,
       prototype: e.prototype,
       rotation: e.rotation,
-      components: e.components.map(c => ({ ...c })),
+      components: e.components.map((c) => ({ ...c })),
       ...(e.spriteStateOverride ? { spriteStateOverride: e.spriteStateOverride } : {}),
     }));
 
     // Copy selected decals too
     const activeGrid = ctx.state.grids[ctx.state.activeGridIndex];
     const selectedDecalSet = new Set(ctx.state.selectedDecalIds);
-    const selectedDecals = activeGrid.decals.decals.filter(d => selectedDecalSet.has(d.id));
+    const selectedDecals = activeGrid.decals.decals.filter((d) => selectedDecalSet.has(d.id));
 
-    const clipDecals: ClipboardDecal[] = selectedDecals.map(d => ({
+    const clipDecals: ClipboardDecal[] = selectedDecals.map((d) => ({
       dx: d.position.x - minX,
       dy: d.position.y - minY,
       prototypeId: d.prototypeId,
@@ -618,7 +626,10 @@ export class EntitySelectTool implements ITool {
     }));
 
     // Include decal bounding box in width/height if decals extend beyond entities
-    let clipMinX = minX, clipMinY = minY, clipMaxX = maxX, clipMaxY = maxY;
+    let clipMinX = minX,
+      clipMinY = minY,
+      clipMaxX = maxX,
+      clipMaxY = maxY;
     for (const d of selectedDecals) {
       const dx = Math.floor(d.position.x);
       const dy = Math.floor(d.position.y);
@@ -631,11 +642,13 @@ export class EntitySelectTool implements ITool {
     const clipH = clipMaxY - clipMinY + 1;
 
     setClipboard({
-      width: Math.max(w, clipW), height: Math.max(h, clipH),
+      width: Math.max(w, clipW),
+      height: Math.max(h, clipH),
       tiles: new Array(Math.max(w, clipW) * Math.max(h, clipH)).fill(null),
       entities: clipEntities,
       decals: clipDecals,
-      originX: Math.min(minX, clipMinX), originY: Math.min(minY, clipMinY),
+      originX: Math.min(minX, clipMinX),
+      originY: Math.min(minY, clipMinY),
     });
   }
 
@@ -664,7 +677,7 @@ export class EntitySelectTool implements ITool {
     const newH = W;
     const delta = direction === 'cw' ? -Math.PI / 2 : Math.PI / 2;
 
-    const newEntities: ClipboardEntity[] = entities.map(e => {
+    const newEntities: ClipboardEntity[] = entities.map((e) => {
       let newDx: number, newDy: number;
       if (direction === 'cw') {
         newDx = e.dy;
@@ -681,7 +694,7 @@ export class EntitySelectTool implements ITool {
       };
     });
 
-    const newDecals: ClipboardDecal[] | undefined = this.pasteData.decals?.map(d => {
+    const newDecals: ClipboardDecal[] | undefined = this.pasteData.decals?.map((d) => {
       let newDx: number, newDy: number;
       if (direction === 'cw') {
         newDx = d.dy;
@@ -758,12 +771,7 @@ export class EntitySelectTool implements ITool {
     // Stay in paste mode for repeated stamps
   }
 
-  renderPreview(
-    canvasCtx: CanvasRenderingContext2D,
-    toolCtx: ToolContext,
-    _cursorTileX: number,
-    _cursorTileY: number,
-  ) {
+  renderPreview(canvasCtx: CanvasRenderingContext2D, toolCtx: ToolContext, _cursorTileX: number, _cursorTileY: number) {
     const { state, camera, canvasW, canvasH } = toolCtx;
     const tileScreenSize = camera.tileScreenSize;
 
@@ -800,8 +808,10 @@ export class EntitySelectTool implements ITool {
           const ghostScreenY = camera.worldToScreenY(ey + dy, canvasH);
           const origScreenX = camera.worldToScreenX(ex, canvasW);
           const origScreenY = camera.worldToScreenY(ey, canvasH);
-          const ghostVisible = ghostScreenX >= vpLeft && ghostScreenX <= vpRight && ghostScreenY >= vpTop && ghostScreenY <= vpBottom;
-          const origVisible = origScreenX >= vpLeft && origScreenX <= vpRight && origScreenY >= vpTop && origScreenY <= vpBottom;
+          const ghostVisible =
+            ghostScreenX >= vpLeft && ghostScreenX <= vpRight && ghostScreenY >= vpTop && ghostScreenY <= vpBottom;
+          const origVisible =
+            origScreenX >= vpLeft && origScreenX <= vpRight && origScreenY >= vpTop && origScreenY <= vpBottom;
           if (!ghostVisible && !origVisible) continue;
 
           // Translucent sprite ghost at destination
@@ -810,8 +820,10 @@ export class EntitySelectTool implements ITool {
             const dir = rotToDir(entity.rotation);
             const sprite = getEntitySprite(entity.prototype, dir, state.registry);
             if (sprite) {
-              const needsRotation = !isNoRot(entity.prototype, state.registry)
-                && entity.rotation !== 0 && sprite.sh === sprite.image.height;
+              const needsRotation =
+                !isNoRot(entity.prototype, state.registry) &&
+                entity.rotation !== 0 &&
+                sprite.sh === sprite.image.height;
               canvasCtx.save();
               canvasCtx.globalAlpha = 0.5;
               if (needsRotation) {
@@ -823,8 +835,14 @@ export class EntitySelectTool implements ITool {
               }
               canvasCtx.drawImage(
                 sprite.image,
-                sprite.sx, sprite.sy, sprite.sw, sprite.sh,
-                ghostScreenX, ghostScreenY, tileScreenSize, tileScreenSize,
+                sprite.sx,
+                sprite.sy,
+                sprite.sw,
+                sprite.sh,
+                ghostScreenX,
+                ghostScreenY,
+                tileScreenSize,
+                tileScreenSize,
               );
               canvasCtx.restore();
               drewGhost = true;
@@ -948,7 +966,11 @@ export class EntitySelectTool implements ITool {
           const decalImg = getDecalSprite(decal.prototypeId, state.registry);
           if (decalImg) {
             const spriteInfo: SpriteDrawInfo = {
-              image: decalImg, sx: 0, sy: 0, sw: decalImg.width, sh: decalImg.height,
+              image: decalImg,
+              sx: 0,
+              sy: 0,
+              sw: decalImg.width,
+              sh: decalImg.height,
             };
             const outline = getSpriteOutline(spriteInfo, '#00DDDD');
             if (outline) {
@@ -1034,8 +1056,8 @@ export class EntitySelectTool implements ITool {
           const dir = rotToDir(ce.rotation);
           const sprite = getEntitySprite(ce.prototype, dir, state.registry);
           if (sprite) {
-            const needsRotation = !isNoRot(ce.prototype, state.registry)
-              && ce.rotation !== 0 && sprite.sh === sprite.image.height;
+            const needsRotation =
+              !isNoRot(ce.prototype, state.registry) && ce.rotation !== 0 && sprite.sh === sprite.image.height;
             canvasCtx.save();
             if (needsRotation) {
               const cx = sx + tileScreenSize / 2;
@@ -1046,8 +1068,14 @@ export class EntitySelectTool implements ITool {
             }
             canvasCtx.drawImage(
               sprite.image,
-              sprite.sx, sprite.sy, sprite.sw, sprite.sh,
-              sx, sy, tileScreenSize, tileScreenSize,
+              sprite.sx,
+              sprite.sy,
+              sprite.sw,
+              sprite.sh,
+              sx,
+              sy,
+              tileScreenSize,
+              tileScreenSize,
             );
             canvasCtx.restore();
             drewSprite = true;
@@ -1158,7 +1186,7 @@ export class EntitySelectTool implements ITool {
     if (state.selectedEntityUids.length === 0) return;
 
     const selectedUidSet = selectedSet(state.selectedEntityUids);
-    const selected = state.entities.filter(e => selectedUidSet.has(e.uid));
+    const selected = state.entities.filter((e) => selectedUidSet.has(e.uid));
     if (selected.length === 0) return;
 
     const delta = direction === 'cw' ? -Math.PI / 2 : Math.PI / 2;
@@ -1176,9 +1204,10 @@ export class EntitySelectTool implements ITool {
     }
 
     const dirLabel = direction === 'cw' ? 'CW' : 'CCW';
-    const label = selected.length === 1
-      ? `Rotate ${selected[0].prototype} ${dirLabel}`
-      : `Rotate ${selected.length} entities ${dirLabel}`;
+    const label =
+      selected.length === 1
+        ? `Rotate ${selected[0].prototype} ${dirLabel}`
+        : `Rotate ${selected.length} entities ${dirLabel}`;
 
     ctx.dispatch({
       type: 'APPLY_COMMAND',
@@ -1192,7 +1221,7 @@ export class EntitySelectTool implements ITool {
     if (state.selectedEntityUids.length === 0) return;
 
     const selectedUidSet = selectedSet(state.selectedEntityUids);
-    const selected = state.entities.filter(e => selectedUidSet.has(e.uid));
+    const selected = state.entities.filter((e) => selectedUidSet.has(e.uid));
     if (selected.length === 0) return;
 
     const entityChanges: { action: 'add' | 'remove'; entity: ImportedEntity }[] = [];
@@ -1208,9 +1237,7 @@ export class EntitySelectTool implements ITool {
       entityChanges.push({ action: 'add', entity: rotated });
     }
 
-    const label = selected.length === 1
-      ? `Rotate ${selected[0].prototype}`
-      : `Rotate ${selected.length} entities`;
+    const label = selected.length === 1 ? `Rotate ${selected[0].prototype}` : `Rotate ${selected.length} entities`;
 
     ctx.dispatch({
       type: 'APPLY_COMMAND',
@@ -1226,27 +1253,30 @@ export class EntitySelectTool implements ITool {
     if (!hasEntities && !hasDecals) return;
 
     const selectedUidSet = selectedSet(state.selectedEntityUids);
-    const selectedEntities = state.entities.filter(e => selectedUidSet.has(e.uid));
+    const selectedEntities = state.entities.filter((e) => selectedUidSet.has(e.uid));
 
     const activeGrid = state.grids[state.activeGridIndex];
     const selectedDecalSet = new Set(state.selectedDecalIds);
     const decalChanges: DecalChange[] = activeGrid.decals.decals
-      .filter(d => selectedDecalSet.has(d.id))
-      .map(d => ({ action: 'remove' as const, decal: d }));
+      .filter((d) => selectedDecalSet.has(d.id))
+      .map((d) => ({ action: 'remove' as const, decal: d }));
 
     if (selectedEntities.length === 0 && decalChanges.length === 0) return;
 
     const totalCount = selectedEntities.length + decalChanges.length;
-    const label = totalCount === 1
-      ? (selectedEntities.length === 1 ? `Delete ${selectedEntities[0].prototype}` : `Delete decal`)
-      : `Delete ${totalCount} items`;
+    const label =
+      totalCount === 1
+        ? selectedEntities.length === 1
+          ? `Delete ${selectedEntities[0].prototype}`
+          : `Delete decal`
+        : `Delete ${totalCount} items`;
 
     ctx.dispatch({
       type: 'APPLY_COMMAND',
       command: {
         label,
         tileChanges: [],
-        entityChanges: selectedEntities.map(e => ({ action: 'remove' as const, entity: e })),
+        entityChanges: selectedEntities.map((e) => ({ action: 'remove' as const, entity: e })),
         decalChanges: decalChanges.length > 0 ? decalChanges : undefined,
       },
     });
@@ -1268,8 +1298,8 @@ export class EntitySelectTool implements ITool {
 function rotToDir(rotation: number): CardinalDirection {
   const TWO_PI = 2 * Math.PI;
   const norm = ((rotation % TWO_PI) + TWO_PI) % TWO_PI;
-  if (norm < Math.PI / 4 || norm >= 7 * Math.PI / 4) return 'south';
-  if (norm < 3 * Math.PI / 4) return 'east';
-  if (norm < 5 * Math.PI / 4) return 'north';
+  if (norm < Math.PI / 4 || norm >= (7 * Math.PI) / 4) return 'south';
+  if (norm < (3 * Math.PI) / 4) return 'east';
+  if (norm < (5 * Math.PI) / 4) return 'north';
   return 'west';
 }

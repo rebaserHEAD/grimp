@@ -16,8 +16,8 @@ export interface Rect {
 
 export interface TileCell {
   tileId: string;
-  flags?: number;            // byte, preserved from import
-  variant?: number;          // byte, preserved from import
+  flags?: number; // byte, preserved from import
+  variant?: number; // byte, preserved from import
   rotationMirroring?: number; // byte, format 7+ only
 }
 
@@ -65,7 +65,23 @@ export interface InfrastructureLayout {
 
 // ---- Editor-specific types ----
 
-export type ToolType = 'paint' | 'erase' | 'eyedropper' | 'fill' | 'rectangle' | 'line' | 'circle' | 'select' | 'polygon' | 'pan' | 'entitySelect' | 'entityPlace' | 'cableDraw' | 'pipeDraw' | 'deviceLink' | 'prefabPlace';
+export type ToolType =
+  | 'paint'
+  | 'erase'
+  | 'eyedropper'
+  | 'fill'
+  | 'rectangle'
+  | 'line'
+  | 'circle'
+  | 'select'
+  | 'polygon'
+  | 'pan'
+  | 'entitySelect'
+  | 'entityPlace'
+  | 'cableDraw'
+  | 'pipeDraw'
+  | 'deviceLink'
+  | 'prefabPlace';
 
 // ---- Infrastructure drawing ----
 
@@ -138,8 +154,8 @@ export interface Command {
 export interface GridCommand {
   type: 'ADD_GRID' | 'REMOVE_GRID' | 'RENAME_GRID';
   gridData: import('./state/gridData').GridData;
-  previousName?: string;    // for undo of rename
-  insertIndex?: number;     // where the grid was in the array (for undo of remove)
+  previousName?: string; // for undo of rename
+  insertIndex?: number; // where the grid was in the array (for undo of remove)
 }
 
 export type UndoableCommand = Command | GridCommand;

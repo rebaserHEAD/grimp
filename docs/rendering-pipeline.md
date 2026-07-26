@@ -31,12 +31,12 @@ requestAnimationFrame (useAnimationFrame.ts)
 
 Module-level flags that gate the entire render loop. If no flag is set, the frame is skipped entirely (zero render work when idle).
 
-| Flag | Set By | Triggers |
-|------|--------|----------|
-| `sceneDirty` | Entity add/remove/move, tile change, layer toggle, map load | Invalidate L0+L1+L3 layers |
-| `cameraDirty` | Pan, zoom, resize | Overlay redraw only (layers use offset/scale compositing) |
-| `overlayDirty` | Cursor move, tool state, selection change | Overlay redraw only |
-| `connectionsDirty` | Entity selection change, connection edit | Invalidate L3 layer |
+| Flag               | Set By                                                      | Triggers                                                  |
+| ------------------ | ----------------------------------------------------------- | --------------------------------------------------------- |
+| `sceneDirty`       | Entity add/remove/move, tile change, layer toggle, map load | Invalidate L0+L1+L3 layers                                |
+| `cameraDirty`      | Pan, zoom, resize                                           | Overlay redraw only (layers use offset/scale compositing) |
+| `overlayDirty`     | Cursor move, tool state, selection change                   | Overlay redraw only                                       |
+| `connectionsDirty` | Entity selection change, connection edit                    | Invalidate L3 layer                                       |
 
 `needsRedraw()` returns true if any flag is set. `markClean()` clears all flags at end of frame.
 
@@ -48,14 +48,14 @@ The scene is rendered to five offscreen canvases (tiles, decals, entities, conne
 
 ### Layer Architecture
 
-| Layer | Canvas | Content | Invalidated By |
-|-------|--------|---------|---------------|
-| L0 | tileCanvas | Tile sprites | `sceneDirty`, pan margin, zoom settle |
-| L1 | decalCanvas | Decal sprites (floor markings, overlays) | `sceneDirty`, entity invalidation |
-| L2 | entityCanvas | Entity sprites (with LOD) | `sceneDirty`, pan margin, zoom settle |
-| L3 | connectionCanvas | Device link lines | `connectionsDirty`, pan margin, zoom settle |
-| L4 | lightCanvas | Lighting preview | Entity changes, light edits |
-| L5 | (main canvas) | Grid lines, tool preview, hover tooltip | Every frame (cheap overlay) |
+| Layer | Canvas           | Content                                  | Invalidated By                              |
+| ----- | ---------------- | ---------------------------------------- | ------------------------------------------- |
+| L0    | tileCanvas       | Tile sprites                             | `sceneDirty`, pan margin, zoom settle       |
+| L1    | decalCanvas      | Decal sprites (floor markings, overlays) | `sceneDirty`, entity invalidation           |
+| L2    | entityCanvas     | Entity sprites (with LOD)                | `sceneDirty`, pan margin, zoom settle       |
+| L3    | connectionCanvas | Device link lines                        | `connectionsDirty`, pan margin, zoom settle |
+| L4    | lightCanvas      | Lighting preview                         | Entity changes, light edits                 |
+| L5    | (main canvas)    | Grid lines, tool preview, hover tooltip  | Every frame (cheap overlay)                 |
 
 ### Oversized Buffers
 
@@ -70,6 +70,7 @@ physicalWidth = bufferWidth × devicePixelRatio
 ### Pan Offset Compositing
 
 When the camera pans, the pixel offset from the snapshot position is computed:
+
 ```
 offsetX = (snapshotX - camera.x) × tileScreenSize
 offsetY = -(snapshotY - camera.y) × tileScreenSize  // Y-up → Y-down
@@ -82,6 +83,7 @@ If `|offsetX| > viewportW × margin` or `|offsetY| > viewportH × margin`, the p
 ### Zoom-Deferred Compositing
 
 When zoom changes (scroll wheel), cached layers are composited with a scale transform centered on the viewport:
+
 ```
 scale = camera.zoom / snapshotZoom
 ctx.translate(w/2, h/2) → ctx.scale(scale, scale) → ctx.translate(-w/2, -h/2)
@@ -91,14 +93,14 @@ After 150ms of no zoom change, all layers are invalidated for a crisp re-render 
 
 ### Layer Invalidation Rules
 
-| Trigger | Layers Invalidated |
-|---------|-------------------|
-| Entity/tile mutation (`sceneDirty`) | L0 + L1 + L2 + L3 + L4 |
-| Entity selection change (`connectionsDirty`) | L3 |
-| Pan exceeds buffer margin | All |
-| Zoom settles (150ms debounce) | All |
-| Viewport resize | All (buffers reallocated) |
-| `cameraDirty` alone (small pan/zoom) | None, handled by offset/scale compositing |
+| Trigger                                      | Layers Invalidated                        |
+| -------------------------------------------- | ----------------------------------------- |
+| Entity/tile mutation (`sceneDirty`)          | L0 + L1 + L2 + L3 + L4                    |
+| Entity selection change (`connectionsDirty`) | L3                                        |
+| Pan exceeds buffer margin                    | All                                       |
+| Zoom settles (150ms debounce)                | All                                       |
+| Viewport resize                              | All (buffers reallocated)                 |
+| `cameraDirty` alone (small pan/zoom)         | None, handled by offset/scale compositing |
 
 ---
 
@@ -121,9 +123,11 @@ Simple `requestAnimationFrame` loop calling a ref-stored callback. Vsync-locked 
 ## 5. Grid Renderer (`gridRenderer.ts`)
 
 ### Viewport Culling
+
 Converts screen corners to world tile coordinates via `camera.screenToTile()`, clamps to grid bounds. Only tiles in the visible region (+1 margin) are iterated.
 
 ### Per-Tile Rendering
+
 ```
 for each visible tile (x, y):
   skip if Space
@@ -137,6 +141,7 @@ for each visible tile (x, y):
 **Cost:** O(visible tiles). Each tile = 1 cache lookup + 1 `drawImage`.
 
 ### Grid Lines
+
 - Opacity scales with zoom: `0.06 * zoom + 0.02`
 - **Density culling**: If tiles < 3px on screen, skip every Nth line
 - Only draws lines in the visible viewport range
@@ -179,11 +184,11 @@ for each entity from spatial query:
 
 Cable and smooth neighbor lookups use the persistent spatial index (`spatialGetAt()`) instead of per-frame rebuilt indexes:
 
-| Query | Method | Cost |
-|-------|--------|------|
+| Query                 | Method                                 | Cost                       |
+| --------------------- | -------------------------------------- | -------------------------- |
 | Cable connection mask | `hasCablePrototypeAt()` × 4 directions | O(cell size) per direction |
-| Smooth cardinal mask | `hasSmoothKeyAt()` × 4 directions | O(cell size) per direction |
-| Smooth corner fills | `hasSmoothKeyAt()` × 8 directions | O(cell size) per direction |
+| Smooth cardinal mask  | `hasSmoothKeyAt()` × 4 directions      | O(cell size) per direction |
+| Smooth corner fills   | `hasSmoothKeyAt()` × 8 directions      | O(cell size) per direction |
 
 Cell size is typically 1-5 entities, so these are effectively O(1).
 
@@ -239,6 +244,7 @@ For each visible entity, in sorted order:
 ### 6.7 Placeholders
 
 When sprite is loading or missing, draws a small colored circle:
+
 - Green: Spawn entities
 - Orange: Cables
 - Cyan: Pipes/Gas
@@ -252,6 +258,7 @@ When sprite is loading or missing, draws a small colored circle:
 Renders DeviceList (cyan) and DeviceLinkSource (orange) lines between entities using batched rendering for performance.
 
 ### Optimizations
+
 - **Zoom skip**: Entire pass skipped when `tileScreenSize < 4px`
 - **Viewport culling**: Only iterates entities within the visible viewport via `spatialGetInRect()`
 - **Target lookup**: Uses `spatialGetByUid()` for O(1) target position lookups, also handles deleted entities gracefully (returns undefined → line skipped)
@@ -259,6 +266,7 @@ Renders DeviceList (cyan) and DeviceLinkSource (orange) lines between entities u
 - **Cached selection Set**: `selectedEntityUids` array is converted to a Set once, cached by reference identity to avoid per-frame allocation
 
 ### Process
+
 ```
 1. Spatial query for viewport entities: spatialGetInRect(viewport bounds)
 2. Collect pass, bucket connection lines into 4 arrays:
@@ -271,11 +279,14 @@ Renders DeviceList (cyan) and DeviceLinkSource (orange) lines between entities u
 ```
 
 ### Visual Hierarchy
+
 - **No selection**: All connections shown at medium visibility (1.5px, 0.4α)
 - **With selection**: Selected entity connections highlighted (3px, 1.0α, arrows), all others dimmed (1px, 0.15α)
 
 ### Invalidation
+
 Connection layer is invalidated by:
+
 - `sceneDirty`, entity add/remove/move/component edit (ensures deleted entity links disappear immediately)
 - `connectionsDirty`, entity selection change (ensures highlight/dim state updates instantly)
 - Pan margin overflow / zoom settle (standard compositor triggers)
@@ -289,14 +300,15 @@ Connection layer is invalidated by:
 Persistent module-level spatial hash rebuilt by the reducer after entity mutations.
 
 ### API
-| Function | Complexity | Description |
-|----------|-----------|-------------|
-| `rebuildSpatialIndex(entities)` | O(N) | Full rebuild (clears + re-inserts all) |
-| `spatialInsert(entity)` | O(1) | Add entity to index (internal/test use) |
-| `spatialRemove(uid)` | O(cell) | Remove entity from index (internal/test use) |
-| `spatialGetAt(x, y)` | O(1) | Get entities at tile |
-| `spatialGetInRect(...)` | O(area) | Get entities in rectangle |
-| `spatialGetByUid(uid)` | O(cell) | Look up entity by UID |
+
+| Function                        | Complexity | Description                                  |
+| ------------------------------- | ---------- | -------------------------------------------- |
+| `rebuildSpatialIndex(entities)` | O(N)       | Full rebuild (clears + re-inserts all)       |
+| `spatialInsert(entity)`         | O(1)       | Add entity to index (internal/test use)      |
+| `spatialRemove(uid)`            | O(cell)    | Remove entity from index (internal/test use) |
+| `spatialGetAt(x, y)`            | O(1)       | Get entities at tile                         |
+| `spatialGetInRect(...)`         | O(area)    | Get entities in rectangle                    |
+| `spatialGetByUid(uid)`          | O(cell)    | Look up entity by UID                        |
 
 ### Reducer Integration
 
@@ -314,10 +326,12 @@ All entity-mutating actions call `rebuildSpatialIndex(entities)` after computing
 ## 9. Entity Hover Tooltip
 
 Runs per frame but only rescans when cursor tile changes or entity array reference changes:
+
 ```
 if (cursorTile changed || entities array changed):
   cachedHovered = getEntitiesAtTile(x, y)  // O(1) via spatial index
 ```
+
 If entities found: draws tile highlight outline + background rectangle + prototype name label.
 
 **Cost:** O(1) per cursor tile change (spatial index lookup). O(0) when cursor hasn't moved.
@@ -340,35 +354,35 @@ If entities found: draws tile highlight outline + background rectangle + prototy
 
 ### Session-Long Caches (never cleared)
 
-| Cache | Key | Stores |
-|-------|-----|--------|
-| `tileImageCache` | tileId | `HTMLImageElement \| null` |
-| `entitySpriteCache` | `proto:dir:state` | `SpriteDrawInfo \| null` |
-| `extraLayerCache` | `proto:dir:layers` | `SpriteDrawInfo[] \| null` |
+| Cache               | Key                  | Stores                          |
+| ------------------- | -------------------- | ------------------------------- |
+| `tileImageCache`    | tileId               | `HTMLImageElement \| null`      |
+| `entitySpriteCache` | `proto:dir:state`    | `SpriteDrawInfo \| null`        |
+| `extraLayerCache`   | `proto:dir:layers`   | `SpriteDrawInfo[] \| null`      |
 | `tintedSpriteCache` | `imgSrc:sx,sy:color` | `HTMLCanvasElement` (offscreen) |
-| `drawDepthCache` | prototype | `number` |
-| `noRotCache` | prototype | `boolean` |
-| `spriteColorCache` | prototype | `string \| null` |
-| `smoothInfoCache` | prototype | `SmoothInfo \| null` |
-| `subFloorCache` | prototype | `boolean` |
+| `drawDepthCache`    | prototype            | `number`                        |
+| `noRotCache`        | prototype            | `boolean`                       |
+| `spriteColorCache`  | prototype            | `string \| null`                |
+| `smoothInfoCache`   | prototype            | `SmoothInfo \| null`            |
+| `subFloorCache`     | prototype            | `boolean`                       |
 
 ### Persistent (Reducer-Maintained)
 
-| Structure | Scope | Update Cost |
-|-----------|-------|-------------|
+| Structure     | Scope        | Update Cost                            |
+| ------------- | ------------ | -------------------------------------- |
 | Spatial index | All entities | O(N) rebuild per dispatch (idempotent) |
 
 ### Cached Between Frames (Invalidated on Change)
 
-| Structure | Invalidated When | Cost to Rebuild |
-|-----------|-----------------|-----------------|
+| Structure         | Invalidated When                    | Cost to Rebuild                                 |
+| ----------------- | ----------------------------------- | ----------------------------------------------- |
 | `cachedVisible[]` | Camera, entities, or filters change | O(visible area) spatial query + O(V log V) sort |
-| `cachedHovered` | Cursor tile changes | O(1) spatial lookup |
+| `cachedHovered`   | Cursor tile changes                 | O(1) spatial lookup                             |
 
 ### Per-Entity (UID-based)
 
-| Cache | Key | Notes |
-|-------|-----|-------|
+| Cache            | Key        | Notes                           |
+| ---------------- | ---------- | ------------------------------- |
 | `pipeColorCache` | entity.uid | AtmosPipeColor component lookup |
 
 ---
@@ -377,40 +391,40 @@ If entities found: draws tile highlight outline + background rectangle + prototy
 
 ### With Layered Compositing
 
-| Scenario | Per-Frame Cost | Notes |
-|----------|---------------|-------|
-| Idle | 0 work | Dirty flags skip entire frame |
-| Hover only | ~5 draw calls | Overlay pass only (grid lines + tooltip) |
-| Pan (within margin) | 2-3 drawImage composites + overlay | Cached layers at offset, no re-render |
-| Pan (exceeds margin) | Full layer re-render + composite | Same as pre-compositing, but only when margin exceeded |
-| Zoom (during scroll) | 2-3 scaled drawImage + overlay | Cached layers with scale transform |
-| Zoom (after 150ms settle) | Full layer re-render + composite | Crisp re-render at new zoom level |
-| Entity mutation | L1+L3 re-render next frame | Entity + connection layers (links to deleted entities removed) |
-| Tile mutation | L0+L1+L3 re-render next frame | Tile, entity, and connection layers |
-| Entity selection change | L3 re-render next frame | Connection layer only (highlight/dim) |
+| Scenario                  | Per-Frame Cost                     | Notes                                                          |
+| ------------------------- | ---------------------------------- | -------------------------------------------------------------- |
+| Idle                      | 0 work                             | Dirty flags skip entire frame                                  |
+| Hover only                | ~5 draw calls                      | Overlay pass only (grid lines + tooltip)                       |
+| Pan (within margin)       | 2-3 drawImage composites + overlay | Cached layers at offset, no re-render                          |
+| Pan (exceeds margin)      | Full layer re-render + composite   | Same as pre-compositing, but only when margin exceeded         |
+| Zoom (during scroll)      | 2-3 scaled drawImage + overlay     | Cached layers with scale transform                             |
+| Zoom (after 150ms settle) | Full layer re-render + composite   | Crisp re-render at new zoom level                              |
+| Entity mutation           | L1+L3 re-render next frame         | Entity + connection layers (links to deleted entities removed) |
+| Tile mutation             | L0+L1+L3 re-render next frame      | Tile, entity, and connection layers                            |
+| Entity selection change   | L3 re-render next frame            | Connection layer only (highlight/dim)                          |
 
 ### Per-Layer Render Cost (when layer is dirty)
 
 For a map with N total entities, V visible entities, and A visible tile area:
 
-| Operation | Complexity | Notes |
-|-----------|-----------|-------|
-| Grid tile rendering (L0) | O(visible tiles) | Viewport-culled |
-| Entity spatial query (L1) | O(A) | Visible area, not total entities |
-| Entity sorting (L1) | O(V log V) | Cached, skipped when unchanged |
-| IconSmooth per entity (L1) | O(1), 4-8 lookups | Via spatial index |
-| Cable mask per entity (L1) | O(1), 4 lookups | Via spatial index |
-| Sprite draw per entity (L1) | O(1) | Cache hit = instant |
-| Connection rendering (L2) | O(V_connected × M) | Viewport-only, M = connections/entity |
-| LOD mode (zoom < 6px) | O(V) | Colored dots only, no sprites |
+| Operation                   | Complexity         | Notes                                 |
+| --------------------------- | ------------------ | ------------------------------------- |
+| Grid tile rendering (L0)    | O(visible tiles)   | Viewport-culled                       |
+| Entity spatial query (L1)   | O(A)               | Visible area, not total entities      |
+| Entity sorting (L1)         | O(V log V)         | Cached, skipped when unchanged        |
+| IconSmooth per entity (L1)  | O(1), 4-8 lookups  | Via spatial index                     |
+| Cable mask per entity (L1)  | O(1), 4 lookups    | Via spatial index                     |
+| Sprite draw per entity (L1) | O(1)               | Cache hit = instant                   |
+| Connection rendering (L2)   | O(V_connected × M) | Viewport-only, M = connections/entity |
+| LOD mode (zoom < 6px)       | O(V)               | Colored dots only, no sprites         |
 
 ### Overlay Pass (every frame, always cheap)
 
-| Operation | Complexity | Notes |
-|-----------|-----------|-------|
-| Grid line rendering | O(visible lines) | Viewport-culled, density-culled |
-| Tool preview | O(1) | Single draw operation |
-| Hover tooltip | O(1) | Spatial index, cached by cursor tile |
+| Operation           | Complexity       | Notes                                |
+| ------------------- | ---------------- | ------------------------------------ |
+| Grid line rendering | O(visible lines) | Viewport-culled, density-culled      |
+| Tool preview        | O(1)             | Single draw operation                |
+| Hover tooltip       | O(1)             | Spatial index, cached by cursor tile |
 
 ---
 

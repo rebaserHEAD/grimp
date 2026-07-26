@@ -17,20 +17,14 @@ const EPSILON = 0.0001;
  * @param segments - Wall segments to test against
  * @returns Array of polygon vertices in angle-sorted order (world coordinates)
  */
-export function computeVisibilityPolygon(
-  lx: number,
-  ly: number,
-  radius: number,
-  segments: WallSegment[],
-): Point[] {
+export function computeVisibilityPolygon(lx: number, ly: number, radius: number, segments: WallSegment[]): Point[] {
   // Pre-filter segments to only those within radius (AABB check)
-  const nearSegments = segments.filter(seg => {
+  const nearSegments = segments.filter((seg) => {
     const minX = Math.min(seg.x1, seg.x2);
     const maxX = Math.max(seg.x1, seg.x2);
     const minY = Math.min(seg.y1, seg.y2);
     const maxY = Math.max(seg.y1, seg.y2);
-    return maxX >= lx - radius && minX <= lx + radius
-        && maxY >= ly - radius && minY <= ly + radius;
+    return maxX >= lx - radius && minX <= lx + radius && maxY >= ly - radius && minY <= ly + radius;
   });
 
   // Sort by midpoint distance from light (closest first) for early termination
@@ -51,7 +45,10 @@ export function computeVisibilityPolygon(
 
   // Add rays toward each segment endpoint (+ epsilon offsets for corner peeking)
   for (const seg of nearSegments) {
-    for (const [px, py] of [[seg.x1, seg.y1], [seg.x2, seg.y2]]) {
+    for (const [px, py] of [
+      [seg.x1, seg.y1],
+      [seg.x2, seg.y2],
+    ]) {
       const angle = Math.atan2(py - ly, px - lx);
       angles.push(angle - EPSILON);
       angles.push(angle);
@@ -94,8 +91,10 @@ export function computeVisibilityPolygon(
  * Returns intersection point and distance, or null if no hit.
  */
 function raySegmentIntersection(
-  ox: number, oy: number,
-  dx: number, dy: number,
+  ox: number,
+  oy: number,
+  dx: number,
+  dy: number,
   seg: WallSegment,
 ): { point: Point; dist: number } | null {
   const sx = seg.x2 - seg.x1;
