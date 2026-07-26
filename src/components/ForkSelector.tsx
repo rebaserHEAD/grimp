@@ -559,7 +559,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
              recent files / recent forks / discovered forks on the right. The
              right pane only exists on desktop once there is history. ---- */}
         {phase === 'idle' && (
-          <div className={hasLists ? 'grid grid-cols-[1fr_1.15fr] gap-6 items-start' : 'flex flex-col gap-4'}>
+          <div className={hasLists ? 'grid grid-cols-[1fr_1.15fr] gap-8 items-center' : 'flex flex-col gap-4'}>
             <div className="flex flex-col gap-4 min-w-0">
               {canPickFolder ? (
                 <>
