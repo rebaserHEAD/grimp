@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { HttpResourceProvider, FileSystemResourceProvider, setActiveProvider } from '../loaders/resourceProvider';
+import { FileSystemResourceProvider } from '../loaders/resourceProvider';
 import type { ResourceProvider } from '../loaders/resourceProvider';
 import { ElectronResourceProvider } from '../loaders/electronResourceProvider';
 import {
@@ -36,8 +36,6 @@ interface ForkSelectorProps {
     forkName: string,
     opts?: { forkDir?: string | null; pendingFile?: { path: string; name: string } },
   ) => void;
-  builtInAvailable: boolean;
-  builtInForkName: string;
 }
 
 function formatNumber(n: number): string {
@@ -72,7 +70,7 @@ const supportsWebkitDirectory = (() => {
 })();
 const canPickFolder = supportsDirectoryPicker || supportsWebkitDirectory || isElectron;
 
-export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvailable, builtInForkName }) => {
+export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady }) => {
   const [phase, setPhase] = useState<SelectorState>('idle');
   const [scanProgress, setScanProgress] = useState(0);
   const [scanTotal, setScanTotal] = useState(0);
@@ -349,11 +347,6 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
       cancelled = true;
     };
   }, [onReady]);
-
-  const handleUseBuiltIn = useCallback(() => {
-    const provider = new HttpResourceProvider('', builtInForkName);
-    onReady(provider, builtInForkName);
-  }, [onReady, builtInForkName]);
 
   const handleReset = useCallback(() => {
     setPhase('idle');
@@ -637,17 +630,6 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady, builtInAvai
                   Your browser does not support folder selection. Please use Chrome, Edge, or Firefox for local fork
                   loading.
                 </div>
-              )}
-
-              {builtInAvailable && (
-                <button
-                  onClick={handleUseBuiltIn}
-                  className="w-full py-3 px-4 rounded-lg bg-elevated text-primary font-medium text-sm
-                           hover:bg-hover active:brightness-90 transition-all cursor-pointer
-                           border border-subtle outline-none focus:ring-2 focus:ring-accent/50"
-                >
-                  Use Built-in Resources ({builtInForkName})
-                </button>
               )}
             </div>
 

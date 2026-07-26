@@ -34,7 +34,7 @@ import { LoadingScreen } from './components/LoadingScreen';
 import { LayerPanel } from './components/LayerPanel';
 import { useKeyboard } from './hooks/useKeyboard';
 import { initRegistry } from './loaders/initRegistry';
-import { setActiveProvider, HttpResourceProvider } from './loaders/resourceProvider';
+import { setActiveProvider } from './loaders/resourceProvider';
 import type { ResourceProvider } from './loaders/resourceProvider';
 import { ForkSelector } from './components/ForkSelector';
 import { importMap } from './import/mapImporter';
@@ -103,10 +103,6 @@ export const App: React.FC = () => {
   const [loadFailed, setLoadFailed] = useState(false);
   const [forkProvider, setForkProvider] = useState<ResourceProvider | null>(null);
   const [forkName, setForkName] = useState('');
-  const [builtInAvailable, setBuiltInAvailable] = useState(false);
-  // Name of the pre-baked/built-in resources, written by prebuild-resources.mjs.
-  // Falls back to a generic label when not specified (e.g. base Space Station 14).
-  const [builtInForkName, setBuiltInForkName] = useState('Built-in');
   const [cursorTile, setCursorTile] = useState({ x: 0, y: 0 });
   const [showGrid, setShowGrid] = useState(true);
   const [showSpaceBackground, setShowSpaceBackground] = useState(false);
@@ -168,27 +164,6 @@ export const App: React.FC = () => {
   const cameraRef = useRef(new Camera());
   const searchInputRef = useRef<HTMLInputElement>(null);
   const decalPlacementSettingsRef = useRef<DecalPlacementSettings>({ ...DEFAULT_DECAL_PLACEMENT_SETTINGS });
-
-  // Probe for built-in resources availability
-  useEffect(() => {
-    fetch('/resources-list?dir=Prototypes/Entities&ext=.yml')
-      .then((r) => {
-        if (r.ok) setBuiltInAvailable(true);
-      })
-      .catch(() => {});
-    fetch('/resources/_manifests/entities.json')
-      .then((r) => {
-        if (r.ok) setBuiltInAvailable(true);
-      })
-      .catch(() => {});
-    // Built-in resources may carry a fork name written at pre-bake time.
-    fetch('/resources/_manifests/fork.json')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data?.name) setBuiltInForkName(data.name);
-      })
-      .catch(() => {});
-  }, []);
 
   // Called when the ForkSelector picks a provider. opts.forkDir stamps
   // recent-file entries; opts.pendingFile is a recent file to import once the
@@ -970,9 +945,7 @@ export const App: React.FC = () => {
 
   // Show fork selector when no provider selected yet
   if (!forkProvider) {
-    return (
-      <ForkSelector onReady={handleForkReady} builtInAvailable={builtInAvailable} builtInForkName={builtInForkName} />
-    );
+    return <ForkSelector onReady={handleForkReady} />;
   }
 
   // Show loading screen while registry loads
