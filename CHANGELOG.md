@@ -10,6 +10,8 @@ workflow copies it into the GitHub release notes.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-07-26
+
 ### Added
 
 - Save vs Save As (desktop): Ctrl+S now writes straight to the file's known
@@ -112,7 +114,8 @@ Program).
 - First packaged desktop release: Windows portable `.exe` and Linux AppImage
   built by tag-triggered CI, wrapping the browser editor in Electron.
 
-[Unreleased]: https://github.com/rebaserHEAD/grimp/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/rebaserHEAD/grimp/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/rebaserHEAD/grimp/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/rebaserHEAD/grimp/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/rebaserHEAD/grimp/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/rebaserHEAD/grimp/compare/v1.0.0...v1.1.0
