@@ -56,6 +56,7 @@ import {
   flushSettings,
   withRecentFile,
   withoutRecentFile,
+  migrateLegacyFlags,
   DEFAULT_SETTINGS,
 } from './settings/settingsStore';
 import type { AppSettings, ForkSettings, FileSettings } from './settings/settingsStore';
@@ -95,9 +96,8 @@ const TOOL_MAP: Record<string, ITool> = {
 
 export const App: React.FC = () => {
   const [state, dispatch] = useReducer(editorReducer, undefined, createInitialState);
-  const [showDisclaimer, setShowDisclaimer] = useState(
-    () => !localStorage.getItem('space-station-14-map-editor-disclaimer-dismissed'),
-  );
+  // Shown after settings load unless previously acknowledged (#46).
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [statusMessage, setStatusMessage] = useState('Ready');
   const [loadingMessage, setLoadingMessage] = useState('Discovering prototypes...');
   const [loadFailed, setLoadFailed] = useState(false);
@@ -520,7 +520,9 @@ export const App: React.FC = () => {
   // (debounced) whenever they change. settingsRef guards the write path: no
   // persisting until the initial load has landed.
   useEffect(() => {
-    loadSettings().then((s) => {
+    loadSettings().then((loaded) => {
+      // Fold the pre-store localStorage disclaimer flag in once (#46).
+      const { settings: s, migrated } = migrateLegacyFlags(loaded);
       setShowGrid(s.view.showGrid);
       setShowEntities(s.view.showEntities);
       setShowSpaceBackground(s.view.showSpaceBackground);
@@ -529,7 +531,12 @@ export const App: React.FC = () => {
       setShowPerfHUD(s.view.showPerfHUD);
       setForkSettings(s.fork);
       setFileSettings(s.files);
+      setShowDisclaimer(!s.ui.disclaimerDismissed);
       settingsRef.current = s;
+      if (migrated) {
+        persistSettings(s);
+        flushSettings();
+      }
       markSceneDirty();
     });
     // Passive flush so a debounced write isn't lost on close. Must never set
@@ -1003,8 +1010,14 @@ export const App: React.FC = () => {
             </p>
             <button
               onClick={() => {
-                localStorage.setItem('space-station-14-map-editor-disclaimer-dismissed', '1');
                 setShowDisclaimer(false);
+                const current = settingsRef.current;
+                if (current) {
+                  const next: AppSettings = { ...current, ui: { ...current.ui, disclaimerDismissed: true } };
+                  settingsRef.current = next;
+                  persistSettings(next);
+                  flushSettings();
+                }
               }}
               style={{
                 backgroundColor: '#0f3460',
