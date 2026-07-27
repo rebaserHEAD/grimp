@@ -265,6 +265,86 @@ app.whenReady().then(() => {
   ipcMain.handle('fork:pick', handlePickFork);
   ipcMain.handle('fork:discover', handleDiscoverForks);
 
+  // ── User prefab library (#45) ──────────────────────────────────────────
+  // .prefab.json files in userData/prefabs. The renderer parses/validates;
+  // main only round-trips file contents.
+  const prefabsDir = path.join(app.getPath('userData'), 'prefabs');
+
+  function sanitizePrefabFileName(name) {
+    const base =
+      String(name)
+        .replace(/[\\/:*?"<>|]/g, '_')
+        .trim() || 'prefab';
+    return base.endsWith('.json') ? base : `${base}.prefab.json`;
+  }
+
+  ipcMain.handle('prefabs:list', () => {
+    let entries;
+    try {
+      entries = fs.readdirSync(prefabsDir, { withFileTypes: true });
+    } catch {
+      return []; // Library not created yet.
+    }
+    const out = [];
+    for (const entry of entries) {
+      if (!entry.isFile() || !entry.name.endsWith('.json')) continue;
+      try {
+        out.push({ fileName: entry.name, content: fs.readFileSync(path.join(prefabsDir, entry.name), 'utf8') });
+      } catch {
+        // Unreadable file: skip, don't sink the whole listing.
+      }
+    }
+    return out;
+  });
+
+  ipcMain.handle('prefabs:save', (_event, fileName, content) => {
+    try {
+      fs.mkdirSync(prefabsDir, { recursive: true });
+      const safe = sanitizePrefabFileName(fileName);
+      fs.writeFileSync(path.join(prefabsDir, safe), content, 'utf8');
+      return safe;
+    } catch {
+      return null;
+    }
+  });
+
+  // Native picker; copies the chosen files INTO the library so they're
+  // permanent, then returns them for immediate display.
+  ipcMain.handle('prefabs:import', async () => {
+    const result = await dialog.showOpenDialog(BrowserWindow.getFocusedWindow() ?? undefined, {
+      title: 'Import prefabs',
+      filters: [{ name: 'Prefab JSON', extensions: ['json'] }],
+      properties: ['openFile', 'multiSelections'],
+    });
+    if (result.canceled || result.filePaths.length === 0) return [];
+    const imported = [];
+    try {
+      fs.mkdirSync(prefabsDir, { recursive: true });
+    } catch {
+      return imported;
+    }
+    for (const p of result.filePaths) {
+      try {
+        const content = fs.readFileSync(p, 'utf8');
+        const safe = sanitizePrefabFileName(path.basename(p));
+        fs.writeFileSync(path.join(prefabsDir, safe), content, 'utf8');
+        imported.push({ fileName: safe, content });
+      } catch {
+        // Unreadable pick: skip.
+      }
+    }
+    return imported;
+  });
+
+  ipcMain.handle('prefabs:open-folder', () => {
+    try {
+      fs.mkdirSync(prefabsDir, { recursive: true });
+    } catch {
+      return;
+    }
+    shell.openPath(prefabsDir);
+  });
+
   // Generic directory picker (used to choose the forks folder, #34).
   ipcMain.handle('dialog:pick-directory', async (_event, defaultPath) => {
     const result = await dialog.showOpenDialog(BrowserWindow.getFocusedWindow() ?? undefined, {

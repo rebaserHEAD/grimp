@@ -38,6 +38,16 @@ contextBridge.exposeInMainWorld('electronSettings', {
   set: (settings) => ipcRenderer.invoke('settings:set', settings),
 });
 
+// User prefab library in userData/prefabs (#45). save() resolves the stored
+// file name (or null on failure); importFiles() copies picks into the library.
+contextBridge.exposeInMainWorld('electronPrefabs', {
+  available: true,
+  list: () => ipcRenderer.invoke('prefabs:list'),
+  save: (fileName, content) => ipcRenderer.invoke('prefabs:save', fileName, content),
+  importFiles: () => ipcRenderer.invoke('prefabs:import'),
+  openFolder: () => ipcRenderer.invoke('prefabs:open-folder'),
+});
+
 // Native file dialogs for import/export. Resolves to file content / saved
 // path, or null when the user cancels.
 contextBridge.exposeInMainWorld('electronDialogs', {

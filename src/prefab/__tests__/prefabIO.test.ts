@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { stringifyPrefab, parsePrefabJson } from '../prefabIO';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { stringifyPrefab, parsePrefabJson, savePrefabFile, PREFABS_CHANGED_EVENT } from '../prefabIO';
 import type { PrefabData } from '../prefabTypes';
 
 function makePrefab(): PrefabData {
@@ -90,5 +90,34 @@ describe('parsePrefabJson validation', () => {
     const obj = { name: 'min', width: 0, height: 0, tiles: [], entities: [], deviceLinks: [] };
     const result = parsePrefabJson(JSON.stringify(obj));
     expect(result.name).toBe('min');
+  });
+});
+
+describe('savePrefabFile', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('writes through the electron prefab library when available', async () => {
+    const save = vi.fn().mockResolvedValue('test.prefab.json');
+    const dispatched: string[] = [];
+    vi.stubGlobal('window', {
+      electronPrefabs: { available: true, save },
+      dispatchEvent: (e: Event) => (dispatched.push(e.type), true),
+    });
+    const stored = await savePrefabFile(makePrefab(), 'test');
+    expect(stored).toBe('test.prefab.json');
+    expect(save).toHaveBeenCalledWith('test', stringifyPrefab(makePrefab()));
+    expect(dispatched).toContain(PREFABS_CHANGED_EVENT);
+  });
+
+  it('does not announce a library change when the write fails', async () => {
+    const save = vi.fn().mockResolvedValue(null);
+    const dispatched: string[] = [];
+    vi.stubGlobal('window', {
+      electronPrefabs: { available: true, save },
+      dispatchEvent: (e: Event) => (dispatched.push(e.type), true),
+    });
+    const stored = await savePrefabFile(makePrefab(), 'test');
+    expect(stored).toBeNull();
+    expect(dispatched).toEqual([]);
   });
 });
