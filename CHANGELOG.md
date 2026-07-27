@@ -43,6 +43,12 @@ workflow copies it into the GitHub release notes.
 
 ### Fixed
 
+- Desktop: prefabs now live in a real library (the app's user data folder).
+  Save as Prefab writes there and the prefab panel lists it immediately;
+  before, saved prefabs fell into the browser Downloads folder and the panel
+  couldn't list anything in the packaged app. The + button imports copies
+  into the library via a native picker, and a new folder button opens the
+  library in your file manager. (#45)
 - Add Grid, grid rename, and Save as Prefab work in the desktop app again.
   They relied on `window.prompt()`, which silently does nothing under
   Electron; they now use a proper in-app dialog. (#14)

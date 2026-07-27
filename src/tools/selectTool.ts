@@ -7,7 +7,7 @@ import { getClipboard, setClipboard } from '../state/clipboard';
 import type { ClipboardData, ClipboardEntity, ClipboardDecal } from '../state/clipboard';
 import type { ContextMenuItem } from '../components/ContextMenu';
 import { serializePrefab } from '../prefab/prefabSerializer';
-import { downloadPrefab } from '../prefab/prefabIO';
+import { savePrefabFile } from '../prefab/prefabIO';
 import {
   updateTransformPos,
   updateTransformRot,
@@ -819,7 +819,7 @@ export class SelectTool implements ITool {
               entities: ctx.state.entities,
               entityRawComponents: ctx.state.entityRawComponents ?? {},
             });
-            downloadPrefab(prefab, name);
+            void savePrefabFile(prefab, name);
           };
           if (ctx.requestPrompt) {
             ctx.requestPrompt({ title: 'Save as Prefab', onSubmit: savePrefab });

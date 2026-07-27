@@ -47,6 +47,25 @@ export function parsePrefabJson(json: string): PrefabData {
   return o as unknown as PrefabData;
 }
 
+/** Fired on window whenever the prefab library changes (save/import). */
+export const PREFABS_CHANGED_EVENT = 'grimp:prefabs-changed';
+
+/**
+ * Save a prefab where the build can actually find it again (#45): desktop
+ * writes into the userData prefab library over IPC; the browser build falls
+ * back to a download. Resolves the stored file name, or null on failure.
+ */
+export async function savePrefabFile(prefab: PrefabData, filename: string): Promise<string | null> {
+  const bridge = typeof window !== 'undefined' ? window.electronPrefabs : undefined;
+  if (bridge?.available) {
+    const stored = await bridge.save(filename, stringifyPrefab(prefab));
+    if (stored) window.dispatchEvent(new Event(PREFABS_CHANGED_EVENT));
+    return stored;
+  }
+  downloadPrefab(prefab, filename);
+  return filename;
+}
+
 /** Trigger a browser download of the prefab as a .json file. */
 export function downloadPrefab(prefab: PrefabData, filename: string): void {
   const json = stringifyPrefab(prefab);

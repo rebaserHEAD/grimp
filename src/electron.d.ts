@@ -42,6 +42,17 @@ declare global {
       /** Overwrite the stored settings; resolves false on write failure. */
       set: (settings: unknown) => Promise<boolean>;
     };
+    electronPrefabs?: {
+      available: boolean;
+      /** All .json files in the userData prefab library. */
+      list: () => Promise<{ fileName: string; content: string }[]>;
+      /** Write a prefab into the library; resolves the stored file name or null. */
+      save: (fileName: string, content: string) => Promise<string | null>;
+      /** Native picker; copies picks into the library and returns them. */
+      importFiles: () => Promise<{ fileName: string; content: string }[]>;
+      /** Open the library folder in the OS file manager. */
+      openFolder: () => Promise<void>;
+    };
     electronDialogs?: {
       available: boolean;
       /** Native open dialog; resolves file content + name + path, or null if cancelled. */
