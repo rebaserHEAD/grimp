@@ -61,6 +61,8 @@ declare global {
       saveYaml: (content: string, defaultName: string) => Promise<string | null>;
       /** Dialog-less read for replaying recent files; null when gone/unreadable. */
       readYaml: (filePath: string) => Promise<{ content: string; fileName: string; path: string } | null>;
+      /** Dialog-less write for Save-in-place; resolves false when the write fails. */
+      writeYaml: (filePath: string, content: string) => Promise<boolean>;
     };
   }
 }

@@ -8,7 +8,7 @@ interface Props {
   onShowMapProperties: () => void;
   onShowSettings: () => void;
   onImport: (content: string, fileName?: string) => void;
-  onExport: () => void;
+  onSave: () => void;
   onUndo: () => void;
   onRedo: () => void;
   canUndo: boolean;
@@ -112,7 +112,7 @@ export const MenuBar: React.FC<Props> = ({
   onShowMapProperties,
   onShowSettings,
   onImport,
-  onExport,
+  onSave,
   onUndo,
   onRedo,
   canUndo,
@@ -196,7 +196,7 @@ export const MenuBar: React.FC<Props> = ({
     { label: 'New Grid', shortcut: 'Ctrl+Shift+N', action: handleNewGrid },
     { label: 'separator', separator: true },
     { label: 'Import .yml...', shortcut: 'Ctrl+O', action: handleImportClick },
-    { label: 'Export .yml', shortcut: 'Ctrl+S', action: onExport },
+    { label: 'Export .yml', shortcut: 'Ctrl+S', action: onSave },
     { label: 'separator2', separator: true },
     { label: 'Map Properties...', action: onShowMapProperties },
     { label: 'Settings...', shortcut: 'Ctrl+,', action: onShowSettings },
@@ -330,7 +330,8 @@ const SHORTCUT_SECTIONS: { title: string; rows: [string, string][] }[] = [
       ['Ctrl+N', 'New Map'],
       ['Ctrl+Shift+N', 'New Grid'],
       ['Ctrl+O', 'Import .yml'],
-      ['Ctrl+S', 'Export .yml'],
+      ['Ctrl+S', 'Save'],
+      ['Ctrl+Shift+S', 'Save As'],
       ['Ctrl+F', 'Search entities on map'],
       ['Space (hold)', 'Pan mode'],
       ['Escape', 'Cancel / close menu'],
