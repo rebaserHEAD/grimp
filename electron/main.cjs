@@ -18,6 +18,21 @@ const { installMenu, updateMenuState } = require('./menu.cjs');
 const startUrl = process.env.ELECTRON_START_URL;
 const distDir = path.join(__dirname, '..', 'dist');
 
+// Single instance (#48): a second launch would race this instance's
+// settings.json writes (debounced, last-writer-wins). Take the lock; a second
+// launch hands off here and we surface the existing window instead.
+let mainWin = null;
+if (!app.requestSingleInstanceLock()) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWin && !mainWin.isDestroyed()) {
+      if (mainWin.isMinimized()) mainWin.restore();
+      mainWin.focus();
+    }
+  });
+}
+
 // Resources/ directory of the currently loaded fork. The forkres:// handler
 // reads from here; set when the renderer picks a fork via fork:pick.
 let currentForkRoot = null;
@@ -190,6 +205,8 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.cjs'),
     },
   });
+
+  mainWin = win;
 
   if (startUrl) {
     win.loadURL(startUrl);
