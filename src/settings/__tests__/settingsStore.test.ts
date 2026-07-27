@@ -8,6 +8,7 @@ import {
   withoutRecentFork,
   withRecentFile,
   withoutRecentFile,
+  migrateLegacyFlags,
   DEFAULT_SETTINGS,
   RECENT_FORKS_CAP,
   RECENT_FILES_CAP,
@@ -126,6 +127,45 @@ describe('recent-files helpers', () => {
     s = withoutRecentFile(s, triad.path);
     expect(s.files.recentFiles).toEqual([]);
     expect(s.fork.recentForks).toHaveLength(1);
+  });
+});
+
+describe('migrateLegacyFlags', () => {
+  const LEGACY_KEY = 'space-station-14-map-editor-disclaimer-dismissed';
+
+  function stubStorage(initial: Record<string, string>) {
+    const store = new Map(Object.entries(initial));
+    vi.stubGlobal('localStorage', {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => void store.set(k, v),
+      removeItem: (k: string) => void store.delete(k),
+    });
+    return store;
+  }
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('folds a legacy dismissal into the settings and removes the old key', () => {
+    const store = stubStorage({ [LEGACY_KEY]: '1' });
+    const { settings, migrated } = migrateLegacyFlags(mergeSettings(null));
+    expect(migrated).toBe(true);
+    expect(settings.ui.disclaimerDismissed).toBe(true);
+    expect(store.has(LEGACY_KEY)).toBe(false);
+  });
+
+  it('no-ops without the legacy key', () => {
+    stubStorage({});
+    const { settings, migrated } = migrateLegacyFlags(mergeSettings(null));
+    expect(migrated).toBe(false);
+    expect(settings.ui.disclaimerDismissed).toBe(false);
+  });
+
+  it('cleans the stale key without re-migrating when already dismissed', () => {
+    const store = stubStorage({ [LEGACY_KEY]: '1' });
+    const dismissed = mergeSettings({ ui: { disclaimerDismissed: true } });
+    const { migrated } = migrateLegacyFlags(dismissed);
+    expect(migrated).toBe(false);
+    expect(store.has(LEGACY_KEY)).toBe(false);
   });
 });
 
