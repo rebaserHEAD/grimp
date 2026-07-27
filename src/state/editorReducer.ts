@@ -860,6 +860,11 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         registry: action.registry,
       };
 
+    // The document was written to disk (Save / Save As); clear the dirty flag
+    // so the title bar and close guard stop reporting unsaved changes.
+    case 'MARK_SAVED':
+      return state.dirty ? { ...state, dirty: false } : state;
+
     case 'SELECT_ENTITY':
       markOverlayDirty();
       markConnectionsDirty();

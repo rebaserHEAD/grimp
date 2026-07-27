@@ -17,6 +17,8 @@ interface KeyboardActions {
   onShowShortcuts?: () => void;
   onFocusSearch?: () => void;
   onOpenSettings?: () => void;
+  onSave?: () => void;
+  onSaveAs?: () => void;
 }
 
 const TOOL_SHORTCUTS: Record<string, ToolType> = {
@@ -47,6 +49,17 @@ export function useKeyboard(actions: KeyboardActions): { isSpaceHeld: boolean; i
       if ((e.ctrlKey || e.metaKey) && e.key === 'f' && !e.shiftKey) {
         e.preventDefault();
         actions.onFocusSearch?.();
+        return;
+      }
+
+      // Save / Save As, also before the input guard so they always fire and
+      // suppress the browser's save-page dialog. The native menu shows the
+      // accelerators for discoverability but doesn't register them
+      // (menu.cjs registerAccelerator:false); these are the live bindings.
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        if (e.shiftKey) actions.onSaveAs?.();
+        else actions.onSave?.();
         return;
       }
 

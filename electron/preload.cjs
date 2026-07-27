@@ -56,4 +56,6 @@ contextBridge.exposeInMainWorld('electronDialogs', {
   saveYaml: (content, defaultName) => ipcRenderer.invoke('dialog:save-yaml', { content, defaultName }),
   // Dialog-less read for replaying recent files; null when gone/unreadable.
   readYaml: (filePath) => ipcRenderer.invoke('file:read-yaml', filePath),
+  // Dialog-less write for Save-in-place (#49); false when the write fails.
+  writeYaml: (filePath, content) => ipcRenderer.invoke('file:write-yaml', { filePath, content }),
 });

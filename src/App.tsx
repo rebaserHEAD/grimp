@@ -134,6 +134,10 @@ export const App: React.FC = () => {
   const [pendingOpenFile, setPendingOpenFile] = useState<{ path: string; name: string } | null>(null);
   // Display name of the open file (#57); null for unsaved new documents.
   const [currentFileName, setCurrentFileName] = useState<string | null>(null);
+  // Full on-disk path of the open file (#49). Only set when the file came from
+  // or went to disk natively (open/recent/Save As); null in the browser build
+  // and for new documents, where Save falls back to the Save As flow.
+  const [currentFilePath, setCurrentFilePath] = useState<string | null>(null);
 
   // Recent project files (#35): recorded on native open/save with the owning
   // fork's dir, so the start screen can restore fork + file in one click.
@@ -208,6 +212,7 @@ export const App: React.FC = () => {
     setLoadFailed(false);
     currentForkDirRef.current = null;
     setCurrentFileName(null);
+    setCurrentFilePath(null);
   }, [forkProvider]);
 
   // Warn on unsaved changes before closing/navigating away.
@@ -298,6 +303,7 @@ export const App: React.FC = () => {
     cameraRef.current.y = 0;
     cameraRef.current.zoom = 1;
     setCurrentFileName(null);
+    setCurrentFilePath(null);
     setStatusMessage('New map');
   }, []);
 
@@ -307,6 +313,7 @@ export const App: React.FC = () => {
     cameraRef.current.y = 0;
     cameraRef.current.zoom = 1;
     setCurrentFileName(null);
+    setCurrentFilePath(null);
     setStatusMessage('New grid');
   }, []);
 
@@ -315,6 +322,9 @@ export const App: React.FC = () => {
       const map = importMap(content);
       dispatch({ type: 'LOAD_MAP', map, sourceName: fileName });
       setCurrentFileName(fileName ?? null);
+      // No path by default (browser file input); native callers with a real
+      // on-disk path stamp it right after this call.
+      setCurrentFilePath(null);
       const { grid } = map;
       cameraRef.current.fitBounds(
         { minX: grid.offsetX, maxX: grid.offsetX + grid.width, minY: grid.offsetY, maxY: grid.offsetY + grid.height },
@@ -357,48 +367,29 @@ export const App: React.FC = () => {
     setHighlightTile({ x, y, startTime: performance.now() });
   }, []);
 
-  const handleExport = useCallback(async () => {
-    try {
-      const yaml = exportMap(
-        {
-          meta: state.meta,
-          tilemap: state.tilemap ?? {},
-          grid: state.grid,
-          entities: state.entities,
-          containedEntities: state.containedEntities,
-          gridUid: state.gridUid,
-          mapUid: state.mapUid,
-          maps: state.maps,
-          grids: state.gridUidList,
-          gridDataList: state.grids,
-          structuralEntityData: state.structuralEntityData,
-          entityRawComponents: state.entityRawComponents,
-          entityRawPreamble: state.entityRawPreamble,
-          chunkKeyOrder: state.chunkKeyOrder,
-          lineEnding: state.lineEnding,
-          hasDocumentTerminator: state.hasDocumentTerminator,
-          entityOrder: state.entityOrder,
-        },
-        state.decalsDirty,
-      );
-      // Default filename follows the document kind (savemap vs savegrid).
-      const defaultName = getDocumentKind(state) === 'Grid' ? 'grid.yml' : 'map.yml';
-      // Native save dialog in Electron; browser download otherwise.
-      if (window.electronDialogs?.available) {
-        const saved = await window.electronDialogs.saveYaml(yaml, defaultName);
-        setStatusMessage(saved ? `Exported ${saved}` : 'Export cancelled');
-        if (saved) {
-          const savedName = saved.split(/[\\/]/).pop() ?? saved;
-          recordRecentFile(saved, savedName);
-          setCurrentFileName(savedName);
-        }
-      } else {
-        downloadYAML(yaml, defaultName);
-        setStatusMessage(`Exported ${defaultName}`);
-      }
-    } catch (err) {
-      setStatusMessage(`Export failed: ${err}`);
-    }
+  const buildYaml = useCallback(() => {
+    return exportMap(
+      {
+        meta: state.meta,
+        tilemap: state.tilemap ?? {},
+        grid: state.grid,
+        entities: state.entities,
+        containedEntities: state.containedEntities,
+        gridUid: state.gridUid,
+        mapUid: state.mapUid,
+        maps: state.maps,
+        grids: state.gridUidList,
+        gridDataList: state.grids,
+        structuralEntityData: state.structuralEntityData,
+        entityRawComponents: state.entityRawComponents,
+        entityRawPreamble: state.entityRawPreamble,
+        chunkKeyOrder: state.chunkKeyOrder,
+        lineEnding: state.lineEnding,
+        hasDocumentTerminator: state.hasDocumentTerminator,
+        entityOrder: state.entityOrder,
+      },
+      state.decalsDirty,
+    );
   }, [
     state.grid,
     state.entities,
@@ -417,8 +408,57 @@ export const App: React.FC = () => {
     state.lineEnding,
     state.hasDocumentTerminator,
     state.entityOrder,
-    recordRecentFile,
   ]);
+
+  // Save As (Ctrl+Shift+S): always a dialog (desktop) or a download (browser).
+  // A completed native save adopts the chosen path as the document's path.
+  const handleSaveAs = useCallback(async () => {
+    try {
+      const yaml = buildYaml();
+      // Default filename follows the document kind (savemap vs savegrid).
+      const defaultName = currentFileName ?? (getDocumentKind(state) === 'Grid' ? 'grid.yml' : 'map.yml');
+      if (window.electronDialogs?.available) {
+        const saved = await window.electronDialogs.saveYaml(yaml, defaultName);
+        setStatusMessage(saved ? `Saved ${saved}` : 'Save cancelled');
+        if (saved) {
+          const savedName = saved.split(/[\\/]/).pop() ?? saved;
+          recordRecentFile(saved, savedName);
+          setCurrentFileName(savedName);
+          setCurrentFilePath(saved);
+          dispatch({ type: 'MARK_SAVED' });
+        }
+      } else {
+        downloadYAML(yaml, defaultName);
+        setStatusMessage(`Exported ${defaultName}`);
+        dispatch({ type: 'MARK_SAVED' });
+      }
+    } catch (err) {
+      setStatusMessage(`Save failed: ${err}`);
+    }
+  }, [buildYaml, currentFileName, state, recordRecentFile]);
+
+  // Save (Ctrl+S): write straight to the known path, no dialog (#49).
+  // Documents without a path yet (new files, browser build) fall back to
+  // Save As, as does a failed write (path gone, permissions).
+  const handleSave = useCallback(async () => {
+    if (!currentFilePath || !window.electronDialogs?.available) {
+      await handleSaveAs();
+      return;
+    }
+    try {
+      const ok = await window.electronDialogs.writeYaml(currentFilePath, buildYaml());
+      if (!ok) {
+        setStatusMessage(`Could not write ${currentFilePath}: choose where to save`);
+        await handleSaveAs();
+        return;
+      }
+      recordRecentFile(currentFilePath, currentFileName ?? currentFilePath);
+      dispatch({ type: 'MARK_SAVED' });
+      setStatusMessage(`Saved ${currentFileName ?? currentFilePath}`);
+    } catch (err) {
+      setStatusMessage(`Save failed: ${err}`);
+    }
+  }, [currentFilePath, currentFileName, buildYaml, handleSaveAs, recordRecentFile]);
 
   // Native open dialog for import (Electron); the browser build uses MenuBar's
   // hidden file input instead.
@@ -427,6 +467,7 @@ export const App: React.FC = () => {
     const opened = await window.electronDialogs.openYaml();
     if (opened != null) {
       handleImport(opened.content, opened.fileName);
+      setCurrentFilePath(opened.path);
       recordRecentFile(opened.path, opened.fileName);
     }
   }, [handleImport, recordRecentFile]);
@@ -445,6 +486,7 @@ export const App: React.FC = () => {
         return;
       }
       handleImport(opened.content, opened.fileName);
+      setCurrentFilePath(opened.path);
       recordRecentFile(opened.path, opened.fileName);
     })();
   }, [pendingOpenFile, state.registry, handleImport, recordRecentFile, dropRecentFile]);
@@ -470,8 +512,11 @@ export const App: React.FC = () => {
       case 'file:import':
         handleImportNative();
         break;
-      case 'file:export':
-        handleExport();
+      case 'file:save':
+        handleSave();
+        break;
+      case 'file:saveAs':
+        handleSaveAs();
         break;
       case 'edit:undo':
         handleUndo();
@@ -909,11 +954,15 @@ export const App: React.FC = () => {
       onShowShortcuts: () => setShowShortcuts((s) => !s),
       onFocusSearch: () => searchInputRef.current?.focus(),
       onOpenSettings: () => setShowSettings(true),
+      onSave: handleSave,
+      onSaveAs: handleSaveAs,
     }),
     [
       handleSelectTool,
       handleUndo,
       handleRedo,
+      handleSave,
+      handleSaveAs,
       handleCopy,
       handleCut,
       handlePaste,
@@ -1146,7 +1195,7 @@ export const App: React.FC = () => {
         onShowMapProperties={() => setShowMapProperties(true)}
         onShowSettings={() => setShowSettings(true)}
         onImport={handleImport}
-        onExport={handleExport}
+        onSave={handleSave}
         onUndo={handleUndo}
         onRedo={handleRedo}
         canUndo={state.undoStack.length > 0}

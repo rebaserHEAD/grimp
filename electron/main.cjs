@@ -419,13 +419,25 @@ app.whenReady().then(() => {
 
   ipcMain.handle('dialog:save-yaml', async (_event, { content, defaultName }) => {
     const result = await dialog.showSaveDialog(BrowserWindow.getFocusedWindow() ?? undefined, {
-      title: 'Export map',
+      title: 'Save map as',
       defaultPath: defaultName || 'station.yml',
       filters: [{ name: 'YAML', extensions: ['yml', 'yaml'] }],
     });
     if (result.canceled || !result.filePath) return null;
     fs.writeFileSync(result.filePath, content, 'utf8');
     return result.filePath;
+  });
+
+  // Dialog-less write for Save-in-place (#49): the renderer already knows the
+  // file's path. False on failure (path gone, permissions); the renderer falls
+  // back to the Save As dialog.
+  ipcMain.handle('file:write-yaml', (_event, { filePath, content }) => {
+    try {
+      fs.writeFileSync(filePath, content, 'utf8');
+      return true;
+    } catch {
+      return false;
+    }
   });
 
   createWindow();

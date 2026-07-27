@@ -15,6 +15,7 @@ export type EditorAction =
   | { type: 'SET_ROOT_COMPONENT'; gridUid: number; componentType: string; enabled: boolean }
   | { type: 'SET_ROOT_COMPONENT_FIELD'; gridUid: number; componentType: string; field: string; value: string | null }
   | { type: 'SET_REGISTRY'; registry: IPrototypeRegistry | null }
+  | { type: 'MARK_SAVED' }
   | { type: 'SELECT_ENTITY'; uids: number[] }
   | { type: 'TOGGLE_SELECT_ENTITY'; uid: number }
   | { type: 'ADD_SELECT_ENTITIES'; uids: number[] }

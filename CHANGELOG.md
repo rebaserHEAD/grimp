@@ -12,6 +12,12 @@ workflow copies it into the GitHub release notes.
 
 ### Added
 
+- Save vs Save As (desktop): Ctrl+S now writes straight to the file's known
+  path with no dialog, and a successful save clears the unsaved-changes
+  marker. Ctrl+Shift+S (Save As) keeps the dialog flow and adopts the chosen
+  path. New documents and the browser build fall back to the old behavior.
+  Ctrl+S and Ctrl+Shift+S are also real keyboard shortcuts now; before, the
+  menu displayed Ctrl+S but only clicking the menu item worked. (#49)
 - Desktop: launching GRIMP while it's already running now focuses the
   existing window instead of opening a second instance (which could
   silently overwrite your settings and recent lists). (#48)
