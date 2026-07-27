@@ -132,6 +132,8 @@ export const App: React.FC = () => {
   const currentForkDirRef = useRef<string | null>(null);
   // A recent-file open waiting for the fork's registry init to finish.
   const [pendingOpenFile, setPendingOpenFile] = useState<{ path: string; name: string } | null>(null);
+  // Display name of the open file (#57); null for unsaved new documents.
+  const [currentFileName, setCurrentFileName] = useState<string | null>(null);
 
   // Recent project files (#35): recorded on native open/save with the owning
   // fork's dir, so the start screen can restore fork + file in one click.
@@ -205,6 +207,7 @@ export const App: React.FC = () => {
     setForkName('');
     setLoadFailed(false);
     currentForkDirRef.current = null;
+    setCurrentFileName(null);
   }, [forkProvider]);
 
   // Warn on unsaved changes before closing/navigating away.
@@ -294,6 +297,7 @@ export const App: React.FC = () => {
     cameraRef.current.x = 0;
     cameraRef.current.y = 0;
     cameraRef.current.zoom = 1;
+    setCurrentFileName(null);
     setStatusMessage('New map');
   }, []);
 
@@ -302,6 +306,7 @@ export const App: React.FC = () => {
     cameraRef.current.x = 0;
     cameraRef.current.y = 0;
     cameraRef.current.zoom = 1;
+    setCurrentFileName(null);
     setStatusMessage('New grid');
   }, []);
 
@@ -309,6 +314,7 @@ export const App: React.FC = () => {
     try {
       const map = importMap(content);
       dispatch({ type: 'LOAD_MAP', map, sourceName: fileName });
+      setCurrentFileName(fileName ?? null);
       const { grid } = map;
       cameraRef.current.fitBounds(
         { minX: grid.offsetX, maxX: grid.offsetX + grid.width, minY: grid.offsetY, maxY: grid.offsetY + grid.height },
@@ -381,7 +387,11 @@ export const App: React.FC = () => {
       if (window.electronDialogs?.available) {
         const saved = await window.electronDialogs.saveYaml(yaml, defaultName);
         setStatusMessage(saved ? `Exported ${saved}` : 'Export cancelled');
-        if (saved) recordRecentFile(saved, saved.split(/[\\/]/).pop() ?? saved);
+        if (saved) {
+          const savedName = saved.split(/[\\/]/).pop() ?? saved;
+          recordRecentFile(saved, savedName);
+          setCurrentFileName(savedName);
+        }
       } else {
         downloadYAML(yaml, defaultName);
         setStatusMessage(`Exported ${defaultName}`);
@@ -514,6 +524,17 @@ export const App: React.FC = () => {
     if (!window.electronMenu?.available) return;
     return window.electronMenu.onCommand((command) => menuCommandRef.current(command));
   }, []);
+
+  // Window title reflects the open file and dirty state (#57). Plain
+  // document.title writes drive the Electron window title too.
+  useEffect(() => {
+    if (!forkProvider) {
+      document.title = 'GRIMP';
+      return;
+    }
+    const docName = currentFileName ?? (getDocumentKind(state) === 'Grid' ? 'Untitled Grid' : 'Untitled Map');
+    document.title = `${state.dirty ? '● ' : ''}${docName} - GRIMP`;
+  }, [forkProvider, currentFileName, state]);
 
   // ── Persisted settings (#19) ─────────────────────────────────────────────
   // Seed the view toggles from the store once on startup, then write back

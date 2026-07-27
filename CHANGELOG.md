@@ -12,6 +12,9 @@ workflow copies it into the GitHub release notes.
 
 ### Added
 
+- The window title now shows the open file and unsaved-changes state
+  (`● map.yml - GRIMP`), so a minimized editor tells you what it holds. (#57)
+
 - Start screen (desktop): the landing screen is now a VS Code-style welcome.
   Recently opened map/grid files sit alongside recent forks and discovered
   forks; a recent file remembers which fork it was opened under and one click
