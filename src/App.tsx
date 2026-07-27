@@ -56,6 +56,7 @@ import {
   flushSettings,
   withRecentFile,
   withoutRecentFile,
+  migrateLegacyFlags,
   DEFAULT_SETTINGS,
 } from './settings/settingsStore';
 import type { AppSettings, ForkSettings, FileSettings } from './settings/settingsStore';
@@ -95,9 +96,8 @@ const TOOL_MAP: Record<string, ITool> = {
 
 export const App: React.FC = () => {
   const [state, dispatch] = useReducer(editorReducer, undefined, createInitialState);
-  const [showDisclaimer, setShowDisclaimer] = useState(
-    () => !localStorage.getItem('space-station-14-map-editor-disclaimer-dismissed'),
-  );
+  // Shown after settings load unless previously acknowledged (#46).
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [statusMessage, setStatusMessage] = useState('Ready');
   const [loadingMessage, setLoadingMessage] = useState('Discovering prototypes...');
   const [loadFailed, setLoadFailed] = useState(false);
@@ -132,6 +132,8 @@ export const App: React.FC = () => {
   const currentForkDirRef = useRef<string | null>(null);
   // A recent-file open waiting for the fork's registry init to finish.
   const [pendingOpenFile, setPendingOpenFile] = useState<{ path: string; name: string } | null>(null);
+  // Display name of the open file (#57); null for unsaved new documents.
+  const [currentFileName, setCurrentFileName] = useState<string | null>(null);
 
   // Recent project files (#35): recorded on native open/save with the owning
   // fork's dir, so the start screen can restore fork + file in one click.
@@ -205,6 +207,7 @@ export const App: React.FC = () => {
     setForkName('');
     setLoadFailed(false);
     currentForkDirRef.current = null;
+    setCurrentFileName(null);
   }, [forkProvider]);
 
   // Warn on unsaved changes before closing/navigating away.
@@ -294,6 +297,7 @@ export const App: React.FC = () => {
     cameraRef.current.x = 0;
     cameraRef.current.y = 0;
     cameraRef.current.zoom = 1;
+    setCurrentFileName(null);
     setStatusMessage('New map');
   }, []);
 
@@ -302,6 +306,7 @@ export const App: React.FC = () => {
     cameraRef.current.x = 0;
     cameraRef.current.y = 0;
     cameraRef.current.zoom = 1;
+    setCurrentFileName(null);
     setStatusMessage('New grid');
   }, []);
 
@@ -309,6 +314,7 @@ export const App: React.FC = () => {
     try {
       const map = importMap(content);
       dispatch({ type: 'LOAD_MAP', map, sourceName: fileName });
+      setCurrentFileName(fileName ?? null);
       const { grid } = map;
       cameraRef.current.fitBounds(
         { minX: grid.offsetX, maxX: grid.offsetX + grid.width, minY: grid.offsetY, maxY: grid.offsetY + grid.height },
@@ -381,7 +387,11 @@ export const App: React.FC = () => {
       if (window.electronDialogs?.available) {
         const saved = await window.electronDialogs.saveYaml(yaml, defaultName);
         setStatusMessage(saved ? `Exported ${saved}` : 'Export cancelled');
-        if (saved) recordRecentFile(saved, saved.split(/[\\/]/).pop() ?? saved);
+        if (saved) {
+          const savedName = saved.split(/[\\/]/).pop() ?? saved;
+          recordRecentFile(saved, savedName);
+          setCurrentFileName(savedName);
+        }
       } else {
         downloadYAML(yaml, defaultName);
         setStatusMessage(`Exported ${defaultName}`);
@@ -515,12 +525,25 @@ export const App: React.FC = () => {
     return window.electronMenu.onCommand((command) => menuCommandRef.current(command));
   }, []);
 
+  // Window title reflects the open file and dirty state (#57). Plain
+  // document.title writes drive the Electron window title too.
+  useEffect(() => {
+    if (!forkProvider) {
+      document.title = 'GRIMP';
+      return;
+    }
+    const docName = currentFileName ?? (getDocumentKind(state) === 'Grid' ? 'Untitled Grid' : 'Untitled Map');
+    document.title = `${state.dirty ? '● ' : ''}${docName} - GRIMP`;
+  }, [forkProvider, currentFileName, state]);
+
   // ── Persisted settings (#19) ─────────────────────────────────────────────
   // Seed the view toggles from the store once on startup, then write back
   // (debounced) whenever they change. settingsRef guards the write path: no
   // persisting until the initial load has landed.
   useEffect(() => {
-    loadSettings().then((s) => {
+    loadSettings().then((loaded) => {
+      // Fold the pre-store localStorage disclaimer flag in once (#46).
+      const { settings: s, migrated } = migrateLegacyFlags(loaded);
       setShowGrid(s.view.showGrid);
       setShowEntities(s.view.showEntities);
       setShowSpaceBackground(s.view.showSpaceBackground);
@@ -529,7 +552,12 @@ export const App: React.FC = () => {
       setShowPerfHUD(s.view.showPerfHUD);
       setForkSettings(s.fork);
       setFileSettings(s.files);
+      setShowDisclaimer(!s.ui.disclaimerDismissed);
       settingsRef.current = s;
+      if (migrated) {
+        persistSettings(s);
+        flushSettings();
+      }
       markSceneDirty();
     });
     // Passive flush so a debounced write isn't lost on close. Must never set
@@ -1003,8 +1031,14 @@ export const App: React.FC = () => {
             </p>
             <button
               onClick={() => {
-                localStorage.setItem('space-station-14-map-editor-disclaimer-dismissed', '1');
                 setShowDisclaimer(false);
+                const current = settingsRef.current;
+                if (current) {
+                  const next: AppSettings = { ...current, ui: { ...current.ui, disclaimerDismissed: true } };
+                  settingsRef.current = next;
+                  persistSettings(next);
+                  flushSettings();
+                }
               }}
               style={{
                 backgroundColor: '#0f3460',

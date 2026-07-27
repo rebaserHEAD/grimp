@@ -53,10 +53,16 @@ export interface FileSettings {
   recentFiles: RecentFile[];
 }
 
+export interface UiSettings {
+  /** Early Development disclaimer acknowledged (one-time). */
+  disclaimerDismissed: boolean;
+}
+
 export interface AppSettings {
   view: ViewSettings;
   fork: ForkSettings;
   files: FileSettings;
+  ui: UiSettings;
   /** Unknown top-level sections written by newer versions are preserved. */
   [section: string]: unknown;
 }
@@ -77,7 +83,33 @@ export const DEFAULT_SETTINGS: AppSettings = {
   files: {
     recentFiles: [],
   },
+  ui: {
+    disclaimerDismissed: false,
+  },
 };
+
+/**
+ * Pre-settings-store persistence used the pre-rebrand localStorage key below.
+ * migrateLegacyFlags folds it into the store once; remove after a few
+ * releases when old installs have rolled over.
+ */
+const LEGACY_DISCLAIMER_KEY = 'space-station-14-map-editor-disclaimer-dismissed';
+
+/** Fold legacy localStorage flags into freshly loaded settings. Returns the
+ *  (possibly updated) settings and whether a write-back is needed. */
+export function migrateLegacyFlags(settings: AppSettings): { settings: AppSettings; migrated: boolean } {
+  try {
+    if (typeof localStorage !== 'undefined' && localStorage.getItem(LEGACY_DISCLAIMER_KEY)) {
+      localStorage.removeItem(LEGACY_DISCLAIMER_KEY);
+      if (!settings.ui.disclaimerDismissed) {
+        return { settings: { ...settings, ui: { ...settings.ui, disclaimerDismissed: true } }, migrated: true };
+      }
+    }
+  } catch {
+    // localStorage unavailable: nothing to migrate.
+  }
+  return { settings, migrated: false };
+}
 
 export const RECENT_FORKS_CAP = 6;
 
