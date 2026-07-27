@@ -62,7 +62,7 @@ const ListHeading: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="text-[9px] uppercase tracking-wider text-muted px-1">{children}</div>
 );
 
-const supportsDirectoryPicker = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
+const supportsDirectoryPicker = !isElectron && typeof window !== 'undefined' && 'showDirectoryPicker' in window;
 const supportsWebkitDirectory = (() => {
   if (typeof document === 'undefined') return false;
   const input = document.createElement('input');

@@ -65,11 +65,6 @@ describe('FileSystemResourceProvider', () => {
     expect(provider.forkName).toBe('MyFork');
   });
 
-  it('isLocal is true', () => {
-    const provider = new FileSystemResourceProvider(new Map(), 'TestFork');
-    expect(provider.isLocal).toBe(true);
-  });
-
   it('listFiles returns empty for non-matching directory', async () => {
     const files = new Map<string, File>([['Prototypes/Entities/mobs.yml', makeFile('', 'mobs.yml')]]);
     const provider = new FileSystemResourceProvider(files, 'TestFork');

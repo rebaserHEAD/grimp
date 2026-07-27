@@ -16,15 +16,12 @@ export interface ResourceProvider {
   getImageUrl(path: string): string;
   /** Human-readable fork name (e.g. the picked folder name). */
   readonly forkName: string;
-  /** Whether resources come from a local directory. */
-  readonly isLocal: boolean;
   /** Release resources (revoke blob URLs, etc.). */
   dispose(): void;
 }
 
 export class FileSystemResourceProvider implements ResourceProvider {
   readonly forkName: string;
-  readonly isLocal = true;
   private files: Map<string, File>;
   private blobUrls: string[] = [];
 
