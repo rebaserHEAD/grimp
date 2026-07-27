@@ -12,9 +12,11 @@ workflow copies it into the GitHub release notes.
 
 ### Added
 
+- Desktop: launching GRIMP while it's already running now focuses the
+  existing window instead of opening a second instance (which could
+  silently overwrite your settings and recent lists). (#48)
 - The window title now shows the open file and unsaved-changes state
   (`● map.yml - GRIMP`), so a minimized editor tells you what it holds. (#57)
-
 - Start screen (desktop): the landing screen is now a VS Code-style welcome.
   Recently opened map/grid files sit alongside recent forks and discovered
   forks; a recent file remembers which fork it was opened under and one click
