@@ -62,7 +62,10 @@ const ListHeading: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="text-[9px] uppercase tracking-wider text-muted px-1">{children}</div>
 );
 
-const supportsDirectoryPicker = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
+// Browser-only capability. Chromium exposes showDirectoryPicker under Electron too, so this
+// must exclude the desktop build: otherwise the flag reads TRUE there and the only thing
+// keeping desktop off the browser FS Access path is handleOpenFolder checking isElectron first.
+const supportsDirectoryPicker = !isElectron && typeof window !== 'undefined' && 'showDirectoryPicker' in window;
 const supportsWebkitDirectory = (() => {
   if (typeof document === 'undefined') return false;
   const input = document.createElement('input');
@@ -707,7 +710,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady }) => {
                   <div className="h-full bg-accent rounded-full w-[30%] animate-[scanning-slide_1.2s_ease-in-out_infinite]" />
                 </div>
                 <div className="text-xs text-muted">
-                  {!supportsDirectoryPicker
+                  {!isElectron && !supportsDirectoryPicker
                     ? 'Your browser is reading all files in the folder. The page may appear unresponsive for up to 30 seconds for large repositories.'
                     : 'This may take a few seconds for large repositories'}
                 </div>

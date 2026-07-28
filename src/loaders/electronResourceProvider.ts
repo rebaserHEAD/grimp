@@ -18,7 +18,6 @@ function toUrl(key: string): string {
  * fetches each file on demand.
  */
 export class ElectronResourceProvider implements ResourceProvider {
-  readonly isLocal = true;
   readonly forkName: string;
   private keys: string[];
 
