@@ -16,9 +16,10 @@ workflow copies it into the GitHub release notes.
   a `gameMap`, a `pointOfInterest`, or a `salvageMap` prototype points at
   shows what the fork intends it to be, next to the Map/Grid badge. A
   purchasable ship typically shows both its shipyard listing and its station
-  wrapper; tooltips carry the prototype id, purchasability (`purchasable:
-false` is called out), station ids, and the defining prototype file.
-  Desktop only in practice: the lookup needs the file's on-disk path.
+  wrapper; tooltips carry the prototype id, purchasability (an explicit
+  opt-out is called out as NOT purchasable), station ids, and the defining
+  prototype file. Desktop only in practice: the lookup needs the file's
+  on-disk path.
 
 ### Fixed
 
