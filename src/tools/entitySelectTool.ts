@@ -659,7 +659,7 @@ export class EntitySelectTool implements ITool {
   }
 
   /** Enter paste mode */
-  paste(ctx: ToolContext) {
+  paste(_ctx: ToolContext) {
     const clip = getClipboard();
     if (!clip || (clip.entities.length === 0 && (!clip.decals || clip.decals.length === 0))) return;
     this.pasteData = clip;

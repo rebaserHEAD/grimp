@@ -10,6 +10,7 @@
 
 import yaml from 'js-yaml';
 import { SS14_SCHEMA } from './ss14Schema';
+import { validateMapDocument } from './mapSchema';
 import type { GridData } from '../state/gridData';
 import { parseDecalGrid } from './decalParser';
 
@@ -17,7 +18,7 @@ import { parseDecalGrid } from './decalParser';
 
 export interface MapMeta {
   format: number;
-  postmapinit?: boolean;
+  postmapinit?: boolean | undefined;
   category?: string;
   engineVersion?: string;
   forkId?: string;
@@ -44,31 +45,31 @@ export interface ImportedMap {
   /** The uid of the map entity (usually 1) */
   mapUid: number;
   /** Top-level maps array (format 7+). Empty for grid files (saved ships/POIs). */
-  maps?: number[];
+  maps?: number[] | undefined;
   /** Top-level grids array (format 7+) */
-  grids?: number[];
+  grids?: number[] | undefined;
   /** Top-level orphans array (format 7+). Grid files register their grid here. */
-  orphans?: number[];
+  orphans?: number[] | undefined;
   /** Top-level nullspace array (format 7+) */
-  nullspace?: number[];
+  nullspace?: number[] | undefined;
   /** Leading comment/blank lines before the first YAML key (SPDX headers, author notes) */
-  leadingLines?: string[];
+  leadingLines?: string[] | undefined;
   /** Structural entity components preserved verbatim for roundtrip */
-  structuralEntityData?: Record<number, Record<string, unknown>[]>;
+  structuralEntityData?: Record<number, Record<string, unknown>[]> | undefined;
   /** Original chunk key ordering for roundtrip fidelity */
-  chunkKeyOrder?: string[];
+  chunkKeyOrder?: string[] | undefined;
   /** Line ending style detected from the original file ('\r\n' or '\n') */
-  lineEnding?: string;
+  lineEnding?: string | undefined;
   /** Raw YAML lines for each entity's components (for verbatim export) */
-  entityRawComponents?: Record<number, string[]>;
+  entityRawComponents?: Record<number, string[]> | undefined;
   /** Raw YAML lines for entity-level fields between uid: and components: (e.g., mapInit, paused) */
-  entityRawPreamble?: Record<number, string[]>;
+  entityRawPreamble?: Record<number, string[]> | undefined;
   /** Whether the original file had a YAML document terminator `...` at the end */
-  hasDocumentTerminator?: boolean;
+  hasDocumentTerminator?: boolean | undefined;
   /** Whether the original file ended with a newline (false = no trailing newline) */
   trailingNewline?: boolean;
   /** Original encounter order of non-structural entity UIDs (for byte-exact roundtrip) */
-  entityOrder?: number[];
+  entityOrder?: number[] | undefined;
   /** Per-grid data for multi-grid support */
   gridDataList?: GridData[];
 }
@@ -81,7 +82,7 @@ export interface ImportedEntity {
   /** All components stored verbatim as raw objects */
   components: Record<string, unknown>[];
   /** Optional RSI state override for visual rendering in the editor */
-  spriteStateOverride?: string;
+  spriteStateOverride?: string | undefined;
 }
 
 // ---- Constants ----
@@ -92,7 +93,10 @@ const TILES_PER_CHUNK = CHUNK_SIZE * CHUNK_SIZE; // 256
 // ---- Main entry point ----
 
 export function importMap(yamlContent: string): ImportedMap {
-  const doc = yaml.load(yamlContent, { schema: SS14_SCHEMA }) as any;
+  // Validate the structural shell (doc is a mapping, entities is an array of
+  // uid-bearing groups) so a non-map file fails here with a readable message
+  // instead of a TypeError mid-traversal. Deep values stay untouched.
+  const doc = validateMapDocument(yaml.load(yamlContent, { schema: SS14_SCHEMA }));
 
   const meta = parseMeta(doc.meta);
   const tilemap = parseTilemap(doc.tilemap);
@@ -121,8 +125,7 @@ export function importMap(yamlContent: string): ImportedMap {
   const gridDataList: GridData[] = gridOrder.map((gUid) => {
     const parseData = gridParseDataMap.get(gUid)!;
     const gridTiles = buildGrid(parseData.chunks, tilemap, meta.format);
-    const decalGridComp = parseData.structuralComponents.find((c: any) => c.type === 'DecalGrid') as
-      Record<string, unknown> | undefined;
+    const decalGridComp = parseData.structuralComponents.find((c: any) => c.type === 'DecalGrid');
     const decalData = decalGridComp ? parseDecalGrid(decalGridComp) : { decals: [], nextDecalId: 0 };
     return {
       gridUid: gUid,
@@ -283,17 +286,17 @@ function parseStructuralEntities(entityGroups: any[]): {
         gridUid = entity.uid;
 
         // Extract name from MetaData component
-        const metaComp = components.find((c: any) => c.type === 'MetaData') as any;
+        const metaComp = components.find((c: any) => c.type === 'MetaData');
         const name = metaComp?.name ?? '';
 
         // Extract world position from Transform component
-        const transformComp = components.find((c: any) => c.type === 'Transform') as any;
+        const transformComp = components.find((c: any) => c.type === 'Transform');
         const worldPosition = parsePosition(transformComp?.pos);
 
         const chunks: ChunkData[] = [];
         const chunkKeyOrder: string[] = [];
-        const rawChunks = mapGridComp.chunks ?? {};
-        for (const [key, chunkObj] of Object.entries(rawChunks) as [string, any][]) {
+        const rawChunks: Record<string, { tiles?: string; version?: number }> = mapGridComp.chunks ?? {};
+        for (const [key, chunkObj] of Object.entries(rawChunks)) {
           chunkKeyOrder.push(key);
           const [cxStr, cyStr] = key.split(',');
           chunks.push({
@@ -339,7 +342,7 @@ function parseStructuralEntities(entityGroups: any[]): {
 
 // ---- Grid building ----
 
-function buildGrid(chunks: ChunkData[], tilemap: Record<number, string>, format: number): ImportedMap['grid'] {
+function buildGrid(chunks: ChunkData[], tilemap: Record<number, string>, _format: number): ImportedMap['grid'] {
   if (chunks.length === 0) {
     return { width: 0, height: 0, offsetX: 0, offsetY: 0, cells: [] };
   }
@@ -405,7 +408,7 @@ interface DecodedTile {
  * Format 6: 6 bytes/tile (int32 typeId + flags byte + variant byte)
  * Format 7: 7 bytes/tile (int32 typeId + flags byte + variant byte + rotationMirroring byte)
  */
-function decodeChunkTiles(base64: string, version: number): DecodedTile[] {
+function decodeChunkTiles(base64: string, _version: number): DecodedTile[] {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
@@ -566,7 +569,9 @@ function parseNonStructuralEntities(
  * Can be a string like "90.5,17.5" or already parsed by js-yaml into a string.
  */
 function parsePosition(pos: unknown): { x: number; y: number } {
-  if (pos == null) return { x: 0, y: 0 };
+  // Anything but a scalar (e.g. a mapping that shouldn't be here) falls to
+  // origin, same as an unparseable string always has.
+  if (pos == null || (typeof pos !== 'string' && typeof pos !== 'number')) return { x: 0, y: 0 };
 
   const str = String(pos);
   const parts = str.split(',');
@@ -587,8 +592,10 @@ function parsePosition(pos: unknown): { x: number; y: number } {
 function parseRotation(rot: unknown): number {
   if (rot == null) return 0;
   if (typeof rot === 'number') return rot;
+  // Non-scalars can't carry a rotation; treat like an unparseable string.
+  if (typeof rot !== 'string') return 0;
 
-  const str = String(rot).replace(/\s*rad\s*$/i, '');
+  const str = rot.replace(/\s*rad\s*$/i, '');
   const val = parseFloat(str);
   return isNaN(val) ? 0 : val;
 }

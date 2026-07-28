@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { serializePrefab, type SerializePrefabInput } from '../prefabSerializer';
+import { serializePrefab } from '../prefabSerializer';
 import type { ImportedEntity } from '../../import/mapImporter';
 import type { TileGrid, TileCell } from '../../types';
 

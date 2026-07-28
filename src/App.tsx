@@ -1,7 +1,7 @@
 import React, { useReducer, useCallback, useRef, useEffect, useState, useMemo } from 'react';
 import type { ToolType, PaletteItem } from './types';
 import { editorReducer } from './state/editorReducer';
-import { createInitialState, ensureGridContainsBounds, getDocumentKind, getGridProperties } from './state/editorState';
+import { createInitialState, getDocumentKind, getGridProperties } from './state/editorState';
 import type { ITool } from './tools/toolTypes';
 import { PaintTool } from './tools/paintTool';
 import { EraseTool } from './tools/eraseTool';
@@ -64,8 +64,7 @@ import {
 } from './settings/settingsStore';
 import type { AppSettings, ForkSettings, FileSettings } from './settings/settingsStore';
 import { BenchmarkOverlay } from './components/BenchmarkOverlay';
-import { markSceneDirty, markOverlayDirty, markAllDirty } from './rendering/dirtyFlags';
-import { buildTransformComponent } from './tools/entityHelpers';
+import { markSceneDirty, markAllDirty } from './rendering/dirtyFlags';
 import { resetAllCaches } from './loaders/resetAllCaches';
 import { validateMap } from './validation/mapValidator';
 import type { ValidationIssue } from './validation/mapValidator';
@@ -96,6 +95,9 @@ const TOOL_MAP: Record<string, ITool> = {
   deviceLink: deviceLinkTool,
   prefabPlace: prefabPlaceTool,
 };
+
+// Tools that support both tile and entity palette items
+const ENTITY_CAPABLE_TOOLS = new Set(['paint', 'erase', 'rectangle', 'line', 'circle', 'entitySelect', 'entityPlace']);
 
 export const App: React.FC = () => {
   const [state, dispatch] = useReducer(editorReducer, undefined, createInitialState);
@@ -195,7 +197,7 @@ export const App: React.FC = () => {
           if (opts?.pendingFile) setPendingOpenFile(opts.pendingFile);
         })
         .catch((err) => {
-          setLoadingMessage(`Resource load failed: ${err}`);
+          setLoadingMessage(`Resource load failed: ${String(err)}`);
           setLoadFailed(true);
         });
     },
@@ -265,17 +267,6 @@ export const App: React.FC = () => {
     },
     [state.selectedPaletteItem],
   );
-
-  // Tools that support both tile and entity palette items
-  const ENTITY_CAPABLE_TOOLS = new Set([
-    'paint',
-    'erase',
-    'rectangle',
-    'line',
-    'circle',
-    'entitySelect',
-    'entityPlace',
-  ]);
 
   const handleSelectPaletteItem = useCallback(
     (item: PaletteItem) => {
@@ -352,7 +343,7 @@ export const App: React.FC = () => {
       );
       setStatusMessage(`Imported: ${grid.width}x${grid.height} grid, ${map.entities.length} entities`);
     } catch (err) {
-      setStatusMessage(`Import failed: ${err}`);
+      setStatusMessage(`Import failed: ${String(err)}`);
     }
   }, []);
 
@@ -427,6 +418,7 @@ export const App: React.FC = () => {
     state.lineEnding,
     state.hasDocumentTerminator,
     state.entityOrder,
+    state.decalsDirty,
   ]);
 
   // Save As (Ctrl+Shift+S): always a dialog (desktop) or a download (browser).
@@ -452,7 +444,7 @@ export const App: React.FC = () => {
         dispatch({ type: 'MARK_SAVED' });
       }
     } catch (err) {
-      setStatusMessage(`Save failed: ${err}`);
+      setStatusMessage(`Save failed: ${String(err)}`);
     }
   }, [buildYaml, currentFileName, state, recordRecentFile]);
 
@@ -475,7 +467,7 @@ export const App: React.FC = () => {
       dispatch({ type: 'MARK_SAVED' });
       setStatusMessage(`Saved ${currentFileName ?? currentFilePath}`);
     } catch (err) {
-      setStatusMessage(`Save failed: ${err}`);
+      setStatusMessage(`Save failed: ${String(err)}`);
     }
   }, [currentFilePath, currentFileName, buildYaml, handleSaveAs, recordRecentFile]);
 
@@ -507,7 +499,9 @@ export const App: React.FC = () => {
       handleImport(opened.content, opened.fileName);
       setCurrentFilePath(opened.path);
       recordRecentFile(opened.path, opened.fileName);
-    })();
+    })().catch((err: unknown) => {
+      setStatusMessage(`Could not open ${file.name}: ${String(err)}`);
+    });
   }, [pendingOpenFile, state.registry, handleImport, recordRecentFile, dropRecentFile]);
 
   const handleUndo = useCallback(() => dispatch({ type: 'UNDO' }), []);
@@ -528,14 +522,16 @@ export const App: React.FC = () => {
       case 'file:properties':
         setShowMapProperties(true);
         break;
+      // Menu dispatch is fire-and-forget; the async handlers surface their own
+      // failures through the status bar, so `void` is honest here.
       case 'file:import':
-        handleImportNative();
+        void handleImportNative();
         break;
       case 'file:save':
-        handleSave();
+        void handleSave();
         break;
       case 'file:saveAs':
-        handleSaveAs();
+        void handleSaveAs();
         break;
       case 'edit:undo':
         handleUndo();
@@ -605,25 +601,31 @@ export const App: React.FC = () => {
   // (debounced) whenever they change. settingsRef guards the write path: no
   // persisting until the initial load has landed.
   useEffect(() => {
-    loadSettings().then((loaded) => {
-      // Fold the pre-store localStorage disclaimer flag in once (#46).
-      const { settings: s, migrated } = migrateLegacyFlags(loaded);
-      setShowGrid(s.view.showGrid);
-      setShowEntities(s.view.showEntities);
-      setShowSpaceBackground(s.view.showSpaceBackground);
-      setShowSubFloor(s.view.showSubFloor);
-      setShowConnections(s.view.showConnections);
-      setShowPerfHUD(s.view.showPerfHUD);
-      setForkSettings(s.fork);
-      setFileSettings(s.files);
-      setShowDisclaimer(!s.ui.disclaimerDismissed);
-      settingsRef.current = s;
-      if (migrated) {
-        persistSettings(s);
-        flushSettings();
-      }
-      markSceneDirty();
-    });
+    loadSettings()
+      .then((loaded) => {
+        // Fold the pre-store localStorage disclaimer flag in once (#46).
+        const { settings: s, migrated } = migrateLegacyFlags(loaded);
+        setShowGrid(s.view.showGrid);
+        setShowEntities(s.view.showEntities);
+        setShowSpaceBackground(s.view.showSpaceBackground);
+        setShowSubFloor(s.view.showSubFloor);
+        setShowConnections(s.view.showConnections);
+        setShowPerfHUD(s.view.showPerfHUD);
+        setForkSettings(s.fork);
+        setFileSettings(s.files);
+        setShowDisclaimer(!s.ui.disclaimerDismissed);
+        settingsRef.current = s;
+        if (migrated) {
+          persistSettings(s);
+          flushSettings();
+        }
+        markSceneDirty();
+      })
+      .catch((err: unknown) => {
+        // Defaults are already in place; a failed settings read just means a
+        // stock-configured session, not a broken one.
+        console.error('Settings load failed:', err);
+      });
     // Passive flush so a debounced write isn't lost on close. Must never set
     // returnValue here: a vetoing beforeunload is exactly the v1.2.1 bug.
     window.addEventListener('beforeunload', flushSettings);
@@ -748,33 +750,6 @@ export const App: React.FC = () => {
       setActivePrompt(opts);
     },
     [],
-  );
-
-  const handleFocusGrid = useCallback(
-    (index: number) => {
-      const gd = state.grids[index];
-      if (!gd || gd.grid.width === 0) return;
-      const camera = cameraRef.current;
-      const canvasEl = document.querySelector('canvas');
-      if (!canvasEl) return;
-      // clientWidth/Height, NOT width/height: the canvas backing store is
-      // devicePixelRatio-scaled, and fitBounds works in CSS pixels. Feeding it
-      // physical pixels overshot the zoom by the display-scaling factor
-      // (1.5x too far in on 150% Windows scaling), so Focus Grid jumped past
-      // the grid it was framing.
-      camera.fitBounds(
-        {
-          minX: gd.grid.offsetX,
-          minY: gd.grid.offsetY,
-          maxX: gd.grid.offsetX + gd.grid.width,
-          maxY: gd.grid.offsetY + gd.grid.height,
-        },
-        canvasEl.clientWidth,
-        canvasEl.clientHeight,
-      );
-      markAllDirty();
-    },
-    [state.grids],
   );
 
   // Clipboard actions delegate to SelectTool
@@ -943,7 +918,7 @@ export const App: React.FC = () => {
       const settings = decalPlacementSettingsRef.current;
       decalPlacementSettingsRef.current = { ...settings, angle: settings.angle + Math.PI / 2 };
     }
-  }, [state.activeTool]);
+  }, [state.activeTool, state.selectedPaletteItem]);
 
   const keyboardActions = useMemo(
     () => ({
@@ -998,8 +973,6 @@ export const App: React.FC = () => {
       handleCycleEntityRotationCW,
       handleCycleEntityRotationCCW,
       state.activeTool,
-      state.selectedEntityUids,
-      state.selectedDecalIds,
       state.selectedPaletteItem,
     ],
   );
@@ -1146,7 +1119,7 @@ export const App: React.FC = () => {
           forksDirectory={forkSettings.forksDirectory}
           recentForksCount={forkSettings.recentForks.length}
           recentFilesCount={fileSettings.recentFiles.length}
-          onChooseForksDirectory={handleChooseForksDirectory}
+          onChooseForksDirectory={() => void handleChooseForksDirectory()}
           onClearForksDirectory={() => updateForkSettings((f) => ({ ...f, forksDirectory: null }))}
           onClearRecentForks={() => updateForkSettings((f) => ({ ...f, recentForks: [] }))}
           onClearRecentFiles={() => updateFileSettings((f) => ({ ...f, recentFiles: [] }))}
@@ -1234,7 +1207,7 @@ export const App: React.FC = () => {
         onShowMapProperties={() => setShowMapProperties(true)}
         onShowSettings={() => setShowSettings(true)}
         onImport={handleImport}
-        onSave={handleSave}
+        onSave={() => void handleSave()}
         onUndo={handleUndo}
         onRedo={handleRedo}
         canUndo={state.undoStack.length > 0}
@@ -1283,7 +1256,6 @@ export const App: React.FC = () => {
             onAddGrid={handleAddGrid}
             onDeleteGrid={handleDeleteGrid}
             onRequestRename={handleRequestRename}
-            onFocusGrid={handleFocusGrid}
             entities={state.entities}
             registry={state.registry}
             onSearchNavigate={handleSearchNavigate}

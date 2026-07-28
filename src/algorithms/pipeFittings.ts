@@ -13,7 +13,7 @@ export interface FittedPipe {
   y: number;
   prototype: string;
   rotation: number; // radians
-  color?: string;
+  color?: string | undefined;
 }
 
 export type PipeFamily = 'gas' | 'disposal';
@@ -181,7 +181,7 @@ export function computePipeChanges(
       [0, -1],
       [1, 0],
       [-1, 0],
-    ]) {
+    ] as const) {
       const nkey = `${t.x + dx},${t.y + dy}`;
       if (existingByKey.has(nkey)) {
         affectedKeys.add(nkey);

@@ -24,7 +24,7 @@ function makeToolContext(paletteItem: ToolContext['paletteItem'] = { type: 'tile
   const dispatched: { type: string }[] = [];
   const ctx: ToolContext = {
     state,
-    dispatch: (action) => dispatched.push(action as { type: string }),
+    dispatch: (action) => dispatched.push(action),
     camera: { tileScreenSize: 32 } as ToolContext['camera'],
     canvasW: 800,
     canvasH: 600,

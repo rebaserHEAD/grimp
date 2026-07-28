@@ -1,6 +1,6 @@
 import type { ITool, ToolContext } from './toolTypes';
 import type { TileChange } from '../types';
-import { getCell, ensureGridContains, setCell } from '../state/editorState';
+import { getCell, setCell } from '../state/editorState';
 
 export class FillTool implements ITool {
   name = 'fill';

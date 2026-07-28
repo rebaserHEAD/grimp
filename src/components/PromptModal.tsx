@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 interface Props {
   title: string;
   message?: string;
-  defaultValue?: string;
+  defaultValue?: string | undefined;
   placeholder?: string;
   confirmLabel?: string;
   cancelLabel?: string;

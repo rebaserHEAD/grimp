@@ -93,7 +93,7 @@ so where you keep the repository has no bearing on which fork you edit.
 
 ## Getting started (development)
 
-Requirements: [Node.js](https://nodejs.org/) 18+ and npm.
+Requirements: [Node.js](https://nodejs.org/) 20.19+ (CI runs 22) and npm.
 
 ```bash
 git clone <this-repo-url> grimp
@@ -154,7 +154,10 @@ React 18 · TypeScript · Vite · Canvas 2D rendering · js-yaml · Tailwind CSS
 
 Work lands through pull requests. Branch off `main`, make your change, and open a PR;
 the template walks you through the rest. CI has to go green before merge: it checks
-formatting (Prettier, `npm run format`), types, tests, and the production build.
+formatting (Prettier, `npm run format`), types (`npm run typecheck`), the
+strict-indexing ratchet (`npm run typecheck:strict`; directories already cleaned for
+`noUncheckedIndexedAccess` stay clean), lint (`npm run lint`, type-aware ESLint),
+tests, and the production build.
 User-facing changes add a line to [CHANGELOG.md](CHANGELOG.md) under **Unreleased**.
 
 The full workflow lives in the wiki:

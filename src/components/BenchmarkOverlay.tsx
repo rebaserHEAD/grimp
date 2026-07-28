@@ -51,7 +51,9 @@ export const BenchmarkOverlay: React.FC = () => {
   const handleCopy = useCallback(() => {
     if (!result) return;
     const text = formatResultText(result);
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(text).catch(() => {
+      // Clipboard write can be denied (permissions/focus); nothing to recover.
+    });
   }, [result]);
 
   return (

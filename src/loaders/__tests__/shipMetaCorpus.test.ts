@@ -38,7 +38,7 @@ function walkYaml(root: string, prefix: string): string[] {
     }
     for (const name of names) {
       const full = join(dir, name);
-      let isDir = false;
+      let isDir: boolean;
       try {
         isDir = statSync(full).isDirectory();
       } catch {

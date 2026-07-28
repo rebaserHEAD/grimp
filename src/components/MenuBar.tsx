@@ -182,7 +182,10 @@ export const MenuBar: React.FC<Props> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    file.text().then((content) => onImport(content, file.name));
+    file.text().then(
+      (content) => onImport(content, file.name),
+      (err: unknown) => console.error('Could not read file:', err),
+    );
     e.target.value = '';
   };
 

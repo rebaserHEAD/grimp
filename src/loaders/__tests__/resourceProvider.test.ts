@@ -41,7 +41,7 @@ describe('FileSystemResourceProvider', () => {
       ['Textures/icon.png', new File([new Uint8Array([0x89, 0x50])], 'icon.png', { type: 'image/png' })],
     ]);
     const provider = new FileSystemResourceProvider(files, 'TestFork');
-    const url = await provider.getImageUrl('/Textures/icon.png');
+    const url = provider.getImageUrl('/Textures/icon.png');
     expect(url).toMatch(/^blob:/);
     provider.dispose();
   });
@@ -53,8 +53,8 @@ describe('FileSystemResourceProvider', () => {
       ['Textures/b.png', new File([new Uint8Array([2])], 'b.png', { type: 'image/png' })],
     ]);
     const provider = new FileSystemResourceProvider(files, 'TestFork');
-    await provider.getImageUrl('/Textures/a.png');
-    await provider.getImageUrl('/Textures/b.png');
+    provider.getImageUrl('/Textures/a.png');
+    provider.getImageUrl('/Textures/b.png');
     provider.dispose();
     expect(revokeSpy).toHaveBeenCalledTimes(2);
     revokeSpy.mockRestore();

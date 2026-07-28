@@ -5,7 +5,7 @@ import { createInitialState } from '../../state/editorState';
 import { editorReducer } from '../../state/editorReducer';
 import type { EditorState } from '../../state/editorState';
 import type { ImportedEntity } from '../../import/mapImporter';
-import type { EntityChange, DecalChange } from '../../types';
+import type { EntityChange } from '../../types';
 import type { DecalInstance } from '../../import/decalParser';
 import type { IPrototypeRegistry } from '../../loaders/registryTypes';
 import type { LayerVisibility } from '../../rendering/entityRenderer';
@@ -52,11 +52,11 @@ function makeMockRegistry(): IPrototypeRegistry {
     getSpriteInfo: (id: string) => {
       // Return appropriate drawDepth for layer filtering tests
       if (id.includes('Wall') || id.includes('Window'))
-        return { rsiPath: 'test.rsi', baseState: 'base', layers: [], drawDepth: 'WallTops' } as any;
+        return { rsiPath: 'test.rsi', baseState: 'base', layers: [], drawDepth: 'WallTops' };
       if (id.includes('Cable') || id.includes('Pipe'))
-        return { rsiPath: 'test.rsi', baseState: 'base', layers: [], drawDepth: 'ThickPipe' } as any;
+        return { rsiPath: 'test.rsi', baseState: 'base', layers: [], drawDepth: 'ThickPipe' };
       if (id.includes('Airlock') || id.includes('Door'))
-        return { rsiPath: 'test.rsi', baseState: 'base', layers: [], drawDepth: 'Doors' } as any;
+        return { rsiPath: 'test.rsi', baseState: 'base', layers: [], drawDepth: 'Doors' };
       return null;
     },
     tileCount: 0,
@@ -439,7 +439,7 @@ describe('EntitySelectTool', () => {
     const e2 = makeEntity(2, 'APC', 5, 5);
     const { ctx } = makeToolContext([e1, e2], [1]); // e1 is selected
 
-    const handled = tool.onWheel!(ctx, 5, 5, 1);
+    const handled = tool.onWheel(ctx, 5, 5, 1);
     expect(handled).toBe(true);
 
     const picker = tool.getPickerState();
@@ -455,7 +455,7 @@ describe('EntitySelectTool', () => {
     const e2 = makeEntity(2, 'APC', 5, 5);
     const { ctx } = makeToolContext([e1, e2]); // nothing selected
 
-    const handled = tool.onWheel!(ctx, 5, 5, 1);
+    const handled = tool.onWheel(ctx, 5, 5, 1);
     expect(handled).toBe(false);
     expect(tool.getPickerState().open).toBe(false);
   });
@@ -465,12 +465,12 @@ describe('EntitySelectTool', () => {
     const e1 = makeEntity(1, 'WallSolid', 5, 5);
     const { ctx } = makeToolContext([e1], [1]); // selected but only 1 entity
 
-    const handled1 = tool.onWheel!(ctx, 5, 5, 1);
+    const handled1 = tool.onWheel(ctx, 5, 5, 1);
     expect(handled1).toBe(false);
     expect(tool.getPickerState().open).toBe(false);
 
     // Empty tile
-    const handled2 = tool.onWheel!(ctx, 10, 10, 1);
+    const handled2 = tool.onWheel(ctx, 10, 10, 1);
     expect(handled2).toBe(false);
     expect(tool.getPickerState().open).toBe(false);
   });
@@ -484,7 +484,7 @@ describe('EntitySelectTool', () => {
     const { ctx } = makeToolContext([e1, e2, e3, e4], [1]); // selected at (5,5)
 
     // Hover over (8,8) which has 2 entities but none selected
-    const handled = tool.onWheel!(ctx, 8, 8, 1);
+    const handled = tool.onWheel(ctx, 8, 8, 1);
     expect(handled).toBe(false);
     expect(tool.getPickerState().open).toBe(false);
   });
@@ -496,17 +496,17 @@ describe('EntitySelectTool', () => {
     const e3 = makeEntity(3, 'Table', 5, 5);
     const { ctx } = makeToolContext([e1, e2, e3], [1]);
 
-    tool.onWheel!(ctx, 5, 5, 1); // opens, index goes to 1
+    tool.onWheel(ctx, 5, 5, 1); // opens, index goes to 1
     expect(tool.getPickerState().index).toBe(1);
 
-    tool.onWheel!(ctx, 5, 5, 1); // index 2
+    tool.onWheel(ctx, 5, 5, 1); // index 2
     expect(tool.getPickerState().index).toBe(2);
 
-    tool.onWheel!(ctx, 5, 5, 1); // wraps to 0
+    tool.onWheel(ctx, 5, 5, 1); // wraps to 0
     expect(tool.getPickerState().index).toBe(0);
 
     // Scroll up wraps backward
-    tool.onWheel!(ctx, 5, 5, -1);
+    tool.onWheel(ctx, 5, 5, -1);
     expect(tool.getPickerState().index).toBe(2);
   });
 
@@ -518,7 +518,7 @@ describe('EntitySelectTool', () => {
     const { ctx, dispatched } = makeToolContext([e1, e2, e3], [1]);
 
     // Scroll opens picker and immediately selects
-    tool.onWheel!(ctx, 5, 5, 1);
+    tool.onWheel(ctx, 5, 5, 1);
     const pickerEntities = tool.getPickerState().entities;
     const expectedEntity = pickerEntities[1];
 
@@ -534,8 +534,7 @@ describe('EntitySelectTool', () => {
     const { ctx, dispatched } = makeToolContext([e1, e2], [1]);
 
     // Scroll to select e2 (or whichever is at index 1)
-    tool.onWheel!(ctx, 5, 5, 1);
-    const pickedUid = tool.getPickerState().entities[1].uid;
+    tool.onWheel(ctx, 5, 5, 1);
 
     // Click should close picker and start move drag (not re-select)
     tool.onMouseDown(ctx, 5, 5, 0);
@@ -555,7 +554,7 @@ describe('EntitySelectTool', () => {
     const e2 = makeEntity(2, 'APC', 5, 5);
     const { ctx } = makeToolContext([e1, e2], [1]);
 
-    tool.onWheel!(ctx, 5, 5, 1);
+    tool.onWheel(ctx, 5, 5, 1);
     expect(tool.getPickerState().open).toBe(true);
 
     tool.onMouseMove(ctx, 6, 6);
@@ -568,7 +567,7 @@ describe('EntitySelectTool', () => {
     const e2 = makeEntity(2, 'APC', 5, 5);
     const { ctx } = makeToolContext([e1, e2], [1]);
 
-    tool.onWheel!(ctx, 5, 5, 1);
+    tool.onWheel(ctx, 5, 5, 1);
     expect(tool.getPickerState().open).toBe(true);
 
     tool.onMouseDown(ctx, 5, 5, 2);
@@ -581,10 +580,10 @@ describe('EntitySelectTool', () => {
     const e2 = makeEntity(2, 'APC', 5, 5);
     const { ctx } = makeToolContext([e1, e2], [1]);
 
-    tool.onWheel!(ctx, 5, 5, 1);
+    tool.onWheel(ctx, 5, 5, 1);
     expect(tool.getPickerState().open).toBe(true);
 
-    tool.deactivate!();
+    tool.deactivate();
     expect(tool.getPickerState().open).toBe(false);
   });
 

@@ -60,7 +60,7 @@ function makeToolContext(
         height: 20,
         offsetX: 0,
         offsetY: 0,
-        cells: Array.from({ length: 400 }, () => ({ tileId: tileId! })),
+        cells: Array.from({ length: 400 }, () => ({ tileId: tileId })),
       }
     : { width: 0, height: 0, offsetX: 0, offsetY: 0, cells: [] };
 
@@ -164,7 +164,7 @@ describe('EyedropperTool', () => {
       const e1 = makeEntity(1, 'APCBasic', 5, 5);
       const { ctx } = makeToolContext([e1], 'FloorSteel');
 
-      const handled = tool.onWheel!(ctx, 5, 5, 1);
+      const handled = tool.onWheel(ctx, 5, 5, 1);
       expect(handled).toBe(true);
 
       const picker = tool.getPickerState();
@@ -180,7 +180,7 @@ describe('EyedropperTool', () => {
       const tool = new EyedropperTool();
       const { ctx } = makeToolContext([], 'FloorSteel');
 
-      const handled = tool.onWheel!(ctx, 3, 3, 1);
+      const handled = tool.onWheel(ctx, 3, 3, 1);
       expect(handled).toBe(false);
       expect(tool.getPickerState().open).toBe(false);
     });
@@ -191,13 +191,13 @@ describe('EyedropperTool', () => {
       const e2 = makeEntity(2, 'WallSolid', 5, 5);
       const { ctx } = makeToolContext([e1, e2], 'FloorSteel');
 
-      tool.onWheel!(ctx, 5, 5, 1); // opens, index → 1
+      tool.onWheel(ctx, 5, 5, 1); // opens, index → 1
       expect(tool.getPickerState().index).toBe(1);
 
-      tool.onWheel!(ctx, 5, 5, 1); // index → 2
+      tool.onWheel(ctx, 5, 5, 1); // index → 2
       expect(tool.getPickerState().index).toBe(2);
 
-      tool.onWheel!(ctx, 5, 5, 1); // wraps → 0
+      tool.onWheel(ctx, 5, 5, 1); // wraps → 0
       expect(tool.getPickerState().index).toBe(0);
     });
 
@@ -207,11 +207,11 @@ describe('EyedropperTool', () => {
       const e2 = makeEntity(2, 'WallSolid', 5, 5);
       const { ctx } = makeToolContext([e1, e2], 'FloorSteel');
 
-      tool.onWheel!(ctx, 5, 5, 1); // opens, index → 1
-      tool.onWheel!(ctx, 5, 5, -1); // back → 0
+      tool.onWheel(ctx, 5, 5, 1); // opens, index → 1
+      tool.onWheel(ctx, 5, 5, -1); // back → 0
       expect(tool.getPickerState().index).toBe(0);
 
-      tool.onWheel!(ctx, 5, 5, -1); // wraps → 2 (last item)
+      tool.onWheel(ctx, 5, 5, -1); // wraps → 2 (last item)
       expect(tool.getPickerState().index).toBe(2);
     });
 
@@ -221,7 +221,7 @@ describe('EyedropperTool', () => {
       const { ctx, dispatched } = makeToolContext([e1], 'FloorSteel');
 
       // Scroll to open picker, index starts at 1 (FloorSteel tile)
-      tool.onWheel!(ctx, 5, 5, 1);
+      tool.onWheel(ctx, 5, 5, 1);
       expect(tool.getPickerState().items[1].type).toBe('tile');
 
       // Click to confirm selection
@@ -238,7 +238,7 @@ describe('EyedropperTool', () => {
       const e1 = makeEntity(1, 'APCBasic', 5, 5);
       const { ctx } = makeToolContext([e1], 'Plating');
 
-      tool.onWheel!(ctx, 5, 5, 1);
+      tool.onWheel(ctx, 5, 5, 1);
 
       const items = tool.getPickerState().items;
       const tileItem = items.find((i) => i.type === 'tile');
@@ -251,7 +251,7 @@ describe('EyedropperTool', () => {
       const e1 = makeEntity(1, 'APCBasic', 5, 5);
       const { ctx } = makeToolContext([e1], 'FloorSteel');
 
-      tool.onWheel!(ctx, 5, 5, 1);
+      tool.onWheel(ctx, 5, 5, 1);
       expect(tool.getPickerState().open).toBe(true);
 
       tool.onMouseMove(ctx, 6, 6);
@@ -263,10 +263,10 @@ describe('EyedropperTool', () => {
       const e1 = makeEntity(1, 'APCBasic', 5, 5);
       const { ctx } = makeToolContext([e1], 'FloorSteel');
 
-      tool.onWheel!(ctx, 5, 5, 1);
+      tool.onWheel(ctx, 5, 5, 1);
       expect(tool.getPickerState().open).toBe(true);
 
-      tool.deactivate!();
+      tool.deactivate();
       expect(tool.getPickerState().open).toBe(false);
     });
 
@@ -276,7 +276,7 @@ describe('EyedropperTool', () => {
       const e2 = makeEntity(2, 'WallSolid', 5, 5);
       const { ctx } = makeToolContext([e1, e2], 'Space');
 
-      tool.onWheel!(ctx, 5, 5, 1);
+      tool.onWheel(ctx, 5, 5, 1);
 
       const items = tool.getPickerState().items;
       expect(items.every((i) => i.type === 'entity')).toBe(true);
@@ -326,7 +326,7 @@ describe('EyedropperTool', () => {
       const d1 = makeDecal(10, 'BotGreyscale', 5, 5, '#FF0000FF');
       const { ctx } = makeToolContext([e1], 'FloorSteel', [d1]);
 
-      tool.onWheel!(ctx, 5, 5, 1);
+      tool.onWheel(ctx, 5, 5, 1);
 
       const items = tool.getPickerState().items;
       expect(items).toHaveLength(3); // entity + decal + tile
@@ -389,7 +389,7 @@ describe('EyedropperTool', () => {
       const layers: LayerVisibility = { ...DEFAULT_LAYER_VISIBILITY, objects: false, decals: true };
       const { ctx } = makeToolContext([e1], 'FloorSteel', [d1], layers);
 
-      tool.onWheel!(ctx, 5, 5, 1);
+      tool.onWheel(ctx, 5, 5, 1);
 
       const items = tool.getPickerState().items;
       // Only decal + tile (entity hidden)

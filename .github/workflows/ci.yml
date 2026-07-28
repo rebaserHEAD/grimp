@@ -28,6 +28,12 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Strict-indexing ratchet
+        run: npm run typecheck:strict
+
+      - name: Lint
+        run: npm run lint
+
       - name: Tests
         run: npm run test
 

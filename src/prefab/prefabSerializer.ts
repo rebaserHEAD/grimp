@@ -72,7 +72,7 @@ export function serializePrefab(input: SerializePrefabInput): PrefabData {
   for (let i = 0; i < insideEntities.length; i++) {
     const ent = insideEntities[i];
     for (const comp of ent.components) {
-      const c = comp as Record<string, unknown>;
+      const c = comp;
       if (c.type === 'DeviceLinkSource' && c.linkedPorts && typeof c.linkedPorts === 'object') {
         const ports = c.linkedPorts as Record<string, [string, string][]>;
         for (const [targetUidStr, pairs] of Object.entries(ports)) {

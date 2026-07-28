@@ -1,5 +1,4 @@
 import type { TileCell } from '../types';
-import type { ImportedEntity } from '../import/mapImporter';
 
 /** Entity stored relative to selection origin (dx, dy offsets from originX, originY). */
 export interface ClipboardEntity {
@@ -28,7 +27,7 @@ export interface ClipboardData {
   height: number;
   tiles: (TileCell | null)[]; // row-major, null = empty/space
   entities: ClipboardEntity[];
-  decals?: ClipboardDecal[];
+  decals?: ClipboardDecal[] | undefined;
   originX: number; // world coords of top-left when copied
   originY: number;
 }

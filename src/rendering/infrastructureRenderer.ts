@@ -78,8 +78,6 @@ export function renderInfrastructure(
   showPipes: boolean,
   showEntities: boolean,
 ) {
-  const tileScreenSize = TILE_SIZE * camera.zoom;
-
   if (showCables) {
     for (const cable of infra.cableSegments) {
       const style = CABLE_COLORS[cable.type];

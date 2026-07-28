@@ -135,7 +135,7 @@ export function renderDecals(
     // Apply alpha from color (#RRGGBBAA, last 2 hex chars)
     const hasAlpha = color != null && color.length === 9;
     if (hasAlpha) {
-      const alpha = parseInt(color!.slice(7, 9), 16) / 255;
+      const alpha = parseInt(color.slice(7, 9), 16) / 255;
       ctx.save();
       ctx.globalAlpha = alpha;
     }

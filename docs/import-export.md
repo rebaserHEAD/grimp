@@ -120,22 +120,34 @@ YAML string                         ImportedMap
 yaml.load() with SS14_SCHEMA        Build tilemap (scan unique tiles)
     |                                   |
     v                                   v
-Parse meta (all fields)             Encode chunks (format-aware encoding)
-    |                                   |
-    v                                   v
-Parse tilemap                       Emit meta + top-level keys (format 7)
-    |                                   |
-    v                                   v
-Find MapGrid, decode chunks         Emit structural entities (preserved)
-(preserve flags/variant/rotation)       |
+Validate structural shell           Encode chunks (format-aware encoding)
+(mapSchema.ts, Zod)                     |
+    |                                   v
+    v                               Emit meta + top-level keys (format 7)
+Parse meta (all fields)                 |
+    |                                   v
+    v                               Emit structural entities (preserved)
+Parse tilemap                           |
     |                                   v
     v                               Group entities by prototype
-Parse entity groups                     |
-(preserve all components verbatim)      v
+Find MapGrid, decode chunks             |
+(preserve flags/variant/rotation)       v
     |                               YAML string
+    v
+Parse entity groups
+(preserve all components verbatim)
+    |
     v
 ImportedMap
 ```
+
+The schema gate between `yaml.load` and the traversal is deliberately the thinnest
+structural check that guarantees what the parse code assumes (document is a mapping,
+`entities` is an array of uid-bearing groups, components are mappings). It exists so a
+non-map file fails with a readable message instead of a TypeError mid-traversal. It
+type-checks fields only when present, passes unknown keys through, and never inspects
+component bodies: anything it rejected would become an unopenable file, so when in
+doubt it stays loose. See `src/import/mapSchema.ts`.
 
 ## Key Types
 

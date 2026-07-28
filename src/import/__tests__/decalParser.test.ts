@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseDecalGrid, type DecalInstance } from '../decalParser';
+import { parseDecalGrid } from '../decalParser';
 
 describe('parseDecalGrid', () => {
   it('returns empty data for missing chunkCollection', () => {

@@ -9,10 +9,10 @@ interface KeyboardActions {
   onCut?: () => void;
   onPaste?: () => void;
   onDelete?: () => void;
-  onRotateEntityCW?: () => void;
-  onRotateEntityCCW?: () => void;
-  onCycleEntityRotationCW?: () => void;
-  onCycleEntityRotationCCW?: () => void;
+  onRotateEntityCW?: (() => void) | undefined;
+  onRotateEntityCCW?: (() => void) | undefined;
+  onCycleEntityRotationCW?: (() => void) | undefined;
+  onCycleEntityRotationCCW?: (() => void) | undefined;
   onEscape?: () => void;
   onShowShortcuts?: () => void;
   onFocusSearch?: () => void;

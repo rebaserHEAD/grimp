@@ -182,7 +182,7 @@ export const EntityInfoPanel: React.FC<Props> = ({
         {showComponents && (
           <div className="mt-1 max-h-[300px] overflow-auto">
             {entity.components.map((comp, i) => {
-              const compType = (comp as Record<string, unknown>).type as string;
+              const compType = comp.type as string;
               return (
                 <EditableComponentRow
                   key={`${entity.uid}-${i}-${compType}`}
@@ -372,9 +372,13 @@ const SpriteStateSelector: React.FC<SpriteStateSelectorProps> = ({ entity, regis
     setThumbnails(new Map());
     setDropdownOpen(false);
 
-    getAvailableStates(entity.prototype, registry).then((states) => {
-      if (!cancelled) setAvailableStates(states);
-    });
+    getAvailableStates(entity.prototype, registry)
+      .then((states) => {
+        if (!cancelled) setAvailableStates(states);
+      })
+      .catch(() => {
+        // Unresolvable sprite: the selector just stays empty.
+      });
 
     return () => {
       cancelled = true;
@@ -416,7 +420,8 @@ const SpriteStateSelector: React.FC<SpriteStateSelectorProps> = ({ entity, regis
       if (!cancelled) setThumbnails(new Map(thumbMap));
     };
 
-    loadAll();
+    // Per-thumbnail failures are already swallowed inside loadAll.
+    void loadAll();
     return () => {
       cancelled = true;
     };
@@ -489,5 +494,5 @@ const SpriteStateSelector: React.FC<SpriteStateSelectorProps> = ({ entity, regis
 };
 
 function hasDeviceList(entity: ImportedEntity): boolean {
-  return entity.components.some((c) => (c as Record<string, unknown>).type === 'DeviceList');
+  return entity.components.some((c) => c.type === 'DeviceList');
 }

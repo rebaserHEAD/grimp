@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { PrefabData, PrefabTile, PrefabEntity, PrefabDeviceLink } from '../prefabTypes';
+import type { PrefabData } from '../prefabTypes';
 
 describe('PrefabData types', () => {
   it('round-trips through JSON.stringify/parse', () => {

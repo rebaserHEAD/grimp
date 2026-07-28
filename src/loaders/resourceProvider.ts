@@ -30,14 +30,14 @@ export class FileSystemResourceProvider implements ResourceProvider {
     this.forkName = forkName;
   }
 
-  async listFiles(dir: string, ext: string): Promise<string[]> {
+  listFiles(dir: string, ext: string): Promise<string[]> {
     const results: string[] = [];
     for (const key of this.files.keys()) {
       if (key.startsWith(dir) && key.endsWith(ext)) {
         results.push(`/${key}`);
       }
     }
-    return results;
+    return Promise.resolve(results);
   }
 
   async readText(path: string): Promise<string> {

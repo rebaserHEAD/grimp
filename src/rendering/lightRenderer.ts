@@ -50,14 +50,13 @@ function parseOffset(raw: unknown): { x: number; y: number } {
  * Returns null if neither instance nor prototype has PointLight.
  */
 export function extractLightInfo(entity: ImportedEntity, registry: IPrototypeRegistry | null): LightInfo | null {
-  const instanceComp = entity.components.find((c) => (c as Record<string, unknown>).type === 'PointLight') as
-    Record<string, unknown> | undefined;
+  const instanceComp = entity.components.find((c) => c.type === 'PointLight');
 
   let protoComp: Record<string, unknown> | undefined;
   if (registry) {
     const resolved = registry.getEntity(entity.prototype);
     if (resolved) {
-      protoComp = resolved.components.find((c) => c.type === 'PointLight') as Record<string, unknown> | undefined;
+      protoComp = resolved.components.find((c) => c.type === 'PointLight');
     }
   }
 

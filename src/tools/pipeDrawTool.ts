@@ -248,7 +248,7 @@ export class PipeDrawTool implements ITool {
 
   private getEntityPipeColor(entity: ImportedEntity): string | null {
     for (const comp of entity.components) {
-      const c = comp as Record<string, unknown>;
+      const c = comp;
       if (c.type === 'AtmosPipeColor' && typeof c.color === 'string') {
         return c.color;
       }

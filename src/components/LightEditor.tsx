@@ -18,8 +18,10 @@ export function hasPointLight(entity: ImportedEntity, registry: IPrototypeRegist
 
 export const LightEditor: React.FC<Props> = ({ entity, registry, onUpdateEntity }) => {
   const lightInfo = extractLightInfo(entity, registry);
-  if (!lightInfo) return null;
 
+  // Hooks must run unconditionally, so this sits above the no-light early
+  // return: if lightInfo flipped null <-> non-null while mounted, a hook
+  // after the return would break React's hook ordering and throw.
   const updatePointLight = useCallback(
     (field: string, value: unknown) => {
       const comps = [...entity.components] as Record<string, unknown>[];
@@ -34,6 +36,8 @@ export const LightEditor: React.FC<Props> = ({ entity, registry, onUpdateEntity 
     },
     [entity, onUpdateEntity],
   );
+
+  if (!lightInfo) return null;
 
   // Convert hex color for the color input (needs exactly #RRGGBB)
   const colorHex = lightInfo.color.length === 7 ? lightInfo.color : '#FFFFFF';

@@ -103,10 +103,13 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady }) => {
       setRecentFiles(s.files.recentFiles);
       setForksDirectory(s.fork.forksDirectory);
       if (s.fork.forksDirectory) {
-        const found = await electronFork!.discoverForks(s.fork.forksDirectory);
+        const found = await electronFork.discoverForks(s.fork.forksDirectory);
         if (!cancelled) setDiscovered(found);
       }
-    })();
+    })().catch((err: unknown) => {
+      // Settings/discovery failure just means an empty landing page.
+      console.error('Fork discovery failed:', err);
+    });
     return () => {
       cancelled = true;
     };
@@ -140,7 +143,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady }) => {
       let result;
       try {
         // Seed the dialog at the configured forks folder when there is one.
-        result = await electronFork!.pickFork(null, forksDirectory);
+        result = await electronFork.pickFork(null, forksDirectory);
       } catch (err) {
         setErrorMessage(String(err));
         setPhase('error');
@@ -338,14 +341,16 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady }) => {
 
   // Dev/automation: launch straight into a fork when SS14_FORK_DIR is set.
   useEffect(() => {
-    if (!isElectron || !electronFork!.autoForkDir) return;
+    if (!isElectron || !electronFork.autoForkDir) return;
     let cancelled = false;
     (async () => {
-      const result = await electronFork!.pickFork(electronFork!.autoForkDir!);
+      const result = await electronFork.pickFork(electronFork.autoForkDir);
       if (cancelled || !result || 'error' in result) return;
       if (!validateKeys(result.keys).valid) return;
       onReady(new ElectronResourceProvider(result.keys, result.name), result.name, { forkDir: result.dir });
-    })();
+    })().catch((err: unknown) => {
+      console.error('SS14_FORK_DIR auto-load failed:', err);
+    });
     return () => {
       cancelled = true;
     };
@@ -428,7 +433,8 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady }) => {
     let running = true;
     let lastT = 0;
 
-    Promise.all([
+    // loadImg resolves even on error, so this chain can never reject.
+    void Promise.all([
       loadImg('/images/space-bg.png').then((i) => {
         dustImg = i;
       }),
@@ -538,7 +544,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady }) => {
         // @ts-expect-error webkitdirectory is non-standard
         webkitdirectory=""
         className="hidden"
-        onChange={handleFileInputChange}
+        onChange={(e) => void handleFileInputChange(e)}
       />
 
       <div
@@ -560,7 +566,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady }) => {
               {canPickFolder ? (
                 <>
                   <button
-                    onClick={handleOpenFolder}
+                    onClick={() => void handleOpenFolder()}
                     className="w-full py-3 px-4 rounded-lg bg-accent text-white font-semibold text-sm
                              hover:brightness-110 active:brightness-90 transition-all cursor-pointer
                              border-none outline-none focus:ring-2 focus:ring-accent/50"
@@ -576,7 +582,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady }) => {
                           : 'Set a forks folder to auto-discover forks.'}
                       </span>
                       <button
-                        onClick={handleChooseForksDir}
+                        onClick={() => void handleChooseForksDir()}
                         className="text-accent hover:brightness-125 bg-transparent border-none cursor-pointer text-[11px] shrink-0"
                       >
                         {forksDirectory ? 'Change…' : 'Set forks folder…'}
@@ -646,7 +652,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady }) => {
                         key={f.path}
                         title={f.name}
                         subtitle={`${f.forkDir ? baseName(f.forkDir) : 'unknown fork'} · ${f.path}`}
-                        onClick={() => handleOpenRecentFile(f)}
+                        onClick={() => void handleOpenRecentFile(f)}
                       />
                     ))}
                   </div>
@@ -659,7 +665,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady }) => {
                         key={r.dir}
                         title={r.name}
                         subtitle={r.dir}
-                        onClick={() => handleLoadFromDir(r.dir, true)}
+                        onClick={() => void handleLoadFromDir(r.dir, true)}
                       />
                     ))}
                   </div>
@@ -672,7 +678,7 @@ export const ForkSelector: React.FC<ForkSelectorProps> = ({ onReady }) => {
                         key={d.dir}
                         title={d.name}
                         subtitle={d.dir}
-                        onClick={() => handleLoadFromDir(d.dir, false)}
+                        onClick={() => void handleLoadFromDir(d.dir, false)}
                       />
                     ))}
                   </div>

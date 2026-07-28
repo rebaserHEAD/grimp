@@ -193,9 +193,9 @@ describe('serializeDecalGrid', () => {
     const decalComp = components[0];
 
     expect(decalComp).toBeDefined();
-    expect((decalComp as Record<string, unknown>).type).toBe('DecalGrid');
+    expect(decalComp.type).toBe('DecalGrid');
 
-    const result = parseDecalGrid(decalComp as Record<string, unknown>);
+    const result = parseDecalGrid(decalComp);
     expect(result.decals).toHaveLength(3);
 
     // Sort both by id for comparison

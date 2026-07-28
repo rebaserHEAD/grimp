@@ -75,6 +75,25 @@ protocol.registerSchemesAsPrivileged([
 // (tainted) canvas. Keeping fork files same-origin avoids the taint.
 const FORK_PREFIX = '/@fork';
 
+// CSP for the packaged app (the dev server is exempt; Vite needs its own
+// looser policy for HMR). Everything is same-origin by design: scripts are
+// the built bundles, resources come off app:// (including /@fork). The
+// allowances that aren't 'self':
+// - style-src 'unsafe-inline': React style={{}} attributes throughout the UI.
+// - img-src blob: data:: sprite thumbnails go through canvas.toDataURL and
+//   object URLs.
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' blob: data:",
+  "connect-src 'self'",
+  "font-src 'self'",
+  "object-src 'none'",
+  "base-uri 'none'",
+  "frame-src 'none'",
+].join('; ');
+
 function serveFromDist(request) {
   let pathname = decodeURIComponent(new URL(request.url).pathname);
 
@@ -93,9 +112,9 @@ function serveFromDist(request) {
   try {
     const data = fs.readFileSync(filePath);
     const ext = path.extname(filePath).toLowerCase();
-    return new Response(data, {
-      headers: { 'Content-Type': MIME[ext] || 'application/octet-stream' },
-    });
+    const headers = { 'Content-Type': MIME[ext] || 'application/octet-stream' };
+    if (ext === '.html') headers['Content-Security-Policy'] = CSP;
+    return new Response(data, { headers });
   } catch {
     return new Response('Not found', { status: 404 });
   }
@@ -202,6 +221,9 @@ function createWindow() {
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
+      // The preload only touches contextBridge/ipcRenderer, so it runs fine
+      // in the OS sandbox; renderer compromise then can't reach Node at all.
+      sandbox: true,
       preload: path.join(__dirname, 'preload.cjs'),
     },
   });
@@ -214,9 +236,19 @@ function createWindow() {
     win.loadURL('app://local/index.html');
   }
 
+  // New windows never open in-app; only web links may reach the OS browser.
+  // The protocol gate matters: a crafted map/prototype string that became a
+  // link must not be able to launch file:// or a custom protocol handler.
   win.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url);
+    if (url.startsWith('https:') || url.startsWith('http:')) shell.openExternal(url);
     return { action: 'deny' };
+  });
+
+  // The app is a single document at a single origin; any in-window navigation
+  // elsewhere (dragged file, crafted link) is denied.
+  win.webContents.on('will-navigate', (e, url) => {
+    const allowedOrigin = startUrl ? new URL(startUrl).origin : 'app://local';
+    if (new URL(url).origin !== allowedOrigin) e.preventDefault();
   });
 
   // Confirm before closing (X, Alt+F4, menu quit) when there are unsaved

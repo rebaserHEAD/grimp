@@ -53,9 +53,9 @@ export interface ShipMetaEntry {
    * on the handful that are not for sale. Absent therefore means purchasable, which is why
    * this is `undefined` rather than defaulted to `false`. Use `isPurchasableVessel`.
    */
-  purchasable?: boolean;
+  purchasable?: boolean | undefined;
   /** `vessel` only (Mono). */
-  cloakHunter?: boolean;
+  cloakHunter?: boolean | undefined;
   /** `gameMap` only: the station ids declared under `stations:`, which key into BecomesStation. */
   stations?: string[];
   /**
@@ -139,7 +139,7 @@ function asBoolean(value: unknown): boolean | undefined {
 /** Pull ids, stationProtos, and inline component types out of a gameMap's `stations:` mapping. */
 function readStations(value: unknown): { ids: string[]; protos: string[]; componentTypes: string[] } | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
-  const ids = Object.keys(value as Record<string, unknown>);
+  const ids = Object.keys(value);
   if (ids.length === 0) return undefined;
 
   const protos = new Set<string>();
@@ -167,7 +167,7 @@ function readStations(value: unknown): { ids: string[]; protos: string[]; compon
 export function parseShipMetaYaml(yamlContent: string, filePath: string): ShipMetaEntry[] {
   let docs: unknown[];
   try {
-    docs = yaml.loadAll(yamlContent, undefined, { schema: SS14_SCHEMA }) as unknown[];
+    docs = yaml.loadAll(yamlContent, undefined, { schema: SS14_SCHEMA });
   } catch {
     // A single malformed prototype file must not take the whole scan down.
     return [];

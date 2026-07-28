@@ -8,13 +8,7 @@ import type { ClipboardData, ClipboardEntity, ClipboardDecal } from '../state/cl
 import type { ContextMenuItem } from '../components/ContextMenu';
 import { serializePrefab } from '../prefab/prefabSerializer';
 import { savePrefabFile } from '../prefab/prefabIO';
-import {
-  updateTransformPos,
-  updateTransformRot,
-  normalizeRotation,
-  cloneComponentsWithPos,
-  cloneComponentsWithPosRot,
-} from './entityHelpers';
+import { normalizeRotation, cloneComponentsWithPos, cloneComponentsWithPosRot } from './entityHelpers';
 import { markOverlayDirty } from '../rendering/dirtyFlags';
 import { spatialGetInRect, tileKey } from '../rendering/spatialIndex';
 
@@ -484,7 +478,7 @@ export class SelectTool implements ITool {
       height: number;
       tiles: (import('../types').TileCell | null)[];
       entities: ClipboardEntity[];
-      decals?: ClipboardDecal[];
+      decals?: ClipboardDecal[] | undefined;
     },
     direction: 'cw' | 'ccw',
   ): {
@@ -492,7 +486,7 @@ export class SelectTool implements ITool {
     height: number;
     tiles: (import('../types').TileCell | null)[];
     entities: ClipboardEntity[];
-    decals?: ClipboardDecal[];
+    decals?: ClipboardDecal[] | undefined;
   } {
     const { width: W, height: H, tiles, entities } = data;
     const newW = H;
@@ -556,7 +550,7 @@ export class SelectTool implements ITool {
   }
 
   /** Enter paste mode */
-  paste(ctx: ToolContext) {
+  paste(_ctx: ToolContext) {
     const clip = getClipboard();
     if (!clip) return;
     this.pasteData = clip;

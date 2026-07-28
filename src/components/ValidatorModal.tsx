@@ -113,7 +113,7 @@ const ValidatorModal: React.FC<ValidatorModalProps> = ({ issues, onJumpTo, onClo
 const CollapsibleRuleGroup: React.FC<{
   ruleId: string;
   ruleIssues: ValidationIssue[];
-  rule?: { id: string; label: string; severity: 'error' | 'warning' };
+  rule?: { id: string; label: string; severity: 'error' | 'warning' } | undefined;
   onJumpTo: (x: number, y: number) => void;
   onClose: () => void;
 }> = ({ ruleId, ruleIssues, rule, onJumpTo, onClose }) => {

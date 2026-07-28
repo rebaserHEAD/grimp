@@ -6,7 +6,7 @@ import type { PrefabData } from '../prefabTypes';
 import type { ImportedEntity } from '../../import/mapImporter';
 import type { TileGrid, TileCell } from '../../types';
 import { editorReducer } from '../../state/editorReducer';
-import { createInitialState, setCell, getCell, ensureGridContainsBounds } from '../../state/editorState';
+import { createInitialState, setCell, getCell } from '../../state/editorState';
 import type { EditorState } from '../../state/editorState';
 import type { GridData } from '../../state/gridData';
 

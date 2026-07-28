@@ -113,7 +113,7 @@ describe('isClickActivatedChrome', () => {
     ['color', false],
   ])('input[type=%s] -> %s', (type, expected) => {
     const input = document.createElement('input');
-    input.type = type as string;
+    input.type = type;
     expect(isClickActivatedChrome(input)).toBe(expected);
   });
 

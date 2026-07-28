@@ -12,7 +12,7 @@ import { setComponentField, addComponent, removeComponent } from './rawComponent
 const MAX_UNDO = 200;
 
 function isGridCommand(cmd: UndoableCommand): cmd is GridCommand {
-  return 'type' in cmd && ['ADD_GRID', 'REMOVE_GRID', 'RENAME_GRID'].includes((cmd as GridCommand).type);
+  return 'type' in cmd && ['ADD_GRID', 'REMOVE_GRID', 'RENAME_GRID'].includes(cmd.type);
 }
 
 /** Mirror a MetaData name/desc edit into the parsed structural data.
@@ -393,7 +393,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         }
       }
 
-      const command = undoCmd as Command;
+      const command = undoCmd;
       const reversed = reverseCommand(command);
 
       // Determine target grid by the stored gridUid on the command
@@ -558,7 +558,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         }
       }
 
-      const command = redoCmd as Command;
+      const command = redoCmd;
       const result = applyCommand(state, command);
       return {
         ...result,

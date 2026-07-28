@@ -95,7 +95,6 @@ describe('entity draw position (center to top-left conversion)', () => {
     camera.y = 0;
     camera.zoom = 2;
     const canvasW = 800;
-    const canvasH = 600;
 
     // Entity at (5.3, 7.8): draw origin at (4.8, 7.3)
     // vs tile-center entity (5.5, 7.5): draw origin at (5.0, 7.0)

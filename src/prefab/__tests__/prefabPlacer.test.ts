@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { placePrefab, type PlacePrefabInput } from '../prefabPlacer';
+import { placePrefab } from '../prefabPlacer';
 import type { PrefabData } from '../prefabTypes';
 import type { TileGrid } from '../../types';
 import type { ImportedEntity } from '../../import/mapImporter';
