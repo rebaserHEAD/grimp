@@ -9,7 +9,7 @@ Resources/Prototypes/*.yml
         │
         ▼
   Discovery (prototypeDiscovery.ts)
-  - Fetches file listings via /resources-list endpoint
+  - Lists files via the active ResourceProvider
   - Parses YAML into RawTilePrototype / RawEntityPrototype
   - Derives categories from file paths
         │
@@ -56,7 +56,7 @@ interface IPrototypeRegistry {
 
 ### Discovery
 
-The `/resources-list` Vite endpoint provides recursive directory listings. Discovery fetches all `.yml` files under `Prototypes/Tiles/`, `Prototypes/Entities/`, and `Prototypes/Catalog/`, parses each with `js-yaml`, and extracts entries with `type: 'tile'` or `type: 'entity'`.
+Discovery calls `listFiles()` on the active `ResourceProvider`, which resolves against whichever fork the user loaded: the picked directory handle in the browser, or the native fork directory on the desktop build. It lists all `.yml` files under `Prototypes/Tiles/`, `Prototypes/Entities/`, and `Prototypes/Catalog/`, parses each with `js-yaml`, and extracts entries with `type: 'tile'` or `type: 'entity'`.
 
 #### Catalog Directory Scanning
 
