@@ -194,10 +194,10 @@ export const EditorCanvas: React.FC<Props> = ({
     return button === 1 || isSpaceHeldRef.current || toolRef.current?.name === 'pan';
   }, []);
 
-  // Safety net: end panning on any release or focus loss anywhere, not just on
-  // the canvas. A release over a side panel (or a pointer grab we didn't see)
-  // would otherwise leave isPanning stuck on. Pan-only; tool drags are ended by
-  // the canvas handlers.
+  // Belt-and-braces: end panning on focus loss or a release anywhere. Pointer
+  // capture below is the primary guarantee that releases reach the canvas;
+  // this backstops the cases capture can't make promises about (capture call
+  // failed, alt-tab mid-gesture on platforms that skip pointercancel).
   useEffect(() => {
     const endPan = () => {
       isPanning.current = false;
@@ -210,18 +210,38 @@ export const EditorCanvas: React.FC<Props> = ({
     };
   }, []);
 
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
+  // Capture the pointer for the duration of a gesture: the browser then
+  // delivers every move and the release to the canvas no matter where the
+  // cursor goes, including outside the window. Without capture, a release
+  // off-canvas is simply never seen, and no amount of bookkeeping downstream
+  // can fully recover (the old stuck-pan / eaten-release desync family).
+  const capturePointer = useCallback((e: React.PointerEvent) => {
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+    } catch {
+      // Capture is an enhancement; the e.buttons liveness heal still backstops.
+    }
+  }, []);
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
       setContextMenu(null);
+      // One gesture at a time. Chorded mouse buttons don't fire pointerdown
+      // again, but a second pointer (touch, pen) or a synthetic event could
+      // otherwise start a pan mid-drag and move the camera under the tool's
+      // anchor.
+      if (isPanning.current || toolDragActive.current) return;
       if (shouldPan(e.button)) {
         // Middle-button mousedown otherwise triggers the browser's autoscroll,
         // which captures the pointer and swallows the matching mouseup, leaving
         // the pan stuck on (view drifts, clicks stop selecting).
         e.preventDefault();
+        capturePointer(e);
         isPanning.current = true;
         lastMouse.current = { x: e.clientX, y: e.clientY };
         return;
       }
+      capturePointer(e);
 
       isShiftHeldRef.current = e.shiftKey;
       isCtrlHeldRef.current = e.ctrlKey || e.metaKey;
@@ -279,11 +299,11 @@ export const EditorCanvas: React.FC<Props> = ({
         tool?.onMouseDown(getToolContext(), tile.x, tile.y, e.button);
       }
     },
-    [screenToWorld, getToolContext, shouldPan],
+    [screenToWorld, getToolContext, shouldPan, capturePointer],
   );
 
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
       isShiftHeldRef.current = e.shiftKey;
       isCtrlHeldRef.current = e.ctrlKey || e.metaKey;
       const tile = screenToWorld(e.clientX, e.clientY);
@@ -292,14 +312,14 @@ export const EditorCanvas: React.FC<Props> = ({
       cursorWorld.current = world;
       markOverlayDirty();
 
-      // Liveness check: e.buttons is ground truth for what is held RIGHT NOW. A
-      // mousemove with no buttons down while we still think a drag is in progress
-      // means the matching mouseup was eaten (released outside the window, native
-      // autoscroll, a menu swallowing it). Trust the hardware over our own
-      // bookkeeping and close the stale state out BEFORE acting on it; otherwise a
-      // stuck pan drags the world along with the bare cursor, and the next click
-      // hit-tests against a camera the user never chose (the "selection lands on a
-      // random spot / view snaps back" desync).
+      // Liveness check: e.buttons is ground truth for what is held RIGHT NOW.
+      // Pointer capture should make an eaten release impossible, but this is
+      // the backstop for when capture wasn't granted (setPointerCapture threw,
+      // synthetic events): a move with no buttons down while we still think a
+      // drag is live means the release was missed. Trust the hardware and
+      // close the stale state out BEFORE acting on it; otherwise a stuck pan
+      // drags the world along with the bare cursor, and the next click
+      // hit-tests against a camera the user never chose.
       if (e.buttons === 0) {
         isPanning.current = false;
         if (toolDragActive.current) {
@@ -329,19 +349,46 @@ export const EditorCanvas: React.FC<Props> = ({
     [camera, screenToWorld, getToolContext],
   );
 
-  const handleMouseUp = useCallback(
-    (e: React.MouseEvent) => {
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent) => {
       isShiftHeldRef.current = e.shiftKey;
       if (isPanning.current) {
         isPanning.current = false;
         return;
       }
+      // Only a live canvas-originated drag gets its release. An unpaired up
+      // (down happened on a panel, or the gesture was already closed out by a
+      // heal or cancel) must not reach the tool: tools treat onMouseUp as a
+      // click/commit, and a phantom one selects or drops at a spot the user
+      // never clicked.
+      if (!toolDragActive.current) return;
       markOverlayDirty();
       toolDragActive.current = false;
       const tool = toolRef.current;
       const usePrecise = e.shiftKey && (tool?.name === 'entityPlace' || tool?.name === 'entitySelect');
       const tile = screenToWorld(e.clientX, e.clientY, usePrecise);
       tool?.onMouseUp(getToolContext(), tile.x, tile.y);
+    },
+    [screenToWorld, getToolContext],
+  );
+
+  // The browser or OS took the gesture away (pointercancel, capture lost to a
+  // native drag or window change). Close out live state the same way the
+  // liveness heal does: a pan just ends, a tool drag gets its release at the
+  // last known position. Also wired to lostpointercapture, which fires after
+  // every normal pointerup too; by then both flags are already false and this
+  // is a no-op.
+  const handlePointerCancel = useCallback(
+    (e: React.PointerEvent) => {
+      isPanning.current = false;
+      if (!toolDragActive.current) return;
+      toolDragActive.current = false;
+      const tool = toolRef.current;
+      const world = screenToWorld(e.clientX, e.clientY, true);
+      const usePrecise = isShiftHeldRef.current && (tool?.name === 'entityPlace' || tool?.name === 'entitySelect');
+      const coord = usePrecise ? world : { x: Math.floor(world.x), y: Math.floor(world.y) };
+      tool?.onMouseUp(getToolContext(), coord.x, coord.y);
+      markOverlayDirty();
     },
     [screenToWorld, getToolContext],
   );
@@ -953,11 +1000,21 @@ export const EditorCanvas: React.FC<Props> = ({
     <>
       <canvas
         ref={canvasRef}
-        style={{ width: '100%', height: '100%', display: 'block', cursor: getCursor(), imageRendering: 'pixelated' }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'block',
+          cursor: getCursor(),
+          imageRendering: 'pixelated',
+          // Pointer events own all gestures; without this, touch scroll/zoom
+          // would fight the capture.
+          touchAction: 'none',
+        }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
+        onLostPointerCapture={handlePointerCancel}
         onWheel={handleWheel}
         onContextMenu={handleContextMenu}
       />

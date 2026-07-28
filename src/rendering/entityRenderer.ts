@@ -159,16 +159,18 @@ export function isLayerVisible(
   layers: LayerVisibility,
   registry?: IPrototypeRegistry,
 ): boolean {
+  // Markers are a semantic category, not a depth band: MarkerBase (and with it
+  // the whole spawner family) draws at Overdoors (+10), so depth-first
+  // bucketing would file every marker under Doors. Classify them before depth.
+  // AtmosFix markers hide with either switch: they are markers, and they
+  // also have their own toggle so spawn points can stay visible alone.
+  if (isAtmosFixPrototype(prototype, registry)) return layers.markers && layers.atmosMarkers;
+  if (isMarkerPrototype(prototype, registry)) return layers.markers;
+
   if (drawDepthValue <= -13) return layers.subfloor;
   if (drawDepthValue <= -5) return layers.floorObjects;
   if (drawDepthValue <= -1) return layers.structures;
-  if (drawDepthValue <= 7) {
-    // AtmosFix markers hide with either switch: they are markers, and they
-    // also have their own toggle so spawn points can stay visible alone.
-    if (isAtmosFixPrototype(prototype, registry)) return layers.markers && layers.atmosMarkers;
-    if (isMarkerPrototype(prototype, registry)) return layers.markers;
-    return layers.objects;
-  }
+  if (drawDepthValue <= 7) return layers.objects;
   if (drawDepthValue <= 10) return layers.doors;
   return layers.objects; // effects, ghosts, overlays
 }

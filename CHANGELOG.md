@@ -12,6 +12,23 @@ workflow copies it into the GitHub release notes.
 
 ### Fixed
 
+- The Markers and Atmos Markers layer toggles did nothing, and the Doors
+  toggle hid every marker on the map along with the doors. Markers draw in
+  the same depth band as doors (Overdoors), and the layer filter sorted
+  purely by draw depth, so all markers landed in the Doors bucket. Markers
+  now classify by what they are instead of where they draw.
+- Reworked canvas input from the ground up to end the pan/drag view desyncs.
+  The canvas now uses pointer capture: a pan or drag that starts on the
+  canvas owns the mouse until release, so dragging across side panels, out
+  of the window, or over other UI can no longer strand a gesture halfway.
+  Three desync sources this removes outright: leaving the canvas mid-drag
+  used to silently commit the drag at the edge (marquees ended early,
+  entity moves dropped where you never released); a release that arrived
+  without its matching press could fire a phantom click that selected or
+  dropped at a spot you never clicked; and pressing a second mouse button
+  mid-drag started a pan underneath the active drag, shifting the view out
+  from under it. One gesture at a time now, and releases always reach the
+  editor.
 - Clicking any button or checkbox left keyboard focus stuck on that control,
   browser-style: after toggling a layer checkbox, Space toggled the checkbox
   again instead of panning, arrow keys walked the panel, and editor
