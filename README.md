@@ -17,7 +17,7 @@ sheets, so it always reflects the current state of the content it is pointed at.
 
 > **Note on game content:** This repository contains only the editor. It ships with
 > **no** Space Station 14 game assets (prototypes, textures, sprites). You supply those
-> from your own SS14 fork: see [Where it lives](#where-it-lives) below.
+> from your own SS14 fork: see [Pointing it at game content](#pointing-it-at-game-content) below.
 
 > **Windows: the download is not code-signed yet.** The release `.exe` is unsigned, so
 > SmartScreen will show "Windows protected your PC" the first time you run it. Click
@@ -77,28 +77,28 @@ desktop build (native menus, real file dialogs, local fork loading) is the prima
   fork folder you pick.
 - All file processing happens locally; nothing is uploaded.
 
-## Where it lives
+## Pointing it at game content
 
-The editor is designed to sit in the `Tools/` directory of a Space Station 14 fork:
+GRIMP is a standalone application. It does not bundle game assets and does not need to
+live inside a fork, so install or clone it wherever you like.
 
-```
-<your-ss14-fork>/
-  Resources/            # the fork's game content (prototypes + textures)
-  Tools/
-    grimp/                              # <- this repository
-```
+To load content, use **Open Fork Folder** on the landing screen and pick any SS14 fork's
+root directory. The editor reads that fork's `Resources/` folder directly and rescans it
+whenever you point it somewhere new. On the desktop build this is a native folder picker;
+in the browser it uses the File System Access API, with an upload fallback for Firefox and
+Safari.
 
-The dev server resolves the game content at `../../Resources` relative to the project
-root, which is exactly your fork's `Resources/` folder when the editor lives at
-`<fork>/Tools/grimp/`. You can clone it anywhere, but this layout makes the dev server
-"just work" against live content.
+> **Note:** There is one dev-only convenience left over from the browser era. The Vite dev
+> server still serves content from `../../Resources` relative to the project root, so a
+> clone that happens to sit two levels below a fork's content (for example
+> `<fork>/Tools/grimp/`) gets that fork's live content with no folder pick. That layout is
+> optional, not the intended home.
 
 ## Getting started (development)
 
 Requirements: [Node.js](https://nodejs.org/) 18+ and npm.
 
 ```bash
-# from <your-ss14-fork>/Tools/
 git clone <this-repo-url> grimp
 cd grimp
 npm install
