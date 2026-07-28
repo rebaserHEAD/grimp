@@ -679,7 +679,9 @@ export const EditorCanvas: React.FC<Props> = ({
           if (lightingRef.current && s.entities.length > 0) {
             lCtx.save();
             lCtx.scale(dpr, dpr);
-            renderLightmap(lCtx, s.entities, s.registry, bufCam, bw, bh, wallCacheRef.current ?? undefined);
+            // s.grid bounds clip the effect to the active grid's tile rect,
+            // so ambient darkness stops dimming the space background.
+            renderLightmap(lCtx, s.entities, s.registry, bufCam, bw, bh, wallCacheRef.current ?? undefined, s.grid);
             lCtx.restore();
           }
         }

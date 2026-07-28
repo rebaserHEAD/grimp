@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { extractLightInfo, computeGradientStops, renderLightmap, collectVisibleLights } from '../lightRenderer';
+import {
+  extractLightInfo,
+  computeGradientStops,
+  colorToRgb,
+  renderLightmap,
+  collectVisibleLights,
+} from '../lightRenderer';
 import type { VisibleLight } from '../lightRenderer';
 import { buildWallSegmentCache } from '../wallSegments';
 import { rebuildSpatialIndex } from '../spatialIndex';
@@ -166,6 +172,58 @@ describe('computeGradientStops', () => {
     expect(stops[0].color).toContain('255'); // red channel
     expect(stops[0].color).toContain(', 0,'); // green = 0
   });
+
+  it('resolves named colors instead of collapsing them to black (#25)', () => {
+    // parseInt('re', 16) -> NaN -> 0 was the old path: a named color became
+    // rgba(0,0,0,..) and the additive tint pass contributed nothing.
+    const stops = computeGradientStops('green', 1.0, 6.8);
+    expect(stops[0].color).toBe(`rgba(0, 128, 0, ${(1).toFixed(4)})`);
+  });
+
+  it('falls back to white, never black, for unparseable colors', () => {
+    const stops = computeGradientStops('not-a-color', 1.0, 6.8);
+    expect(stops[0].color).toContain('255, 255, 255');
+  });
+});
+
+describe('colorToRgb', () => {
+  it.each([
+    ['#FF0000', { r: 255, g: 0, b: 0 }],
+    ['#ff8000', { r: 255, g: 128, b: 0 }],
+    ['#F80', { r: 255, g: 136, b: 0 }], // #RGB shorthand expands per-digit
+    ['#FF8000CC', { r: 255, g: 128, b: 0 }], // alpha digits ignored
+  ])('parses hex %s', (input, expected) => {
+    expect(colorToRgb(input)).toEqual(expected);
+  });
+
+  // Every name observed on PointLight.color in the fork corpus survey,
+  // in the casing the prototypes actually use.
+  it.each([
+    ['green', '#008000'],
+    ['Red', '#FF0000'],
+    ['orange', '#FFA500'],
+    ['darkorange', '#FF8C00'],
+    ['orangered', '#FF4500'],
+    ['OrangeRed', '#FF4500'],
+    ['SkyBlue', '#87CEEB'],
+    ['deepskyblue', '#00BFFF'],
+    ['lightblue', '#ADD8E6'],
+    ['LightGreen', '#90EE90'],
+    ['MediumPurple', '#9370DB'],
+    ['plum', '#DDA0DD'],
+    ['Lime', '#00FF00'],
+    ['cyan', '#00FFFF'],
+    ['yellow', '#FFFF00'],
+    ['white', '#FFFFFF'],
+    ['blue', '#0000FF'],
+  ])('resolves corpus named color %s', (name, hex) => {
+    expect(colorToRgb(name)).toEqual(colorToRgb(hex));
+    expect(colorToRgb(name)).not.toBeNull();
+  });
+
+  it.each([['not-a-color'], ['#GGGGGG'], ['#12345'], ['']])('returns null for %s', (input) => {
+    expect(colorToRgb(input)).toBeNull();
+  });
 });
 
 describe('PointLight export compatibility', () => {
@@ -257,8 +315,45 @@ function createMockCanvasContext() {
     lineTo: noop,
     closePath: noop,
     clip: noop,
+    rect: noop,
     createRadialGradient: () => ({ addColorStop: noop }),
   };
+}
+
+/**
+ * Recording variant: captures each radial gradient's stops together with the
+ * composite operation active when it was created, plus clip-rect calls. jsdom
+ * has no rasterizer (setupDom stubs getContext as a recorder), so compositing
+ * behavior is asserted through the recorded draw commands, not pixels.
+ */
+function createRecordingCanvasContext() {
+  const gradients: { op: string; stops: { offset: number; color: string }[] }[] = [];
+  const rects: number[][] = [];
+  const ctx = {
+    globalCompositeOperation: 'source-over',
+    fillStyle: '' as unknown,
+    fillRect: () => {},
+    save: () => {},
+    restore: () => {},
+    beginPath: () => {},
+    moveTo: () => {},
+    lineTo: () => {},
+    closePath: () => {},
+    clip: () => {},
+    rect: (...args: number[]) => {
+      rects.push(args);
+    },
+    createRadialGradient: () => {
+      const record = { op: ctx.globalCompositeOperation, stops: [] as { offset: number; color: string }[] };
+      gradients.push(record);
+      return {
+        addColorStop: (offset: number, color: string) => {
+          record.stops.push({ offset, color });
+        },
+      };
+    },
+  };
+  return { ctx: ctx as unknown as CanvasRenderingContext2D, gradients, rects };
 }
 
 describe('renderLightmap shadow integration', () => {
@@ -307,6 +402,82 @@ describe('renderLightmap shadow integration', () => {
     expect(() => {
       renderLightmap(ctx, [lightEntity], null, camera, 800, 600);
     }).not.toThrow();
+  });
+});
+
+describe('renderLightmap compositing (#25)', () => {
+  function makeIndexedLight(energy: number, color = '#FFFFFF'): ImportedEntity {
+    return {
+      uid: 1,
+      prototype: 'PoweredLight',
+      position: { x: 5, y: 5 },
+      rotation: 0,
+      components: [{ type: 'PointLight', color, radius: 5, energy, enabled: true }],
+    };
+  }
+
+  it('darkness punch reaches full clear at the center regardless of energy', () => {
+    const light = makeIndexedLight(0.8); // stock wall light energy
+    rebuildSpatialIndex([light]);
+    const { ctx, gradients } = createRecordingCanvasContext();
+
+    renderLightmap(ctx, [light], null, mockCamera(), 800, 600);
+
+    const punch = gradients.find((g) => g.op === 'destination-out');
+    expect(punch).toBeDefined();
+    // Center stop alpha must be 1.0: with the old attenuation*energy alpha a
+    // 0.8-energy light could never clear its own center (0.6 ambient cut only
+    // to 0.12 residual darkness, ~muddy everywhere).
+    expect(punch!.stops[0].color).toBe(`rgba(255, 255, 255, ${(1).toFixed(4)})`);
+  });
+
+  it('tint pass still scales with energy', () => {
+    const light = makeIndexedLight(0.5, '#FF0000');
+    rebuildSpatialIndex([light]);
+    const { ctx, gradients } = createRecordingCanvasContext();
+
+    renderLightmap(ctx, [light], null, mockCamera(), 800, 600);
+
+    const tint = gradients.find((g) => g.op === 'lighter');
+    expect(tint).toBeDefined();
+    // Tint center alpha = energy * 0.4
+    expect(tint!.stops[0].color).toBe(`rgba(255, 0, 0, ${(0.5 * 0.4).toFixed(4)})`);
+  });
+
+  it('clips the whole effect to the grid rect when bounds are provided', () => {
+    const light = makeIndexedLight(1.0);
+    rebuildSpatialIndex([light]);
+    const { ctx, rects } = createRecordingCanvasContext();
+    const camera = mockCamera();
+
+    const bounds = { offsetX: -2, offsetY: -3, width: 10, height: 8 };
+    renderLightmap(ctx, [light], null, camera, 800, 600, undefined, bounds);
+
+    expect(rects).toHaveLength(1);
+    const [x, y, w, h] = rects[0];
+    // mockCamera maps world tile n to n*32 on both axes; tileSize = 32.
+    expect(x).toBe(camera.worldToScreenX(bounds.offsetX, 800));
+    expect(y).toBe(camera.worldToScreenY(bounds.offsetY + bounds.height - 1, 600));
+    expect(w).toBe(bounds.width * 32);
+    expect(h).toBe(bounds.height * 32);
+  });
+
+  it('skips the clip entirely without bounds or with an empty grid', () => {
+    const light = makeIndexedLight(1.0);
+    rebuildSpatialIndex([light]);
+
+    const noBounds = createRecordingCanvasContext();
+    renderLightmap(noBounds.ctx, [light], null, mockCamera(), 800, 600);
+    expect(noBounds.rects).toHaveLength(0);
+
+    const emptyGrid = createRecordingCanvasContext();
+    renderLightmap(emptyGrid.ctx, [light], null, mockCamera(), 800, 600, undefined, {
+      offsetX: 0,
+      offsetY: 0,
+      width: 0,
+      height: 0,
+    });
+    expect(emptyGrid.rects).toHaveLength(0);
   });
 });
 

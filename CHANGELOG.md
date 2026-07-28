@@ -21,6 +21,14 @@ workflow copies it into the GitHub release notes.
 
 ### Fixed
 
+- Lighting preview (#25) is worth turning on again. Three fixes: lit areas
+  now actually clear the darkness at the light's center (the darkness cut
+  used to be scaled by the light's energy, so a standard 0.8-energy wall
+  light left everything muddy); named light colors (green, SkyBlue,
+  MediumPurple, and dozens more across forks) now render as their color
+  instead of silently contributing nothing; and the darkness overlay now
+  covers only the grid instead of dimming the space background around the
+  ship.
 - Rotating decal placement counter-clockwise (Shift+R) could stop responding
   to the selected decal after switching palette items; the clockwise twin
   was unaffected.

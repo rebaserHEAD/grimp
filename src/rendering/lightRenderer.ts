@@ -4,6 +4,7 @@ import type { WallSegmentCache } from './wallSegments';
 import { excludeTileEdges } from './wallSegments';
 import { computeVisibilityPolygon } from './visibility';
 import { spatialGetInRect } from './spatialIndex';
+import { CSS_COLOR_HEX } from './cssColors';
 
 export interface GradientStop {
   offset: number; // 0-1
@@ -99,14 +100,49 @@ function ss14Attenuation(s: number, falloff: number): number {
 const GRADIENT_SAMPLES = 8;
 
 /**
+ * Resolve a PointLight color string to RGB. Prototypes carry hex in several
+ * widths (#RGB, #RRGGBB, #RRGGBBAA) and named colors in any casing (green,
+ * SkyBlue, MediumPurple, ...); the engine resolves names via .NET's color
+ * table, which matches the CSS/X11 set. Alpha digits are ignored: the
+ * gradient computes its own alpha from attenuation.
+ * Returns null for anything unrecognized.
+ */
+export function colorToRgb(color: string): { r: number; g: number; b: number } | null {
+  let hex = color.trim();
+  if (!hex.startsWith('#')) {
+    const named = CSS_COLOR_HEX[hex.toLowerCase()];
+    if (!named) return null;
+    hex = named;
+  }
+  const digits = hex.slice(1);
+  if (digits.length === 3 || digits.length === 4) {
+    const r = parseInt(digits[0] + digits[0], 16);
+    const g = parseInt(digits[1] + digits[1], 16);
+    const b = parseInt(digits[2] + digits[2], 16);
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return null;
+    return { r, g, b };
+  }
+  if (digits.length === 6 || digits.length === 8) {
+    const r = parseInt(digits.slice(0, 2), 16);
+    const g = parseInt(digits.slice(2, 4), 16);
+    const b = parseInt(digits.slice(4, 6), 16);
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return null;
+    return { r, g, b };
+  }
+  return null;
+}
+
+/**
  * Compute radial gradient color stops for a point light.
  * Approximates SS14's attenuation curve using sampled gradient stops.
  * Energy scales brightness. Falloff controls curve steepness (default 6.8).
+ *
+ * Unparseable colors fall back to WHITE, never black: a black gradient is an
+ * invisible light in the additive pass, which is exactly the named-color bug
+ * this replaced (parseInt('re', 16) -> NaN -> 0).
  */
-export function computeGradientStops(hexColor: string, energy: number, falloff: number): GradientStop[] {
-  const r = parseInt(hexColor.slice(1, 3), 16) || 0;
-  const g = parseInt(hexColor.slice(3, 5), 16) || 0;
-  const b = parseInt(hexColor.slice(5, 7), 16) || 0;
+export function computeGradientStops(color: string, energy: number, falloff: number): GradientStop[] {
+  const { r, g, b } = colorToRgb(color) ?? { r: 255, g: 255, b: 255 };
 
   const stops: GradientStop[] = [];
   for (let i = 0; i < GRADIENT_SAMPLES; i++) {
@@ -257,6 +293,11 @@ function clipToVisibility(
  * Pass 2, Color tint: Additive ('lighter') colored gradients for light color
  *
  * Composited onto scene via 'multiply' by the caller (EditorCanvas).
+ *
+ * When `gridBounds` is provided, the whole effect is clipped to the grid's
+ * tile rectangle: the ambient darkness used to cover the entire canvas, which
+ * dimmed the space background 60% and read as a rendering bug rather than a
+ * lighting preview. Space is not the mapper's problem; the ship is.
  */
 export function renderLightmap(
   ctx: CanvasRenderingContext2D,
@@ -272,6 +313,7 @@ export function renderLightmap(
   canvasW: number,
   canvasH: number,
   wallCache?: WallSegmentCache,
+  gridBounds?: { offsetX: number; offsetY: number; width: number; height: number },
 ): void {
   const tileSize = 32 * camera.zoom;
 
@@ -282,6 +324,18 @@ export function renderLightmap(
     canvasW,
     canvasH,
   );
+
+  ctx.save();
+  if (gridBounds && gridBounds.width > 0 && gridBounds.height > 0) {
+    // Clip every pass (ambient fill, punches, tint) to the grid's tile rect.
+    // worldToScreenY(wy) returns the TOP edge of tile row wy, so the rect's
+    // top is the top of the grid's highest row.
+    const left = camera.worldToScreenX(gridBounds.offsetX, canvasW);
+    const top = camera.worldToScreenY(gridBounds.offsetY + gridBounds.height - 1, canvasH);
+    ctx.beginPath();
+    ctx.rect(left, top, gridBounds.width * tileSize, gridBounds.height * tileSize);
+    ctx.clip();
+  }
 
   // === Pass 1: Darkness overlay ===
   ctx.globalCompositeOperation = 'source-over';
@@ -306,7 +360,13 @@ export function renderLightmap(
         entityTileY,
       );
     }
-    const stops = computeGradientStops('#FFFFFF', light.energy, light.falloff);
+    // Energy-independent punch (energy = 1): the darkness cut follows the
+    // attenuation curve alone, so a lit center always clears to ~0 residual
+    // darkness. With alpha = attenuation * energy, a stock 0.8-energy wall
+    // light could never clear its own center (0.6 ambient cut to 0.12
+    // residual) and every map looked muddy. Energy still scales the color
+    // tint in Pass 2, which is where brightness belongs in this model.
+    const stops = computeGradientStops('#FFFFFF', 1.0, light.falloff);
     const grad = ctx.createRadialGradient(lx, ly, 0, lx, ly, radiusPx);
     for (const stop of stops) {
       grad.addColorStop(stop.offset, stop.color);
@@ -346,4 +406,5 @@ export function renderLightmap(
   }
 
   ctx.globalCompositeOperation = 'source-over';
+  ctx.restore();
 }
