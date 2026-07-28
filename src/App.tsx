@@ -1225,6 +1225,7 @@ export const App: React.FC = () => {
         onNewGrid={handleNewGrid}
         documentKind={getDocumentKind(state)}
         shipMetaHits={shipMetaHits}
+        stationProtoResolver={state.registry}
         onShowMapProperties={() => setShowMapProperties(true)}
         onShowSettings={() => setShowSettings(true)}
         onImport={handleImport}

@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { ShipMetaBadges } from './ShipMetaBadges';
-import type { ShipMetaEntry } from '../loaders/shipMetaIndex';
+import type { ShipMetaEntry, StationProtoResolver } from '../loaders/shipMetaIndex';
 
 interface Props {
   onNewMap: () => void;
@@ -9,6 +9,8 @@ interface Props {
   documentKind: 'Map' | 'Grid';
   /** Prototypes referencing the open file (#3): vessel/gameMap/POI/salvage badges. */
   shipMetaHits?: ShipMetaEntry[];
+  /** Resolves stationProto ids for the expedition-capability badge. */
+  stationProtoResolver?: StationProtoResolver | null;
   onShowMapProperties: () => void;
   onShowSettings: () => void;
   onImport: (content: string, fileName?: string) => void;
@@ -114,6 +116,7 @@ export const MenuBar: React.FC<Props> = ({
   onNewGrid,
   documentKind,
   shipMetaHits,
+  stationProtoResolver,
   onShowMapProperties,
   onShowSettings,
   onImport,
@@ -262,7 +265,7 @@ export const MenuBar: React.FC<Props> = ({
         {documentKind}
       </span>
 
-      <ShipMetaBadges hits={shipMetaHits ?? []} />
+      <ShipMetaBadges hits={shipMetaHits ?? []} registry={stationProtoResolver} />
 
       {forkName && (
         <div className="relative ml-2" ref={forkMenuRef}>

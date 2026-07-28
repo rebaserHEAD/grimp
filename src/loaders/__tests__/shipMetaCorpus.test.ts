@@ -177,6 +177,28 @@ describe.skipIf(!FORK_DIR)('ship-meta index against a real fork', () => {
     }
   }, 300_000);
 
+  it('captures stationProtos on ship wrappers: the expedition mechanics switch', async () => {
+    const index = await scanShipMeta(forkProvider());
+
+    // Ship wrappers = gameMaps whose file is also referenced by a vessel.
+    const wrappers = index.entries.filter(
+      (e) => e.kind === 'gameMap' && lookupByPath(index, e.path).some((h) => h.kind === 'vessel'),
+    );
+    expect(wrappers.length).toBeGreaterThan(100); // ~148 in the Triad corpus
+
+    const withProto = wrappers.filter((w) => (w.stationProtos ?? []).length > 0);
+    console.log(`[shipmeta] ${wrappers.length} ship wrappers, ${withProto.length} declare a stationProto`);
+    // Every ship wrapper's station entry declares its stationProto: that proto
+    // deciding SalvageExpeditionData is how expedition ships differ from the rest.
+    expect(withProto.length).toBe(wrappers.length);
+
+    const protoIds = new Set(withProto.flatMap((w) => w.stationProtos ?? []));
+    console.log(`[shipmeta] distinct stationProtos on ship wrappers: ${[...protoIds].sort().join(', ')}`);
+    // The known expedition proto must be among them, or the fork rewired the
+    // mechanic and the badge logic needs a fresh look.
+    expect([...protoIds].some((p) => /expedition/i.test(p))).toBe(true);
+  }, 300_000);
+
   it('finds purchasable vessels, and treats the opt-out flag as the corpus writes it', async () => {
     const index = await scanShipMeta(forkProvider());
     const vessels = index.entries.filter((e) => e.kind === 'vessel');

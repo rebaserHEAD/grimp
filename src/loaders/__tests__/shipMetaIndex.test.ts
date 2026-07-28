@@ -5,6 +5,7 @@ import {
   normalizeResourcePath,
   lookupByPath,
   isPurchasableVessel,
+  isExpeditionCapable,
   scanShipMeta,
   toResourceRelativePath,
   type ShipMetaEntry,
@@ -154,6 +155,26 @@ describe('parseShipMetaYaml', () => {
     expect(entry.stations).toEqual(['Amber', 'AmberSecondary']);
   });
 
+  it('captures stationProtos and inline component types: the expedition switch lives there', () => {
+    const shipWrapper = `
+- type: gameMap
+  id: Arkansaw
+  mapPath: /Maps/_Mono/Shuttles/Expedition/arkansaw.yml
+  stations:
+    Arkansaw:
+      stationProto: StandardFrontierExpeditionVessel
+      components:
+        - type: StationNameSetup
+          mapNameTemplate: 'Arkansaw EXP{1}'
+        - type: StationJobs
+          availableJobs:
+            Contractor: [ 0, 0 ]
+`;
+    const [entry] = parseShipMetaYaml(shipWrapper, 'f.yml');
+    expect(entry.stationProtos).toEqual(['StandardFrontierExpeditionVessel']);
+    expect(entry.stationComponents).toEqual(['StationNameSetup', 'StationJobs']);
+  });
+
   it('reads a pointOfInterest and its gridPath', () => {
     const [entry] = parseShipMetaYaml(POI_YAML, 'f.yml');
     expect(entry).toMatchObject({
@@ -254,6 +275,48 @@ describe('buildShipMetaIndex / lookupByPath', () => {
   it('returns empty for a file nothing references', () => {
     const index = buildShipMetaIndex(entries);
     expect(lookupByPath(index, '/Maps/_Triad/Shuttles/unreferenced.yml')).toEqual([]);
+  });
+});
+
+describe('isExpeditionCapable', () => {
+  const REGISTRY = {
+    getEntity: (id: string) =>
+      id === 'StandardFrontierExpeditionVessel'
+        ? { components: [{ type: 'StationData' }, { type: 'SalvageExpeditionData' }] }
+        : id === 'StandardFrontierSecurityVessel'
+          ? { components: [{ type: 'StationData' }] }
+          : null,
+  };
+
+  const wrapper = (stationProtos: string[], stationComponents: string[] = []): ShipMetaEntry => ({
+    id: 'X',
+    kind: 'gameMap',
+    path: '/Maps/x.yml',
+    sourceFile: 'f.yml',
+    stations: ['X'],
+    stationProtos,
+    stationComponents,
+  });
+
+  it('is true when the stationProto resolves to SalvageExpeditionData', () => {
+    expect(isExpeditionCapable(wrapper(['StandardFrontierExpeditionVessel']), REGISTRY)).toBe(true);
+  });
+
+  it('is false for a plain ship stationProto', () => {
+    expect(isExpeditionCapable(wrapper(['StandardFrontierSecurityVessel']), REGISTRY)).toBe(false);
+  });
+
+  it('is true from inline components even without a registry', () => {
+    expect(isExpeditionCapable(wrapper([], ['SalvageExpeditionData']), null)).toBe(true);
+  });
+
+  it('under-reports rather than guesses when the registry is missing', () => {
+    expect(isExpeditionCapable(wrapper(['StandardFrontierExpeditionVessel']), null)).toBe(false);
+  });
+
+  it('is false for non-gameMap kinds', () => {
+    const vessel: ShipMetaEntry = { id: 'X', kind: 'vessel', path: '/Maps/x.yml', sourceFile: 'f.yml' };
+    expect(isExpeditionCapable(vessel, REGISTRY)).toBe(false);
   });
 });
 

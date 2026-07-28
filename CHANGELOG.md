@@ -14,12 +14,14 @@ workflow copies it into the GitHub release notes.
 
 - Ship / POI / station badges (#3): opening a file that a shipyard `vessel`,
   a `gameMap`, a `pointOfInterest`, or a `salvageMap` prototype points at
-  shows what the fork intends it to be, next to the Map/Grid badge. A
-  purchasable ship typically shows both its shipyard listing and its station
-  wrapper; tooltips carry the prototype id, purchasability (an explicit
-  opt-out is called out as NOT purchasable), station ids, and the defining
-  prototype file. Desktop only in practice: the lookup needs the file's
-  on-disk path.
+  shows what the fork intends it to be, next to the Map/Grid badge. Ships
+  show purchasability (an explicit opt-out is called out as NOT purchasable)
+  and an Expedition badge when the ship's station config makes it
+  expedition-capable (its stationProto carries SalvageExpeditionData); the
+  station plumbing every bought ship gets lives in the tooltip instead of
+  masquerading as a Station badge. Standalone maps keep Station / GameMap /
+  POI / Salvage badges. Desktop only in practice: the lookup needs the
+  file's on-disk path.
 
 ### Fixed
 

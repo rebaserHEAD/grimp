@@ -58,6 +58,18 @@ export interface ShipMetaEntry {
   cloakHunter?: boolean;
   /** `gameMap` only: the station ids declared under `stations:`, which key into BecomesStation. */
   stations?: string[];
+  /**
+   * `gameMap` only: the `stationProto` of each station entry, deduped. For the ~150
+   * gameMaps that wrap purchasable ships this is the mechanics switch: the proto decides
+   * whether the ship-station carries `SalvageExpeditionData` (expedition capability) on
+   * top of the standard StationData/Jobs/Spawning kit every ship-station gets.
+   */
+  stationProtos?: string[];
+  /**
+   * `gameMap` only: component types declared inline under a station entry's `components:`,
+   * deduped. Rarely the expedition component is added here instead of via the proto.
+   */
+  stationComponents?: string[];
 }
 
 export interface ShipMetaIndex {
@@ -124,11 +136,27 @@ function asBoolean(value: unknown): boolean | undefined {
   return typeof value === 'boolean' ? value : undefined;
 }
 
-/** Pull the station ids out of a gameMap's `stations:` mapping. */
-function readStations(value: unknown): string[] | undefined {
+/** Pull ids, stationProtos, and inline component types out of a gameMap's `stations:` mapping. */
+function readStations(value: unknown): { ids: string[]; protos: string[]; componentTypes: string[] } | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
   const ids = Object.keys(value as Record<string, unknown>);
-  return ids.length > 0 ? ids : undefined;
+  if (ids.length === 0) return undefined;
+
+  const protos = new Set<string>();
+  const componentTypes = new Set<string>();
+  for (const stationValue of Object.values(value as Record<string, unknown>)) {
+    if (!stationValue || typeof stationValue !== 'object') continue;
+    const station = stationValue as Record<string, unknown>;
+    if (typeof station.stationProto === 'string') protos.add(station.stationProto);
+    if (Array.isArray(station.components)) {
+      for (const comp of station.components) {
+        if (comp && typeof comp === 'object' && typeof (comp as Record<string, unknown>).type === 'string') {
+          componentTypes.add((comp as Record<string, unknown>).type as string);
+        }
+      }
+    }
+  }
+  return { ids, protos: [...protos], componentTypes: [...componentTypes] };
 }
 
 /**
@@ -163,7 +191,12 @@ export function parseShipMetaYaml(yamlContent: string, filePath: string): ShipMe
         meta.purchasable = asBoolean(record.purchasable);
         meta.cloakHunter = asBoolean(record.cloakHunter);
       } else if (kind === 'gameMap') {
-        meta.stations = readStations(record.stations);
+        const stations = readStations(record.stations);
+        if (stations) {
+          meta.stations = stations.ids;
+          if (stations.protos.length > 0) meta.stationProtos = stations.protos;
+          if (stations.componentTypes.length > 0) meta.stationComponents = stations.componentTypes;
+        }
       }
       found.push(meta);
     }
@@ -228,4 +261,35 @@ export function lookupByPath(index: ShipMetaIndex, path: string): ShipMetaEntry[
  */
 export function isPurchasableVessel(entry: ShipMetaEntry): boolean {
   return entry.kind === 'vessel' && entry.purchasable !== false;
+}
+
+/**
+ * The minimal registry surface expedition detection needs: resolve an entity prototype id
+ * to its composed component list (parent chain already merged).
+ */
+export interface StationProtoResolver {
+  getEntity(id: string): { components: { type: string }[] } | null;
+}
+
+/**
+ * Whether a gameMap entry makes its grid expedition-capable.
+ *
+ * Mechanics (verified against the corpus): a purchased ship becomes a station via its
+ * gameMap wrapper, and expedition capability is decided by the wrapper's `stationProto`.
+ * `StandardFrontierExpeditionVessel` is `StandardFrontierVessel` + `BaseStationExpeditions`,
+ * whose sole contribution is `SalvageExpeditionData`, the station-scoped component the
+ * expedition console requires. So: expedition-capable iff some stationProto's composed
+ * components include `SalvageExpeditionData` (or, rarely, the component is added inline in
+ * the stations block).
+ *
+ * The registry resolves the proto's parent chain; without one (still loading), inline
+ * components are the only signal, so this can under-report until the registry is ready.
+ */
+export function isExpeditionCapable(entry: ShipMetaEntry, registry?: StationProtoResolver | null): boolean {
+  if (entry.kind !== 'gameMap') return false;
+  if (entry.stationComponents?.includes('SalvageExpeditionData')) return true;
+  if (!registry) return false;
+  return (entry.stationProtos ?? []).some((proto) =>
+    registry.getEntity(proto)?.components.some((c) => c.type === 'SalvageExpeditionData'),
+  );
 }
