@@ -69,6 +69,15 @@ if (typeof HTMLCanvasElement !== 'undefined') {
   } as unknown as typeof HTMLCanvasElement.prototype.getContext;
 }
 
+// jsdom does not implement pointer capture. EditorCanvas requests capture on
+// pointerdown so drags survive leaving the canvas; a no-op is fine in tests,
+// where events are dispatched straight at the canvas anyway.
+if (typeof Element !== 'undefined' && !Element.prototype.setPointerCapture) {
+  Element.prototype.setPointerCapture = () => {};
+  Element.prototype.releasePointerCapture = () => {};
+  Element.prototype.hasPointerCapture = () => false;
+}
+
 // jsdom does not implement ResizeObserver, which EditorCanvas uses to track its parent's
 // size. A no-op observer is enough: size-driven behavior isn't testable in jsdom anyway
 // (every element measures 0x0), so tests assert on input handling and state instead.
