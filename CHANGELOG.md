@@ -23,6 +23,18 @@ workflow copies it into the GitHub release notes.
   panned instead of selecting, and scrolling silently rotated the selected
   entity instead of zooming. Held keys now release whenever the window
   loses focus.
+- Switching tools mid-interaction (for example via a tool shortcut during a
+  drag) stranded the old tool's in-progress state: ghost previews reappeared
+  the next time the tool was selected, and a half-finished paint or erase
+  stroke stayed in the grid as a silent, non-undoable edit. Tool switches
+  now cancel the outgoing tool's interaction, and cancelled paint/erase
+  strokes revert cleanly.
+- Pressing R in entity-select mode with nothing selected silently switched
+  to the Rectangle tile tool, so the next drag painted tiles instead of
+  selecting. R is now a no-op there when there is nothing to rotate.
+- Escape now cancels the active tool's in-progress action everywhere: paste
+  ghost, marquee drag, pending device link (previously the only case), or
+  an uncommitted stroke.
 
 ## [1.3.0] - 2026-07-26
 

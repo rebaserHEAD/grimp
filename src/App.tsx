@@ -20,6 +20,7 @@ import { DeviceLinkTool } from './tools/deviceLinkTool';
 import { PrefabPlaceTool } from './tools/prefabPlaceTool';
 import type { PrefabData } from './prefab/prefabTypes';
 import { Camera } from './rendering/camera';
+import { useToolLifecycle } from './hooks/useToolLifecycle';
 import { EditorCanvas } from './components/EditorCanvas';
 import { Toolbar } from './components/Toolbar';
 import { PalettePanel } from './components/PalettePanel';
@@ -232,6 +233,9 @@ export const App: React.FC = () => {
   }, [state.dirty]);
 
   const activeTool = TOOL_MAP[state.activeTool] ?? null;
+  // Cancel the outgoing tool's in-progress interaction on every tool switch
+  // (drag anchors, ghost previews, pickers, uncommitted strokes).
+  useToolLifecycle(activeTool);
 
   const selectedEntities = useMemo(() => {
     if (state.selectedEntityUids.length === 0) return [];
@@ -930,18 +934,17 @@ export const App: React.FC = () => {
       onCut: handleCut,
       onPaste: handlePaste,
       onDelete: handleDelete,
+      // Defined whenever a select-mode tool is active, NOT only when something
+      // is selected: with these undefined, useKeyboard lets R fall through to
+      // TOOL_SHORTCUTS['r'] and silently switches to the rectangle tile tool.
+      // Tapping R in entity-select with an empty selection (e.g. right after a
+      // click on empty space cleared it) must be a no-op, not a mode change
+      // that turns the next drag into tile painting. The handlers already
+      // no-op safely on empty selections.
       onRotateEntityCW:
-        (state.activeTool === 'entitySelect' &&
-          (state.selectedEntityUids.length > 0 || state.selectedDecalIds.length > 0 || entitySelectTool.isPasting())) ||
-        state.activeTool === 'select'
-          ? handleRotateEntityCW
-          : undefined,
+        state.activeTool === 'entitySelect' || state.activeTool === 'select' ? handleRotateEntityCW : undefined,
       onRotateEntityCCW:
-        (state.activeTool === 'entitySelect' &&
-          (state.selectedEntityUids.length > 0 || state.selectedDecalIds.length > 0 || entitySelectTool.isPasting())) ||
-        state.activeTool === 'select'
-          ? handleRotateEntityCCW
-          : undefined,
+        state.activeTool === 'entitySelect' || state.activeTool === 'select' ? handleRotateEntityCCW : undefined,
       onCycleEntityRotationCW:
         state.activeTool === 'entityPlace' || state.selectedPaletteItem?.type === 'decal'
           ? handleCycleEntityRotationCW
@@ -950,7 +953,10 @@ export const App: React.FC = () => {
         state.activeTool === 'entityPlace' || state.selectedPaletteItem?.type === 'decal'
           ? handleCycleEntityRotationCCW
           : undefined,
-      onEscape: state.activeTool === 'deviceLink' ? () => deviceLinkTool.cancelLinking() : undefined,
+      // Escape cancels whatever the active tool has in progress: pending
+      // device link (the old special case), paste ghost, marquee drag,
+      // uncommitted stroke. deactivate() is exactly that cancel.
+      onEscape: () => TOOL_MAP[state.activeTool]?.deactivate?.(),
       onShowShortcuts: () => setShowShortcuts((s) => !s),
       onFocusSearch: () => searchInputRef.current?.focus(),
       onOpenSettings: () => setShowSettings(true),
