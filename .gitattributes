@@ -1,0 +1,22 @@
+# Normalize every text file to LF in the repository AND in the working tree.
+#
+# Prettier is configured with its default endOfLine: "lf". Without this file a
+# Windows checkout with core.autocrlf=true writes CRLF into the working tree,
+# so `npm run format:check` fails on every file while CI (Linux, LF) passes.
+# `eol=lf` pins the checkout regardless of the contributor's autocrlf setting.
+* text=auto eol=lf
+
+# Binaries: never touch the bytes, never diff as text.
+*.png binary
+*.ico binary
+*.icns binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.exe binary
+*.dll binary
+*.zip binary
+*.AppImage binary
