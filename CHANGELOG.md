@@ -10,6 +10,20 @@ workflow copies it into the GitHub release notes.
 
 ## [Unreleased]
 
+### Fixed
+
+- Panning could get stuck "on" when a mouse release went missing (released
+  outside the window, eaten by native middle-click handling). The view would
+  then follow the bare cursor back toward the pan start, and the next click
+  selected a spot the cursor never visibly touched. The editor now checks
+  which buttons are actually held on every mouse move and ends stale pans
+  and tool drags immediately.
+- Space (temporary pan) and R (rotate modifier) could get stuck "held" when
+  a native menu, dialog, or alt-tab stole the key release: every click then
+  panned instead of selecting, and scrolling silently rotated the selected
+  entity instead of zooming. Held keys now release whenever the window
+  loses focus.
+
 ## [1.3.0] - 2026-07-26
 
 ### Added

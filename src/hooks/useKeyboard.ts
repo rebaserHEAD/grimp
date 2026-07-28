@@ -173,11 +173,28 @@ export function useKeyboard(actions: KeyboardActions): { isSpaceHeld: boolean; i
       }
     };
 
+    // Held-key liveness: keyup is not guaranteed to arrive. Native menus, native
+    // dialogs, and alt-tab all steal focus between keydown and keyup, and the
+    // release then goes to whoever has focus. Stuck Space turns every click into
+    // a pan; stuck R turns the scroll wheel into silent entity rotation. Clear
+    // held state whenever the window stops being the one receiving input.
+    const releaseHeldKeys = () => {
+      setIsSpaceHeld(false);
+      setIsRHeld(false);
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') releaseHeldKeys();
+    };
+
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', releaseHeldKeys);
+    document.addEventListener('visibilitychange', onVisibilityChange);
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', releaseHeldKeys);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, [actions]);
 

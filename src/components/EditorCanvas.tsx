@@ -84,6 +84,10 @@ export const EditorCanvas: React.FC<Props> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isPanning = useRef(false);
+  // True while a mousedown has been forwarded to the active tool and its matching
+  // mouseup has not. Lets the liveness check below close out a tool drag whose
+  // release we never received.
+  const toolDragActive = useRef(false);
   const lastMouse = useRef({ x: 0, y: 0 });
   const cursorTile = useRef({ x: 0, y: 0 });
   const cursorWorld = useRef({ x: 0, y: 0 });
@@ -262,6 +266,7 @@ export const EditorCanvas: React.FC<Props> = ({
       const usePrecise = e.shiftKey && (tool?.name === 'entityPlace' || tool?.name === 'entitySelect');
       const tile = screenToWorld(e.clientX, e.clientY, usePrecise);
 
+      toolDragActive.current = true;
       if (tool && tool instanceof EntitySelectTool) {
         if (e.shiftKey) {
           tool.onMouseDownWithShift(getToolContext(), tile.x, tile.y, e.button);
@@ -287,6 +292,27 @@ export const EditorCanvas: React.FC<Props> = ({
       cursorWorld.current = world;
       markOverlayDirty();
 
+      // Liveness check: e.buttons is ground truth for what is held RIGHT NOW. A
+      // mousemove with no buttons down while we still think a drag is in progress
+      // means the matching mouseup was eaten (released outside the window, native
+      // autoscroll, a menu swallowing it). Trust the hardware over our own
+      // bookkeeping and close the stale state out BEFORE acting on it; otherwise a
+      // stuck pan drags the world along with the bare cursor, and the next click
+      // hit-tests against a camera the user never chose (the "selection lands on a
+      // random spot / view snaps back" desync).
+      if (e.buttons === 0) {
+        isPanning.current = false;
+        if (toolDragActive.current) {
+          toolDragActive.current = false;
+          // Close the tool's drag where the cursor is now, same coordinate rules
+          // as a real mouseup.
+          const healTool = toolRef.current;
+          const healPrecise = e.shiftKey && (healTool?.name === 'entityPlace' || healTool?.name === 'entitySelect');
+          const healTile = healPrecise ? world : { x: Math.floor(world.x), y: Math.floor(world.y) };
+          healTool?.onMouseUp(getToolContext(), healTile.x, healTile.y);
+        }
+      }
+
       if (isPanning.current) {
         const dx = e.clientX - lastMouse.current.x;
         const dy = e.clientY - lastMouse.current.y;
@@ -311,6 +337,7 @@ export const EditorCanvas: React.FC<Props> = ({
         return;
       }
       markOverlayDirty();
+      toolDragActive.current = false;
       const tool = toolRef.current;
       const usePrecise = e.shiftKey && (tool?.name === 'entityPlace' || tool?.name === 'entitySelect');
       const tile = screenToWorld(e.clientX, e.clientY, usePrecise);
