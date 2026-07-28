@@ -35,7 +35,7 @@ describe('validateMapDocument', () => {
       entities: [],
       someForkExtension: { anything: true },
     });
-    expect((doc as Record<string, unknown>).someForkExtension).toEqual({ anything: true });
+    expect(doc.someForkExtension).toEqual({ anything: true });
   });
 
   it('rejects a prototype file with a readable message', () => {
@@ -64,7 +64,7 @@ describe('importMap with the schema gate', () => {
   it('still imports a minimal grid', () => {
     const map = importMap(MINIMAL_GRID);
     expect(map.meta.format).toBe(6);
-    expect(map.tilemap![0]).toBe('Space');
+    expect(map.tilemap[0]).toBe('Space');
   });
 
   it('turns a non-map file into a status-bar-sized error', () => {
