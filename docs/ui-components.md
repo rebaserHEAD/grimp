@@ -1,5 +1,22 @@
 # UI Components Reference
 
+## ErrorBoundary
+
+Last-resort catch for render-phase crashes, wrapped around `<App />` in `main.tsx`.
+Any fork's data can reach the renderer (weird prototypes, hand-edited maps); before
+this existed, a single throw during render whitescreened the editor and took unsaved
+work with it.
+
+### Behavior
+
+- Renders children untouched until something throws during render
+- On a crash: shows the error message with a trimmed stack, a **Reload editor**
+  button (`window.location.reload()`, which lands back on the fork selector's
+  recent-files list), and a link to the issue tracker
+- Logs the full error + component stack to the console for bug reports
+- Catches render-phase errors only; event handlers and async code surface through
+  their own `.catch` paths (see the status bar patterns in `App.tsx`)
+
 ## CollapsiblePanel
 
 A shared wrapper for sidebar panels that can be expanded/collapsed by clicking the header.

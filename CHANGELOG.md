@@ -10,7 +10,22 @@ workflow copies it into the GitHub release notes.
 
 ## [Unreleased]
 
+### Added
+
+- A crash screen. If the editor hits a rendering bug (a weird prototype, a
+  hand-edited map it didn't expect), it now shows the error with a Reload
+  button and a link to the issue tracker instead of silently going white.
+- Opening a file that isn't a map or grid (a prototype file, a broken merge)
+  now fails with a readable "Not a valid map/grid file" message in the status
+  bar instead of a cryptic internal error.
+
 ### Fixed
+
+- Rotating decal placement counter-clockwise (Shift+R) could stop responding
+  to the selected decal after switching palette items; the clockwise twin
+  was unaffected.
+- Saving immediately after a decal-only edit could serialize stale decal
+  state (the export path didn't see the just-made decal change).
 
 - The Markers and Atmos Markers layer toggles did nothing, and the Doors
   toggle hid every marker on the map along with the doors. Markers draw in
