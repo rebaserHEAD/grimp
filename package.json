@@ -16,6 +16,8 @@
     "package": "npm run build:electron && electron-builder --win --config.electronDist=node_modules/electron/dist",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:dom": "vitest run --project dom",
+    "test:node": "vitest run --project node",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
@@ -30,6 +32,9 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.1",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.3.5",
     "@types/react": "^18.3.18",
@@ -37,6 +42,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "electron": "^43.2.0",
     "electron-builder": "^26.15.3",
+    "jsdom": "^30.0.0",
     "png-to-ico": "^3.0.2",
     "prettier": "^3.9.6",
     "sharp": "^0.35.3",
