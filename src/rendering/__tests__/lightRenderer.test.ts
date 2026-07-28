@@ -542,6 +542,56 @@ describe('collectVisibleLights', () => {
     expect(result).toHaveLength(1);
   });
 
+  describe('mount offset orientation (#25 "lights shining backwards")', () => {
+    // The stock PoweredLight offset: half a tile out of the wall, into the
+    // room, in entity-local y-up coordinates.
+    function makeOffsetLight(rotation: number): ImportedEntity {
+      return {
+        uid: 1,
+        prototype: 'PoweredLight',
+        position: { x: 25, y: 25 },
+        rotation,
+        components: [{ type: 'PointLight', radius: 5, color: '#FFFFFF', energy: 1, enabled: true, offset: '0, -0.5' }],
+      };
+    }
+
+    function collect(rotation: number): VisibleLight {
+      rebuildSpatialIndex([makeOffsetLight(rotation)]);
+      const result = collectVisibleLights(nullRegistry, camera, canvasW, canvasH);
+      expect(result).toHaveLength(1);
+      return result[0];
+    }
+
+    // Entity center on screen: cx = 400+16, cy = -(25+1-25)*32 + 300+16.
+    const cx = 416;
+    const cy = 284;
+
+    it('rotation 0 (facing south): light hangs BELOW the fixture on screen', () => {
+      const l = collect(0);
+      expect(l.lx).toBeCloseTo(cx);
+      // World -0.5 y = down = larger screen y. The old math put it above
+      // (into the wall), which is the mirrored pool in the field reports.
+      expect(l.ly).toBeCloseTo(cy + 16);
+      expect(l.worldY).toBeCloseTo(25.0); // 25 + 0.5 - 0.5, shadow origin too
+    });
+
+    it('rotation pi (facing north): light sits ABOVE the fixture on screen', () => {
+      const l = collect(Math.PI);
+      expect(l.lx).toBeCloseTo(cx);
+      expect(l.ly).toBeCloseTo(cy - 16);
+      expect(l.worldY).toBeCloseTo(26.0);
+    });
+
+    it('rotation pi/2 (facing east): light sits RIGHT of the fixture on screen', () => {
+      // rotationToDirection maps pi/2 to east; the offset must follow the
+      // same convention or lights disagree with their sprites.
+      const l = collect(Math.PI / 2);
+      expect(l.lx).toBeCloseTo(cx + 16);
+      expect(l.ly).toBeCloseTo(cy);
+      expect(l.worldX).toBeCloseTo(26.0);
+    });
+  });
+
   it('excludes lights far outside viewport even with large radius', () => {
     // Light very far away - radius can't reach viewport
     const entities = [makeLightEntity(1, 100, 100, 5)];

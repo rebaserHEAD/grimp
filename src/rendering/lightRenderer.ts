@@ -211,12 +211,20 @@ export function collectVisibleLights(
     const cx = (entity.position.x - camera.x) * tileSize + canvasW / 2 + tileSize / 2;
     const cy = -(entity.position.y + 1 - camera.y) * tileSize + canvasH / 2 + tileSize / 2;
 
-    const cos = Math.cos(-entity.rotation);
-    const sin = Math.sin(-entity.rotation);
+    // PointLight.offset is entity-local (y-up, like everything in world
+    // space) and rotates WITH the entity: plain CCW rotation by the entity's
+    // world rotation. The y-flip happens once, at the screen conversion,
+    // matching how the sprite renderer handles rotation (screen-CCW via
+    // ctx.rotate(-rotation)). The old math negated the rotation AND skipped
+    // the screen flip, which mirrored the offset: every stock wall light
+    // (offset "0, -0.5", half a tile out of the wall) lit the wall instead
+    // of the room.
+    const cos = Math.cos(entity.rotation);
+    const sin = Math.sin(entity.rotation);
     const worldOffX = light.offset.x * cos - light.offset.y * sin;
     const worldOffY = light.offset.x * sin + light.offset.y * cos;
     const lx = cx + worldOffX * tileSize;
-    const ly = cy + worldOffY * tileSize;
+    const ly = cy - worldOffY * tileSize;
 
     // Frustum cull: skip if light circle is fully outside canvas
     if (lx + radiusPx < 0 || lx - radiusPx > canvasW || ly + radiusPx < 0 || ly - radiusPx > canvasH) continue;
