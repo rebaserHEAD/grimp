@@ -35,6 +35,15 @@ workflow copies it into the GitHub release notes.
 - Escape now cancels the active tool's in-progress action everywhere: paste
   ghost, marquee drag, pending device link (previously the only case), or
   an uncommitted stroke.
+- Keyboard shortcuts no longer fire behind modals. Delete could remove
+  entities behind a confirm dialog, Ctrl+Z undid edits behind Settings, tool
+  shortcuts switched tools invisibly, and Escape closed a modal while also
+  cancelling the tool interaction underneath it. Modals now own the keyboard
+  while open.
+- Focus Grid zoomed past the grid it was framing on displays with Windows
+  scaling (the zoom overshot by the scaling factor, 1.5x at 150%). It now
+  frames the grid correctly, and the initial view fit after importing a map
+  measures the real canvas instead of estimating from the window size.
 
 ## [1.3.0] - 2026-07-26
 
