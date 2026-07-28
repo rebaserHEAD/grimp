@@ -65,6 +65,43 @@ describe('atmos markers sub-layer', () => {
   });
 });
 
+/**
+ * MarkerBase draws at Overdoors (+10), the same depth band as doors. Markers
+ * must classify by what they ARE, not where they draw: at their real depth
+ * they must still answer to the marker toggles and never to the Doors one.
+ */
+describe('markers at their real depth (Overdoors, +10)', () => {
+  const OVERDOORS = 10;
+
+  it('atmosMarkers off hides AtmosFix markers at +10', () => {
+    const layers = { ...DEFAULT_LAYER_VISIBILITY, atmosMarkers: false };
+    expect(isLayerVisible(OVERDOORS, 'AtmosFixBlockerMarker', layers)).toBe(false);
+  });
+
+  it('markers off hides spawn points at +10', () => {
+    const layers = { ...DEFAULT_LAYER_VISIBILITY, markers: false };
+    expect(isLayerVisible(OVERDOORS, 'SpawnPointLatejoin', layers)).toBe(false);
+  });
+
+  it('doors off leaves markers alone', () => {
+    const layers = { ...DEFAULT_LAYER_VISIBILITY, doors: false };
+    expect(isLayerVisible(OVERDOORS, 'AtmosFixBlockerMarker', layers)).toBe(true);
+    expect(isLayerVisible(OVERDOORS, 'SpawnPointLatejoin', layers)).toBe(true);
+  });
+
+  it('doors off still hides actual doors', () => {
+    const layers = { ...DEFAULT_LAYER_VISIBILITY, doors: false };
+    const registry = fakeRegistry({ AirlockGlass: ['Sprite', 'Door'] });
+    expect(isLayerVisible(8, 'AirlockGlass', layers, registry)).toBe(false);
+  });
+
+  it('component-detected markers hide with markers off at +10', () => {
+    const registry = fakeRegistry({ WarpPoint: ['Marker'] });
+    const layers = { ...DEFAULT_LAYER_VISIBILITY, markers: false };
+    expect(isLayerVisible(OVERDOORS, 'WarpPoint', layers, registry)).toBe(false);
+  });
+});
+
 describe('isLayerVisible with the markers layer off', () => {
   const layers = { ...DEFAULT_LAYER_VISIBILITY, markers: false };
 

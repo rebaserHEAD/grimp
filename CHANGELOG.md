@@ -10,6 +10,14 @@ workflow copies it into the GitHub release notes.
 
 ## [Unreleased]
 
+### Fixed
+
+- The Markers and Atmos Markers layer toggles did nothing, and the Doors
+  toggle hid every marker on the map along with the doors. Markers draw in
+  the same depth band as doors (Overdoors), and the layer filter sorted
+  purely by draw depth, so all markers landed in the Doors bucket. Markers
+  now classify by what they are instead of where they draw.
+
 ## [1.4.0] - 2026-07-28
 
 ### Added
