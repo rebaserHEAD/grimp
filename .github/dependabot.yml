@@ -1,6 +1,9 @@
-# Weekly dependency PRs. Electron matters most here: it ships a Chromium,
-# so a stale Electron is a stale browser. Grouped so the noise stays low:
-# one PR for dev tooling, one for runtime deps, actions separately.
+# Weekly dependency PRs, tuned for quiet: one grouped PR per ecosystem lane,
+# minor+patch only. Majors never auto-PR — React, Vite, TypeScript, js-yaml
+# and friends are migrations with real blast radius (js-yaml majors touch the
+# round-trip contract), so they get done deliberately, parity sweep included.
+# Electron still matters most here: it ships a Chromium, so a stale Electron
+# is a stale browser; minors/patches arrive weekly via the dev-tooling group.
 version: 2
 updates:
   - package-ecosystem: npm
@@ -10,11 +13,20 @@ updates:
     groups:
       dev-tooling:
         dependency-type: development
+        update-types: [minor, patch]
       runtime:
         dependency-type: production
-    open-pull-requests-limit: 5
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: '*'
+        update-types: [version-update:semver-major]
+    open-pull-requests-limit: 3
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
+    open-pull-requests-limit: 2
