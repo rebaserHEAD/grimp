@@ -38,12 +38,48 @@ const TOOL_SHORTCUTS: Record<string, ToolType> = {
   d: 'deviceLink',
 };
 
-export function useKeyboard(actions: KeyboardActions): { isSpaceHeld: boolean; isRHeld: boolean } {
+export interface KeyboardOptions {
+  /**
+   * True while any modal owns the keyboard. Every modal handles its own keys
+   * (Escape to close, Enter to confirm), but this hook listens on window and
+   * used to keep firing behind them: Delete removed entities behind a confirm
+   * dialog, Ctrl+Z undid map edits behind Settings, tool shortcuts switched
+   * tools invisibly, and Escape closed the modal AND cancelled the tool
+   * interaction (paste ghost, marquee) underneath it in the same keystroke.
+   * While suppressed, only the `?` shortcuts-card toggle stays live, since
+   * that binding owns its modal.
+   */
+  suppressed?: boolean;
+}
+
+export function useKeyboard(
+  actions: KeyboardActions,
+  options: KeyboardOptions = {},
+): { isSpaceHeld: boolean; isRHeld: boolean } {
   const [isSpaceHeld, setIsSpaceHeld] = useState(false);
   const [isRHeld, setIsRHeld] = useState(false);
+  const { suppressed = false } = options;
+
+  // A modal opening mid-hold must release held keys: the matching keyup will
+  // land while we are suppressed (or go to the modal), and Space/R must not
+  // come back stuck when the modal closes.
+  useEffect(() => {
+    if (suppressed) {
+      setIsSpaceHeld(false);
+      setIsRHeld(false);
+    }
+  }, [suppressed]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      if (suppressed) {
+        // The shortcuts card is toggled by `?` and should close by it too.
+        if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          actions.onShowShortcuts?.();
+        }
+        return;
+      }
+
       // Focus search, must be before the input guard so it prevents
       // the browser find dialog even when an input is focused
       if ((e.ctrlKey || e.metaKey) && e.key === 'f' && !e.shiftKey) {
@@ -196,7 +232,7 @@ export function useKeyboard(actions: KeyboardActions): { isSpaceHeld: boolean; i
       window.removeEventListener('blur', releaseHeldKeys);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
-  }, [actions]);
+  }, [actions, suppressed]);
 
   return { isSpaceHeld, isRHeld };
 }

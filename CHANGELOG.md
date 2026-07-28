@@ -23,6 +23,27 @@ workflow copies it into the GitHub release notes.
   panned instead of selecting, and scrolling silently rotated the selected
   entity instead of zooming. Held keys now release whenever the window
   loses focus.
+- Switching tools mid-interaction (for example via a tool shortcut during a
+  drag) stranded the old tool's in-progress state: ghost previews reappeared
+  the next time the tool was selected, and a half-finished paint or erase
+  stroke stayed in the grid as a silent, non-undoable edit. Tool switches
+  now cancel the outgoing tool's interaction, and cancelled paint/erase
+  strokes revert cleanly.
+- Pressing R in entity-select mode with nothing selected silently switched
+  to the Rectangle tile tool, so the next drag painted tiles instead of
+  selecting. R is now a no-op there when there is nothing to rotate.
+- Escape now cancels the active tool's in-progress action everywhere: paste
+  ghost, marquee drag, pending device link (previously the only case), or
+  an uncommitted stroke.
+- Keyboard shortcuts no longer fire behind modals. Delete could remove
+  entities behind a confirm dialog, Ctrl+Z undid edits behind Settings, tool
+  shortcuts switched tools invisibly, and Escape closed a modal while also
+  cancelling the tool interaction underneath it. Modals now own the keyboard
+  while open.
+- Focus Grid zoomed past the grid it was framing on displays with Windows
+  scaling (the zoom overshot by the scaling factor, 1.5x at 150%). It now
+  frames the grid correctly, and the initial view fit after importing a map
+  measures the real canvas instead of estimating from the window size.
 
 ## [1.3.0] - 2026-07-26
 

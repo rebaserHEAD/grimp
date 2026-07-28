@@ -14,6 +14,14 @@ export class PaintTool implements ITool {
   private entityChanges: EntityChange[] = [];
   private decalChanges: DecalChange[] = [];
   private visited = new Set<string>();
+  // Live state captured at stroke start so deactivate() can revert. paintAt
+  // mutates the grid and the id counters DURING the drag (that's how the
+  // stroke previews); the undo command only exists once onMouseUp commits.
+  // Cancelling mid-stroke therefore has to put the mutations back itself, or
+  // the painted tiles would survive as silent, non-undoable edits.
+  private strokeState: ToolContext['state'] | null = null;
+  private strokeNextEntityId = 0;
+  private strokeNextDecalId = 0;
 
   onMouseDown(ctx: ToolContext, tileX: number, tileY: number, button: number) {
     if (button !== 0) return;
@@ -22,6 +30,9 @@ export class PaintTool implements ITool {
     this.entityChanges = [];
     this.decalChanges = [];
     this.visited.clear();
+    this.strokeState = ctx.state;
+    this.strokeNextEntityId = ctx.state.nextEntityId;
+    this.strokeNextDecalId = ctx.state.grids[ctx.state.activeGridIndex]?.decals.nextDecalId ?? 0;
     this.paintAt(ctx, tileX, tileY);
   }
 
@@ -54,6 +65,7 @@ export class PaintTool implements ITool {
     this.entityChanges = [];
     this.decalChanges = [];
     this.visited.clear();
+    this.strokeState = null;
   }
 
   renderPreview(canvasCtx: CanvasRenderingContext2D, toolCtx: ToolContext, cursorTileX: number, cursorTileY: number) {
@@ -129,11 +141,29 @@ export class PaintTool implements ITool {
     }
   }
 
+  /**
+   * Cancel an in-progress stroke. Reverts the live grid mutations and id
+   * counters, since no undo command exists until onMouseUp commits. Leftover
+   * grid expansion from ensureGridContains stays, matching what undo of a
+   * committed stroke leaves behind.
+   */
   deactivate() {
+    if (this.painting && this.strokeState) {
+      const state = this.strokeState;
+      for (let i = this.tileChanges.length - 1; i >= 0; i--) {
+        const c = this.tileChanges[i];
+        setCell(state.grid, c.x, c.y, c.before);
+      }
+      state.nextEntityId = this.strokeNextEntityId;
+      const activeGrid = state.grids[state.activeGridIndex];
+      if (activeGrid) activeGrid.decals.nextDecalId = this.strokeNextDecalId;
+      if (this.tileChanges.length > 0 || this.decalChanges.length > 0) markSceneDirty();
+    }
     this.painting = false;
     this.tileChanges = [];
     this.entityChanges = [];
     this.decalChanges = [];
     this.visited.clear();
+    this.strokeState = null;
   }
 }

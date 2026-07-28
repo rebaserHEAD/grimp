@@ -14,6 +14,11 @@ export class EraseTool implements ITool {
   private entityChanges: EntityChange[] = [];
   private decalChanges: DecalChange[] = [];
   private visited = new Set<string>();
+  // Grid captured at stroke start so deactivate() can revert. eraseAt blanks
+  // tiles in the live grid during the drag; the undo command only exists once
+  // onMouseUp commits, so a mid-stroke cancel must put the tiles back itself.
+  // (Entity/decal removals are commit-time only and need no revert.)
+  private strokeState: ToolContext['state'] | null = null;
 
   onMouseDown(ctx: ToolContext, tileX: number, tileY: number, button: number) {
     if (button !== 0) return;
@@ -22,6 +27,7 @@ export class EraseTool implements ITool {
     this.entityChanges = [];
     this.decalChanges = [];
     this.visited.clear();
+    this.strokeState = ctx.state;
     this.eraseAt(ctx, tileX, tileY);
   }
 
@@ -54,6 +60,7 @@ export class EraseTool implements ITool {
     this.entityChanges = [];
     this.decalChanges = [];
     this.visited.clear();
+    this.strokeState = null;
   }
 
   renderPreview(canvasCtx: CanvasRenderingContext2D, toolCtx: ToolContext, cursorTileX: number, cursorTileY: number) {
@@ -110,11 +117,21 @@ export class EraseTool implements ITool {
     markSceneDirty(); // Invalidate compositor tile layer so erased tiles appear during drag
   }
 
+  /** Cancel an in-progress stroke, restoring tiles blanked during the drag. */
   deactivate() {
+    if (this.erasing && this.strokeState) {
+      const state = this.strokeState;
+      for (let i = this.tileChanges.length - 1; i >= 0; i--) {
+        const c = this.tileChanges[i];
+        setCell(state.grid, c.x, c.y, c.before);
+      }
+      if (this.tileChanges.length > 0) markSceneDirty();
+    }
     this.erasing = false;
     this.decalChanges = [];
     this.tileChanges = [];
     this.entityChanges = [];
     this.visited.clear();
+    this.strokeState = null;
   }
 }
