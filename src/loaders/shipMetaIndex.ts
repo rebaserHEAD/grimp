@@ -85,6 +85,41 @@ export function normalizeResourcePath(path: string): string {
   return p.toLowerCase();
 }
 
+/**
+ * Turn an on-disk file path into the resource-relative path the prototypes reference,
+ * e.g. `C:\fork\Resources\Maps\_Triad\adjutant.yml` -> `Maps/_Triad/adjutant.yml`.
+ *
+ * Returns the readable form (original case, `Resources/` stripped) rather than the folded
+ * lookup key, so it is safe to display; `lookupByPath` folds case itself.
+ *
+ * `forkDir` is whatever the user picked in the fork dialog, and that is deliberately loose:
+ * the picker accepts a fork root OR its `Resources/` folder directly (`main.cjs`
+ * `loadForkFromDir`), and the renderer persists the picked path, not the resolved one. Both
+ * spellings converge here because stripping the `Resources/` prefix is what the prototypes
+ * expect either way.
+ *
+ * Returns null when the file is outside the fork, which is a real case: nothing stops a user
+ * opening a map from a scratch folder, and a bogus relative path would produce false badge
+ * matches rather than no match.
+ */
+export function toResourceRelativePath(
+  forkDir: string | null | undefined,
+  filePath: string | null | undefined,
+): string | null {
+  if (!forkDir || !filePath) return null;
+
+  const dir = forkDir.trim().replace(/\\/g, '/').replace(/\/+$/, '');
+  const file = filePath.trim().replace(/\\/g, '/');
+  if (dir === '' || file === '') return null;
+
+  // Compare case-insensitively: the fork dir and the opened path can reach us with
+  // different drive-letter or folder casing on Windows.
+  if (!file.toLowerCase().startsWith(dir.toLowerCase() + '/')) return null;
+
+  const relative = file.slice(dir.length + 1);
+  return relative.replace(/^Resources\//i, '');
+}
+
 function asBoolean(value: unknown): boolean | undefined {
   return typeof value === 'boolean' ? value : undefined;
 }

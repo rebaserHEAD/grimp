@@ -1,8 +1,8 @@
 /// <reference types="node" />
 /**
  * Helpers for tests that validate the importer/exporter against real SS14 map
- * files. The editor is designed to live in `<space-station-14>/Tools/space-station-14-map-editor`,
- * so maps are discovered from the host repository's `Resources/Maps/` directory.
+ * files. Callers pass in a maps directory, typically a fork's `Resources/Maps/`
+ * reached through an env var, since GRIMP is standalone and has no fork of its own.
  *
  * These helpers never assume a specific fork or map name: they scan whatever maps
  * the host repo provides, largest-first, and select the first map that actually

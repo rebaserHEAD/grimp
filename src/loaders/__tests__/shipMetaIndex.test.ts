@@ -6,6 +6,7 @@ import {
   lookupByPath,
   isPurchasableVessel,
   scanShipMeta,
+  toResourceRelativePath,
   type ShipMetaEntry,
 } from '../shipMetaIndex';
 import type { ResourceProvider } from '../resourceProvider';
@@ -73,6 +74,55 @@ describe('normalizeResourcePath', () => {
 
   it('folds case', () => {
     expect(normalizeResourcePath('/Maps/Amber.yml')).toBe(normalizeResourcePath('/maps/amber.yml'));
+  });
+});
+
+describe('toResourceRelativePath', () => {
+  it('derives the resource path from a fork root pick', () => {
+    expect(toResourceRelativePath('C:\\src\\Triad_Sector', 'C:\\src\\Triad_Sector\\Resources\\Maps\\amber.yml')).toBe(
+      'Maps/amber.yml',
+    );
+  });
+
+  it('derives the same path when the user picked Resources/ directly', () => {
+    // main.cjs loadForkFromDir accepts either, and the renderer persists what was picked.
+    expect(
+      toResourceRelativePath('C:\\src\\Triad_Sector\\Resources', 'C:\\src\\Triad_Sector\\Resources\\Maps\\amber.yml'),
+    ).toBe('Maps/amber.yml');
+  });
+
+  it('handles posix paths', () => {
+    expect(toResourceRelativePath('/home/j/fork', '/home/j/fork/Resources/Maps/_Triad/adjutant.yml')).toBe(
+      'Maps/_Triad/adjutant.yml',
+    );
+  });
+
+  it('preserves case for display while staying findable in the index', () => {
+    const rel = toResourceRelativePath('/fork', '/fork/Resources/Maps/_Triad/Shuttles/TDF/adjutant.yml');
+    expect(rel).toBe('Maps/_Triad/Shuttles/TDF/adjutant.yml');
+    const index = buildShipMetaIndex(parseShipMetaYaml(VESSEL_YAML, 'a.yml'));
+    expect(lookupByPath(index, rel!)[0].id).toBe('Adjutant');
+  });
+
+  it('tolerates a trailing separator on the fork dir', () => {
+    expect(toResourceRelativePath('/fork/', '/fork/Resources/Maps/amber.yml')).toBe('Maps/amber.yml');
+  });
+
+  it('ignores case differences between the fork dir and the file path', () => {
+    expect(toResourceRelativePath('c:/src/fork', 'C:/SRC/Fork/Resources/Maps/amber.yml')).toBe('Maps/amber.yml');
+  });
+
+  it('returns null for a file outside the fork', () => {
+    expect(toResourceRelativePath('/fork', '/somewhere/else/Maps/amber.yml')).toBeNull();
+  });
+
+  it('does not treat a sibling directory sharing a prefix as inside the fork', () => {
+    expect(toResourceRelativePath('/src/fork', '/src/fork-backup/Resources/Maps/amber.yml')).toBeNull();
+  });
+
+  it('returns null when there is no fork loaded, as in the browser build', () => {
+    expect(toResourceRelativePath(null, '/fork/Resources/Maps/amber.yml')).toBeNull();
+    expect(toResourceRelativePath('/fork', null)).toBeNull();
   });
 });
 
