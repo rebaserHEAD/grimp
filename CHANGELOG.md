@@ -18,6 +18,11 @@ workflow copies it into the GitHub release notes.
   selected a spot the cursor never visibly touched. The editor now checks
   which buttons are actually held on every mouse move and ends stale pans
   and tool drags immediately.
+- Space (temporary pan) and R (rotate modifier) could get stuck "held" when
+  a native menu, dialog, or alt-tab stole the key release: every click then
+  panned instead of selecting, and scrolling silently rotated the selected
+  entity instead of zooming. Held keys now release whenever the window
+  loses focus.
 
 ## [1.3.0] - 2026-07-26
 
