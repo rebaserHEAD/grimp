@@ -10,6 +10,7 @@
 
 import yaml from 'js-yaml';
 import { SS14_SCHEMA } from './ss14Schema';
+import { validateMapDocument } from './mapSchema';
 import type { GridData } from '../state/gridData';
 import { parseDecalGrid } from './decalParser';
 
@@ -92,7 +93,10 @@ const TILES_PER_CHUNK = CHUNK_SIZE * CHUNK_SIZE; // 256
 // ---- Main entry point ----
 
 export function importMap(yamlContent: string): ImportedMap {
-  const doc = yaml.load(yamlContent, { schema: SS14_SCHEMA }) as any;
+  // Validate the structural shell (doc is a mapping, entities is an array of
+  // uid-bearing groups) so a non-map file fails here with a readable message
+  // instead of a TypeError mid-traversal. Deep values stay untouched.
+  const doc = validateMapDocument(yaml.load(yamlContent, { schema: SS14_SCHEMA }));
 
   const meta = parseMeta(doc.meta);
   const tilemap = parseTilemap(doc.tilemap);
