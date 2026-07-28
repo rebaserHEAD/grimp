@@ -6,8 +6,8 @@ describe('fitPipes', () => {
     const tiles = new Set(['5,5']);
     const result = fitPipes(tiles);
     expect(result).toHaveLength(1);
-    expect(result[0]!.prototype).toBe('GasPipeStraight');
-    expect(result[0]!.rotation).toBe(0);
+    expect(result[0]?.prototype).toBe('GasPipeStraight');
+    expect(result[0]?.rotation).toBe(0);
   });
 
   it('vertical straight (N-S neighbors)', () => {
@@ -125,7 +125,7 @@ describe('fitPipes', () => {
   it('preserves color on gas pipes', () => {
     const tiles = new Set(['5,5']);
     const result = fitPipes(tiles, 'gas', '#0055CCFF');
-    expect(result[0]!.color).toBe('#0055CCFF');
+    expect(result[0]?.color).toBe('#0055CCFF');
   });
 
   it('disposal family uses disposal prototypes', () => {

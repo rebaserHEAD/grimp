@@ -63,7 +63,7 @@ describe('recent-forks helpers', () => {
     s = withRecentFork(s, { dir: 'C:/b', name: 'b' }, '2026-01-02T00:00:00.000Z');
     s = withRecentFork(s, { dir: 'C:/a', name: 'a' }, NOW);
     expect(s.fork.recentForks.map((r) => r.dir)).toEqual(['C:/a', 'C:/b']);
-    expect(s.fork.recentForks[0]!.lastOpened).toBe(NOW);
+    expect(s.fork.recentForks[0]?.lastOpened).toBe(NOW);
     expect(s.fork.recentForks).toHaveLength(2);
   });
 
@@ -73,7 +73,7 @@ describe('recent-forks helpers', () => {
       s = withRecentFork(s, { dir: `C:/fork${i}`, name: `fork${i}` }, NOW);
     }
     expect(s.fork.recentForks).toHaveLength(RECENT_FORKS_CAP);
-    expect(s.fork.recentForks[0]!.dir).toBe(`C:/fork${RECENT_FORKS_CAP + 2}`);
+    expect(s.fork.recentForks[0]?.dir).toBe(`C:/fork${RECENT_FORKS_CAP + 2}`);
     expect(s.fork.recentForks.some((r) => r.dir === 'C:/fork0')).toBe(false);
   });
 
@@ -108,8 +108,8 @@ describe('recent-files helpers', () => {
     s = withRecentFile(s, { path: 'C:/maps/other.yml', name: 'other.yml', forkDir: null }, '2026-01-02T00:00:00.000Z');
     s = withRecentFile(s, { ...triad, forkDir: 'C:/src/Hyperion' }, NOW);
     expect(s.files.recentFiles.map((f) => f.path)).toEqual(['C:/maps/adjutant.yml', 'C:/maps/other.yml']);
-    expect(s.files.recentFiles[0]!.forkDir).toBe('C:/src/Hyperion');
-    expect(s.files.recentFiles[0]!.lastOpened).toBe(NOW);
+    expect(s.files.recentFiles[0]?.forkDir).toBe('C:/src/Hyperion');
+    expect(s.files.recentFiles[0]?.lastOpened).toBe(NOW);
   });
 
   it('caps the list, evicting the oldest', () => {
@@ -118,7 +118,7 @@ describe('recent-files helpers', () => {
       s = withRecentFile(s, { path: `C:/maps/m${i}.yml`, name: `m${i}.yml`, forkDir: null }, NOW);
     }
     expect(s.files.recentFiles).toHaveLength(RECENT_FILES_CAP);
-    expect(s.files.recentFiles[0]!.path).toBe(`C:/maps/m${RECENT_FILES_CAP + 1}.yml`);
+    expect(s.files.recentFiles[0]?.path).toBe(`C:/maps/m${RECENT_FILES_CAP + 1}.yml`);
   });
 
   it('removes dead entries and leaves fork lists untouched', () => {
