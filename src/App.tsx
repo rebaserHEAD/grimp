@@ -21,6 +21,7 @@ import { PrefabPlaceTool } from './tools/prefabPlaceTool';
 import type { PrefabData } from './prefab/prefabTypes';
 import { Camera } from './rendering/camera';
 import { useToolLifecycle } from './hooks/useToolLifecycle';
+import { useChromeFocusGuard } from './hooks/useChromeFocusGuard';
 import { useShipMeta } from './hooks/useShipMeta';
 import { EditorCanvas } from './components/EditorCanvas';
 import { Toolbar } from './components/Toolbar';
@@ -237,6 +238,10 @@ export const App: React.FC = () => {
   // Cancel the outgoing tool's in-progress interaction on every tool switch
   // (drag anchors, ghost previews, pickers, uncommitted strokes).
   useToolLifecycle(activeTool);
+
+  // Clicked buttons/checkboxes release the keyboard back to the editor
+  // instead of keeping browser focus and eating shortcuts.
+  useChromeFocusGuard();
 
   // What the fork intends the open file to be (#3): vessel / gameMap / POI /
   // salvage badges in the menu bar. Reading the ref here is safe because

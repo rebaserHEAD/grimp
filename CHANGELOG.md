@@ -29,6 +29,13 @@ workflow copies it into the GitHub release notes.
   mid-drag started a pan underneath the active drag, shifting the view out
   from under it. One gesture at a time now, and releases always reach the
   editor.
+- Clicking any button or checkbox left keyboard focus stuck on that control,
+  browser-style: after toggling a layer checkbox, Space toggled the checkbox
+  again instead of panning, arrow keys walked the panel, and editor
+  shortcuts (tool switching, entity editor) went dead until you clicked the
+  canvas. Clicked controls now hand the keyboard straight back to the
+  editor. Text fields, dropdowns, and sliders still keep focus, and tabbing
+  to a control deliberately still works.
 
 ## [1.4.0] - 2026-07-28
 
