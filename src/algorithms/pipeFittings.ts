@@ -13,7 +13,7 @@ export interface FittedPipe {
   y: number;
   prototype: string;
   rotation: number; // radians
-  color?: string;
+  color?: string | undefined;
 }
 
 export type PipeFamily = 'gas' | 'disposal';

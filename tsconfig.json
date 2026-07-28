@@ -15,6 +15,10 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
+    // Optional fields that are explicitly assigned undefined are annotated
+    // `?: T | undefined`; the round-trip exporter dispatches on key presence
+    // ('maps' in doc), so missing-vs-undefined is a real distinction here.
+    "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true
   },
   "include": ["src"]

@@ -18,7 +18,7 @@ import { isPurchasableVessel, isExpeditionCapable } from '../loaders/shipMetaInd
 interface Props {
   hits: ShipMetaEntry[];
   /** Resolves stationProto ids to composed components (expedition detection). */
-  registry?: StationProtoResolver | null;
+  registry?: StationProtoResolver | null | undefined;
 }
 
 export const ShipMetaBadges: React.FC<Props> = ({ hits, registry }) => {

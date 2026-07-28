@@ -478,7 +478,7 @@ export class SelectTool implements ITool {
       height: number;
       tiles: (import('../types').TileCell | null)[];
       entities: ClipboardEntity[];
-      decals?: ClipboardDecal[];
+      decals?: ClipboardDecal[] | undefined;
     },
     direction: 'cw' | 'ccw',
   ): {
@@ -486,7 +486,7 @@ export class SelectTool implements ITool {
     height: number;
     tiles: (import('../types').TileCell | null)[];
     entities: ClipboardEntity[];
-    decals?: ClipboardDecal[];
+    decals?: ClipboardDecal[] | undefined;
   } {
     const { width: W, height: H, tiles, entities } = data;
     const newW = H;

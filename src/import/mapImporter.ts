@@ -18,7 +18,7 @@ import { parseDecalGrid } from './decalParser';
 
 export interface MapMeta {
   format: number;
-  postmapinit?: boolean;
+  postmapinit?: boolean | undefined;
   category?: string;
   engineVersion?: string;
   forkId?: string;
@@ -45,31 +45,31 @@ export interface ImportedMap {
   /** The uid of the map entity (usually 1) */
   mapUid: number;
   /** Top-level maps array (format 7+). Empty for grid files (saved ships/POIs). */
-  maps?: number[];
+  maps?: number[] | undefined;
   /** Top-level grids array (format 7+) */
-  grids?: number[];
+  grids?: number[] | undefined;
   /** Top-level orphans array (format 7+). Grid files register their grid here. */
-  orphans?: number[];
+  orphans?: number[] | undefined;
   /** Top-level nullspace array (format 7+) */
-  nullspace?: number[];
+  nullspace?: number[] | undefined;
   /** Leading comment/blank lines before the first YAML key (SPDX headers, author notes) */
-  leadingLines?: string[];
+  leadingLines?: string[] | undefined;
   /** Structural entity components preserved verbatim for roundtrip */
-  structuralEntityData?: Record<number, Record<string, unknown>[]>;
+  structuralEntityData?: Record<number, Record<string, unknown>[]> | undefined;
   /** Original chunk key ordering for roundtrip fidelity */
-  chunkKeyOrder?: string[];
+  chunkKeyOrder?: string[] | undefined;
   /** Line ending style detected from the original file ('\r\n' or '\n') */
-  lineEnding?: string;
+  lineEnding?: string | undefined;
   /** Raw YAML lines for each entity's components (for verbatim export) */
-  entityRawComponents?: Record<number, string[]>;
+  entityRawComponents?: Record<number, string[]> | undefined;
   /** Raw YAML lines for entity-level fields between uid: and components: (e.g., mapInit, paused) */
-  entityRawPreamble?: Record<number, string[]>;
+  entityRawPreamble?: Record<number, string[]> | undefined;
   /** Whether the original file had a YAML document terminator `...` at the end */
-  hasDocumentTerminator?: boolean;
+  hasDocumentTerminator?: boolean | undefined;
   /** Whether the original file ended with a newline (false = no trailing newline) */
   trailingNewline?: boolean;
   /** Original encounter order of non-structural entity UIDs (for byte-exact roundtrip) */
-  entityOrder?: number[];
+  entityOrder?: number[] | undefined;
   /** Per-grid data for multi-grid support */
   gridDataList?: GridData[];
 }
@@ -82,7 +82,7 @@ export interface ImportedEntity {
   /** All components stored verbatim as raw objects */
   components: Record<string, unknown>[];
   /** Optional RSI state override for visual rendering in the editor */
-  spriteStateOverride?: string;
+  spriteStateOverride?: string | undefined;
 }
 
 // ---- Constants ----

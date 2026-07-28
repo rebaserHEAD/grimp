@@ -53,9 +53,9 @@ export interface ShipMetaEntry {
    * on the handful that are not for sale. Absent therefore means purchasable, which is why
    * this is `undefined` rather than defaulted to `false`. Use `isPurchasableVessel`.
    */
-  purchasable?: boolean;
+  purchasable?: boolean | undefined;
   /** `vessel` only (Mono). */
-  cloakHunter?: boolean;
+  cloakHunter?: boolean | undefined;
   /** `gameMap` only: the station ids declared under `stations:`, which key into BecomesStation. */
   stations?: string[];
   /**

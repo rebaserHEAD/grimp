@@ -132,7 +132,7 @@ export interface ContainedEntityChange {
   action: 'add' | 'remove';
   parentUid: number;
   entity: import('./import/mapImporter').ImportedEntity;
-  previousParentComponents?: Record<string, unknown>[];
+  previousParentComponents?: Record<string, unknown>[] | undefined;
 }
 
 export interface DecalChange {
@@ -146,9 +146,9 @@ export interface Command {
   tileChanges: TileChange[];
   entityChanges: EntityChange[];
   containedEntityChanges?: ContainedEntityChange[];
-  decalChanges?: DecalChange[];
+  decalChanges?: DecalChange[] | undefined;
   /** When present, undo/redo targets this specific grid. When absent, targets active grid. */
-  gridUid?: number;
+  gridUid?: number | undefined;
 }
 
 export interface GridCommand {

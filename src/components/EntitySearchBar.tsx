@@ -8,7 +8,7 @@ interface Props {
   entities: ImportedEntity[];
   registry: IPrototypeRegistry | null;
   onNavigate: (entity: ImportedEntity) => void;
-  searchInputRef?: React.RefObject<HTMLInputElement | null>;
+  searchInputRef?: React.RefObject<HTMLInputElement | null> | undefined;
 }
 
 export const EntitySearchBar: React.FC<Props> = ({ entities, registry, onNavigate, searchInputRef }) => {

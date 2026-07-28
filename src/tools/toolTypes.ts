@@ -19,9 +19,10 @@ export interface ToolContext {
   /** Update the decal placement color (used by eyedropper to pick decal colors). */
   setDecalColor?: (color: string | null) => void;
   /** Current layer visibility, tools should respect this for selection/interaction. */
-  layerVisibility?: LayerVisibility;
+  layerVisibility?: LayerVisibility | undefined;
   /** Ask the user for a text value via the in-app PromptModal (window.prompt no-ops under Electron). */
-  requestPrompt?: (opts: { title: string; defaultValue?: string; onSubmit: (value: string) => void }) => void;
+  requestPrompt?:
+    ((opts: { title: string; defaultValue?: string; onSubmit: (value: string) => void }) => void) | undefined;
 }
 
 export interface ITool {

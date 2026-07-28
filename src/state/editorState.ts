@@ -34,18 +34,18 @@ export interface EditorState {
   /** @deprecated Use grids[0].gridUid, will be removed when all consumers migrate */
   gridUid: number;
   meta: MapMeta;
-  maps?: number[];
+  maps?: number[] | undefined;
   /** Grid UID list from the YAML file's top-level `grids:` key */
-  gridUidList?: number[];
-  structuralEntityData?: Record<number, Record<string, unknown>[]>;
-  entityRawComponents?: Record<number, string[]>;
-  entityRawPreamble?: Record<number, string[]>;
-  tilemap?: Record<number, string>;
+  gridUidList?: number[] | undefined;
+  structuralEntityData?: Record<number, Record<string, unknown>[]> | undefined;
+  entityRawComponents?: Record<number, string[]> | undefined;
+  entityRawPreamble?: Record<number, string[]> | undefined;
+  tilemap?: Record<number, string> | undefined;
   /** @deprecated Now per-grid in GridData.chunkKeyOrder */
-  chunkKeyOrder?: string[];
-  lineEnding?: string;
-  hasDocumentTerminator?: boolean;
-  entityOrder?: number[];
+  chunkKeyOrder?: string[] | undefined;
+  lineEnding?: string | undefined;
+  hasDocumentTerminator?: boolean | undefined;
+  entityOrder?: number[] | undefined;
 
   // Entity selection (supports multi-select)
   selectedEntityUids: number[];
@@ -166,7 +166,7 @@ export interface GridProperties {
   /** Root component types in file order (synthesized view for from-scratch docs). */
   components: string[];
   /** BecomesStation.id when present: keys into gameMap.stations for station config. */
-  becomesStationId?: string;
+  becomesStationId?: string | undefined;
 }
 
 /**

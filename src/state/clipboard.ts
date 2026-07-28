@@ -27,7 +27,7 @@ export interface ClipboardData {
   height: number;
   tiles: (TileCell | null)[]; // row-major, null = empty/space
   entities: ClipboardEntity[];
-  decals?: ClipboardDecal[];
+  decals?: ClipboardDecal[] | undefined;
   originX: number; // world coords of top-left when copied
   originY: number;
 }
