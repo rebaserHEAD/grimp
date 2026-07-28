@@ -121,8 +121,7 @@ export function importMap(yamlContent: string): ImportedMap {
   const gridDataList: GridData[] = gridOrder.map((gUid) => {
     const parseData = gridParseDataMap.get(gUid)!;
     const gridTiles = buildGrid(parseData.chunks, tilemap, meta.format);
-    const decalGridComp = parseData.structuralComponents.find((c: any) => c.type === 'DecalGrid') as
-      Record<string, unknown> | undefined;
+    const decalGridComp = parseData.structuralComponents.find((c: any) => c.type === 'DecalGrid');
     const decalData = decalGridComp ? parseDecalGrid(decalGridComp) : { decals: [], nextDecalId: 0 };
     return {
       gridUid: gUid,
@@ -283,17 +282,17 @@ function parseStructuralEntities(entityGroups: any[]): {
         gridUid = entity.uid;
 
         // Extract name from MetaData component
-        const metaComp = components.find((c: any) => c.type === 'MetaData') as any;
+        const metaComp = components.find((c: any) => c.type === 'MetaData');
         const name = metaComp?.name ?? '';
 
         // Extract world position from Transform component
-        const transformComp = components.find((c: any) => c.type === 'Transform') as any;
+        const transformComp = components.find((c: any) => c.type === 'Transform');
         const worldPosition = parsePosition(transformComp?.pos);
 
         const chunks: ChunkData[] = [];
         const chunkKeyOrder: string[] = [];
-        const rawChunks = mapGridComp.chunks ?? {};
-        for (const [key, chunkObj] of Object.entries(rawChunks) as [string, any][]) {
+        const rawChunks: Record<string, { tiles?: string; version?: number }> = mapGridComp.chunks ?? {};
+        for (const [key, chunkObj] of Object.entries(rawChunks)) {
           chunkKeyOrder.push(key);
           const [cxStr, cyStr] = key.split(',');
           chunks.push({
@@ -339,7 +338,7 @@ function parseStructuralEntities(entityGroups: any[]): {
 
 // ---- Grid building ----
 
-function buildGrid(chunks: ChunkData[], tilemap: Record<number, string>, format: number): ImportedMap['grid'] {
+function buildGrid(chunks: ChunkData[], tilemap: Record<number, string>, _format: number): ImportedMap['grid'] {
   if (chunks.length === 0) {
     return { width: 0, height: 0, offsetX: 0, offsetY: 0, cells: [] };
   }
@@ -405,7 +404,7 @@ interface DecodedTile {
  * Format 6: 6 bytes/tile (int32 typeId + flags byte + variant byte)
  * Format 7: 7 bytes/tile (int32 typeId + flags byte + variant byte + rotationMirroring byte)
  */
-function decodeChunkTiles(base64: string, version: number): DecodedTile[] {
+function decodeChunkTiles(base64: string, _version: number): DecodedTile[] {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
@@ -566,7 +565,9 @@ function parseNonStructuralEntities(
  * Can be a string like "90.5,17.5" or already parsed by js-yaml into a string.
  */
 function parsePosition(pos: unknown): { x: number; y: number } {
-  if (pos == null) return { x: 0, y: 0 };
+  // Anything but a scalar (e.g. a mapping that shouldn't be here) falls to
+  // origin, same as an unparseable string always has.
+  if (pos == null || (typeof pos !== 'string' && typeof pos !== 'number')) return { x: 0, y: 0 };
 
   const str = String(pos);
   const parts = str.split(',');
@@ -587,8 +588,10 @@ function parsePosition(pos: unknown): { x: number; y: number } {
 function parseRotation(rot: unknown): number {
   if (rot == null) return 0;
   if (typeof rot === 'number') return rot;
+  // Non-scalars can't carry a rotation; treat like an unparseable string.
+  if (typeof rot !== 'string') return 0;
 
-  const str = String(rot).replace(/\s*rad\s*$/i, '');
+  const str = rot.replace(/\s*rad\s*$/i, '');
   const val = parseFloat(str);
   return isNaN(val) ? 0 : val;
 }

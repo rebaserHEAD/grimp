@@ -45,7 +45,7 @@ function makeMockCanvasCtx(): CanvasRenderingContext2D {
     get(_target, prop) {
       if (prop === '_calls') return calls;
       if (typeof prop === 'string') {
-        return (...args: unknown[]) => {
+        return (..._args: unknown[]) => {
           calls.push(prop);
         };
       }
@@ -54,7 +54,7 @@ function makeMockCanvasCtx(): CanvasRenderingContext2D {
       return true;
     },
   };
-  return new Proxy({} as Record<string, unknown>, handler) as unknown as CanvasRenderingContext2D;
+  return new Proxy({}, handler) as unknown as CanvasRenderingContext2D;
 }
 
 describe('outline cache LRU', () => {

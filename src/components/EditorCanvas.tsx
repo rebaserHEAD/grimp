@@ -62,8 +62,6 @@ interface Props {
   requestPrompt?: ToolContext['requestPrompt'];
 }
 
-const TILE_SIZE = 32;
-
 export const EditorCanvas: React.FC<Props> = ({
   state,
   dispatch,
@@ -187,7 +185,7 @@ export const EditorCanvas: React.FC<Props> = ({
       layerVisibility: layerVisibilityRef.current,
       requestPrompt,
     };
-  }, [dispatch, camera, requestPrompt]);
+  }, [dispatch, camera, requestPrompt, decalPlacementSettingsRef]);
 
   // Check if we should pan (middle button, space held, or pan tool active)
   const shouldPan = useCallback((button: number) => {
@@ -299,7 +297,7 @@ export const EditorCanvas: React.FC<Props> = ({
         tool?.onMouseDown(getToolContext(), tile.x, tile.y, e.button);
       }
     },
-    [screenToWorld, getToolContext, shouldPan, capturePointer],
+    [screenToWorld, getToolContext, shouldPan, capturePointer, dispatch, decalPlacementSettingsRef],
   );
 
   const handlePointerMove = useCallback(
@@ -461,7 +459,7 @@ export const EditorCanvas: React.FC<Props> = ({
       const factor = e.deltaY > 0 ? 0.9 : 1.1;
       camera.zoomAt(factor, e.clientX - rect.left, e.clientY - rect.top, rect.width, rect.height);
     },
-    [camera, screenToWorld, getToolContext],
+    [camera, screenToWorld, getToolContext, dispatch, decalPlacementSettingsRef],
   );
 
   const handleContextMenu = useCallback(

@@ -26,7 +26,7 @@ interface ValidationRule {
 function getEntityTags(entity: ImportedEntity, registry: IPrototypeRegistry): string[] {
   // Check instance components first
   for (const comp of entity.components) {
-    const c = comp as Record<string, unknown>;
+    const c = comp;
     if (c.type === 'Tag' && Array.isArray(c.tags)) return c.tags as string[];
   }
   // Fall back to prototype definition
@@ -157,7 +157,7 @@ const danglingDeviceRefRule: ValidationRule = {
       const x = Math.floor(entity.position.x);
       const y = Math.floor(entity.position.y);
       for (const comp of entity.components) {
-        const c = comp as Record<string, unknown>;
+        const c = comp;
 
         if (c.type === 'DeviceList' && Array.isArray(c.devices)) {
           for (const uid of c.devices as number[]) {
@@ -175,7 +175,7 @@ const danglingDeviceRefRule: ValidationRule = {
         }
 
         if (c.type === 'DeviceLinkSource' && c.linkedPorts && typeof c.linkedPorts === 'object') {
-          for (const uidStr of Object.keys(c.linkedPorts as Record<string, unknown>)) {
+          for (const uidStr of Object.keys(c.linkedPorts)) {
             const uid = parseInt(uidStr, 10);
             if (!isNaN(uid) && !validUids.has(uid)) {
               issues.push({
@@ -224,8 +224,7 @@ function makeAlarmRule(alarmType: 'AirAlarm' | 'FireAlarm'): ValidationRule {
         const y = Math.floor(entity.position.y);
 
         // Check instance components
-        const instanceDL = entity.components.find((c) => (c as Record<string, unknown>).type === 'DeviceList') as
-          Record<string, unknown> | undefined;
+        const instanceDL = entity.components.find((c) => c.type === 'DeviceList');
         if (instanceDL) {
           const devices = instanceDL.devices;
           if (!Array.isArray(devices) || devices.length === 0) {

@@ -386,8 +386,8 @@ const MultiDecalView: React.FC<MultiDecalViewProps> = ({
           <ColorBulkActions
             color={sharedColor}
             matchCount={countMatchingColor(sharedColor)}
-            onSelectAll={() => onSelectAllColor(sharedColor!)}
-            onRecolorAll={(newColor) => onRecolorAll(sharedColor!, newColor)}
+            onSelectAll={() => onSelectAllColor(sharedColor)}
+            onRecolorAll={(newColor) => onRecolorAll(sharedColor, newColor)}
           />
         )}
       </div>

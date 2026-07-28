@@ -13,7 +13,6 @@
 
 import type { ImportedMap, ImportedEntity } from '../import/mapImporter';
 import type { TileGrid } from '../types';
-import type { DecalInstance } from '../import/decalParser';
 import { serializeDecalGrid } from './decalExporter';
 
 // ---- Constants ----
@@ -540,7 +539,7 @@ function stripDanglingDeviceRefs(
   for (const entity of entities) {
     let modified = false;
     for (let i = 0; i < entity.components.length; i++) {
-      const comp = entity.components[i] as Record<string, unknown>;
+      const comp = entity.components[i];
 
       if (comp.type === 'DeviceList' && Array.isArray(comp.devices)) {
         const filtered = (comp.devices as number[]).filter((uid) => validUids.has(uid));
@@ -790,7 +789,7 @@ function emitComponent(lines: string[], comp: Record<string, unknown>): void {
   const keys = Object.keys(comp);
 
   // `type` always comes first
-  lines.push(`    - type: ${comp.type}`);
+  lines.push(`    - type: ${String(comp.type)}`);
 
   for (const key of keys) {
     if (key === 'type') continue;
@@ -1053,6 +1052,9 @@ function isPrimitive(value: unknown): boolean {
 export function formatPrimitive(value: unknown): string {
   if (value === null || value === undefined) return '';
   if (typeof value === 'boolean') return value ? 'True' : 'False';
+  // Callers gate on isPrimitive(), so `value` is a scalar here; keeping the
+  // bare String() preserves exact round-trip output for every historical input.
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
   const str = String(value);
   if (str.length === 0) return '""';
   // Quote strings that contain YAML-special characters

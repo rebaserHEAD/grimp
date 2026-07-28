@@ -12,7 +12,6 @@ interface Props {
   onDeleteGrid: (gridUid: number) => void;
   /** Open the rename prompt for a grid (double-click on its tab). */
   onRequestRename: (gridUid: number, currentName: string) => void;
-  onFocusGrid: (index: number) => void;
   entities: ImportedEntity[];
   registry: IPrototypeRegistry | null;
   onSearchNavigate: (entity: ImportedEntity) => void;
@@ -27,7 +26,6 @@ export const GridTabBar: React.FC<Props> = ({
   onAddGrid,
   onDeleteGrid,
   onRequestRename,
-  onFocusGrid,
   entities,
   registry,
   onSearchNavigate,

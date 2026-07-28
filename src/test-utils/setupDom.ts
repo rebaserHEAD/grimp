@@ -86,13 +86,13 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
     observe() {}
     unobserve() {}
     disconnect() {}
-  } as unknown as typeof ResizeObserver;
+  };
 }
 
 // jsdom does not implement matchMedia, and components that check a media query throw without
 // it. Defaults to "no match", which is the desktop/light case the editor already assumes.
 if (typeof window !== 'undefined' && !window.matchMedia) {
-  window.matchMedia = ((query: string) => ({
+  window.matchMedia = (query: string) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -101,5 +101,5 @@ if (typeof window !== 'undefined' && !window.matchMedia) {
     addEventListener: () => {},
     removeEventListener: () => {},
     dispatchEvent: () => false,
-  })) as unknown as typeof window.matchMedia;
+  });
 }

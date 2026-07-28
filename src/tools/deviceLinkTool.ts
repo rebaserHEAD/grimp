@@ -23,7 +23,7 @@ export class DeviceLinkTool implements ITool {
     registry?: IPrototypeRegistry | null,
   ): Record<string, unknown> | null {
     for (const comp of entity.components) {
-      const c = comp as Record<string, unknown>;
+      const c = comp;
       if (c.type === 'DeviceList') return c;
     }
     // Check prototype, entity may not have the component on its instance
@@ -43,7 +43,7 @@ export class DeviceLinkTool implements ITool {
     registry?: IPrototypeRegistry | null,
   ): Record<string, unknown> | null {
     for (const comp of entity.components) {
-      const c = comp as Record<string, unknown>;
+      const c = comp;
       if (c.type === 'DeviceLinkSource') return c;
     }
     // Check prototype
@@ -64,14 +64,14 @@ export class DeviceLinkTool implements ITool {
   }
 
   private addToDeviceList(source: ImportedEntity, targetUid: number): ImportedEntity {
-    const hasComp = source.components.some((c) => (c as Record<string, unknown>).type === 'DeviceList');
+    const hasComp = source.components.some((c) => c.type === 'DeviceList');
     if (hasComp) {
       const newComponents = source.components.map((comp) => {
-        const c = comp as Record<string, unknown>;
+        const c = comp;
         if (c.type !== 'DeviceList') return comp;
         const devices = Array.isArray(c.devices) ? [...c.devices] : [];
         if (!devices.includes(targetUid)) devices.push(targetUid);
-        return { ...c, devices } as Record<string, unknown>;
+        return { ...c, devices };
       });
       return { ...source, components: newComponents };
     }
@@ -84,19 +84,19 @@ export class DeviceLinkTool implements ITool {
 
   private removeFromDeviceList(source: ImportedEntity, targetUid: number): ImportedEntity {
     const newComponents = source.components.map((comp) => {
-      const c = comp as Record<string, unknown>;
+      const c = comp;
       if (c.type !== 'DeviceList') return comp;
       const devices = Array.isArray(c.devices) ? c.devices.filter((uid: unknown) => uid !== targetUid) : [];
-      return { ...c, devices } as Record<string, unknown>;
+      return { ...c, devices };
     });
     return { ...source, components: newComponents };
   }
 
   private addToDeviceLinkSource(source: ImportedEntity, targetUid: number): ImportedEntity {
-    const hasComp = source.components.some((c) => (c as Record<string, unknown>).type === 'DeviceLinkSource');
+    const hasComp = source.components.some((c) => c.type === 'DeviceLinkSource');
     if (hasComp) {
       const newComponents = source.components.map((comp) => {
-        const c = comp as Record<string, unknown>;
+        const c = comp;
         if (c.type !== 'DeviceLinkSource') return comp;
         const linkedPorts =
           c.linkedPorts && typeof c.linkedPorts === 'object'
@@ -106,7 +106,7 @@ export class DeviceLinkTool implements ITool {
         if (!linkedPorts[key]) {
           linkedPorts[key] = [['Pressed', 'Toggle']];
         }
-        return { ...c, linkedPorts } as Record<string, unknown>;
+        return { ...c, linkedPorts };
       });
       return { ...source, components: newComponents };
     }
@@ -125,12 +125,12 @@ export class DeviceLinkTool implements ITool {
 
   private removeFromDeviceLinkSource(source: ImportedEntity, targetUid: number): ImportedEntity {
     const newComponents = source.components.map((comp) => {
-      const c = comp as Record<string, unknown>;
+      const c = comp;
       if (c.type !== 'DeviceLinkSource') return comp;
       if (!c.linkedPorts || typeof c.linkedPorts !== 'object') return comp;
       const linkedPorts = { ...(c.linkedPorts as Record<string, [string, string][]>) };
       delete linkedPorts[String(targetUid)];
-      return { ...c, linkedPorts } as Record<string, unknown>;
+      return { ...c, linkedPorts };
     });
     return { ...source, components: newComponents };
   }
@@ -147,7 +147,7 @@ export class DeviceLinkTool implements ITool {
     } else {
       const comp = this.getDeviceLinkSourceComponent(entity);
       if (comp && comp.linkedPorts && typeof comp.linkedPorts === 'object') {
-        for (const key of Object.keys(comp.linkedPorts as Record<string, unknown>)) {
+        for (const key of Object.keys(comp.linkedPorts)) {
           const uid = parseInt(key, 10);
           if (!isNaN(uid)) uids.add(uid);
         }

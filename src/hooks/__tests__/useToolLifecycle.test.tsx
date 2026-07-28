@@ -17,7 +17,7 @@ function fakeTool(name: string): ITool {
     onMouseMove: vi.fn(),
     onMouseUp: vi.fn(),
     deactivate: vi.fn(),
-  } as unknown as ITool;
+  };
 }
 
 describe('useToolLifecycle', () => {

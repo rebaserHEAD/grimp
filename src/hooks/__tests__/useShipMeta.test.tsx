@@ -67,7 +67,7 @@ describe('useShipMeta', () => {
   it('scans at most once per fork, across file switches', async () => {
     const { provider, listFiles } = fakeProvider(PROTO_FILES);
     const { result, rerender } = renderHook(({ path }) => useShipMeta(provider, FORK, path), {
-      initialProps: { path: ADJUTANT as string | null },
+      initialProps: { path: ADJUTANT },
     });
     await waitFor(() => expect(result.current.hits).toHaveLength(1));
 
@@ -95,7 +95,7 @@ describe('useShipMeta', () => {
     };
 
     const { result, rerender } = renderHook(({ path }) => useShipMeta(provider, FORK, path), {
-      initialProps: { path: UNREFERENCED as string | null },
+      initialProps: { path: UNREFERENCED },
     });
     rerender({ path: ADJUTANT }); // switch files while the scan is still listing
 
@@ -121,9 +121,12 @@ describe('useShipMeta', () => {
 
   it('clears everything when the fork unloads', async () => {
     const { provider } = fakeProvider(PROTO_FILES);
+    // Annotated so rerender() below may pass null; renderHook would otherwise
+    // infer the narrower non-null props type from this initial value.
+    const initialProps: { provider: ResourceProvider | null } = { provider };
     const { result, rerender } = renderHook(
       ({ provider: p }: { provider: ResourceProvider | null }) => useShipMeta(p, FORK, ADJUTANT),
-      { initialProps: { provider: provider as ResourceProvider | null } },
+      { initialProps },
     );
     await waitFor(() => expect(result.current.hits).toHaveLength(1));
 

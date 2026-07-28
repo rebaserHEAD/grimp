@@ -175,10 +175,7 @@ describe('PointLight export compatibility', () => {
       { type: 'Transform' },
       { type: 'PointLight', color: '#FF0000', radius: 12, energy: 2.5, enabled: true },
     ]);
-    const pointLight = entity.components.find((c) => (c as Record<string, unknown>).type === 'PointLight') as Record<
-      string,
-      unknown
-    >;
+    const pointLight = entity.components.find((c) => c.type === 'PointLight') as Record<string, unknown>;
 
     // These exact field names are what SS14 expects
     expect(pointLight.type).toBe('PointLight');
@@ -228,7 +225,7 @@ function makeOccluderRegistry(): IPrototypeRegistry {
       abstract: false,
       categories: [],
       placement: {},
-      components: [{ type: 'Occluder' }, { type: 'Transform' }] as any,
+      components: [{ type: 'Occluder' }, { type: 'Transform' }],
       spriteInfo: null,
       sourceCategory: '',
       raw: { type: 'entity' as const, id },
@@ -276,7 +273,7 @@ describe('renderLightmap shadow integration', () => {
       prototype: 'PoweredLight',
       position: { x: 5, y: 5 },
       rotation: 0,
-      components: [{ type: 'PointLight', color: '#FFFFFF', radius: 5, energy: 1.0 } as any],
+      components: [{ type: 'PointLight', color: '#FFFFFF', radius: 5, energy: 1.0 }],
     };
     const wallEntity: ImportedEntity = {
       uid: 2,
@@ -303,7 +300,7 @@ describe('renderLightmap shadow integration', () => {
       prototype: 'PoweredLight',
       position: { x: 5, y: 5 },
       rotation: 0,
-      components: [{ type: 'PointLight', color: '#FFFFFF', radius: 5, energy: 1.0 } as any],
+      components: [{ type: 'PointLight', color: '#FFFFFF', radius: 5, energy: 1.0 }],
     };
 
     // Should not throw when called with 6 args (no wallCache)

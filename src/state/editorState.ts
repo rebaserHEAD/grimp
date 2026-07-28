@@ -2,7 +2,7 @@ import type { TileGrid, TileCell, ToolType, PaletteItem, UndoableCommand } from 
 import type { ImportedEntity, MapMeta } from '../import/mapImporter';
 import type { IPrototypeRegistry } from '../loaders/registryTypes';
 import type { GridData } from './gridData';
-import { createEmptyGridData, getActiveGrid } from './gridData';
+import { createEmptyGridData } from './gridData';
 
 export interface EditorState {
   // Multi-grid map data (the document)

@@ -1,5 +1,5 @@
 import type { CardinalDirection, TileGrid } from '../types';
-import type { IPrototypeRegistry, ResolvedTile, SpriteLayerInfo } from '../loaders/registryTypes';
+import type { IPrototypeRegistry } from '../loaders/registryTypes';
 import type { ImportedEntity } from '../import/mapImporter';
 import type { SpriteDrawInfo } from '../loaders/rsiLoader';
 import { loadSprite } from '../loaders/rsiLoader';
@@ -642,8 +642,8 @@ function getAtmosPipeColor(entity: ImportedEntity): string | null {
   if (pipeColorCache.has(entity.uid)) return pipeColorCache.get(entity.uid)!;
   let result: string | null = null;
   for (const comp of entity.components) {
-    if ((comp as Record<string, unknown>).type === 'AtmosPipeColor') {
-      const color = (comp as Record<string, unknown>).color;
+    if (comp.type === 'AtmosPipeColor') {
+      const color = comp.color;
       if (typeof color === 'string') result = color;
       break;
     }
@@ -958,7 +958,7 @@ export function renderEntities(
       const spriteColor = getSpriteColor(prototype, registry);
       const hasAlpha = spriteColor && spriteColor.length === 9;
       if (hasAlpha) {
-        const alpha = parseInt(spriteColor!.slice(7, 9), 16) / 255;
+        const alpha = parseInt(spriteColor.slice(7, 9), 16) / 255;
         ctx.save();
         ctx.globalAlpha *= alpha;
       }
@@ -1087,7 +1087,7 @@ export function renderEntities(
     // Handle alpha from color (e.g., "#FFFFFF80" = 50% opacity)
     const hasAlpha = tintColor && tintColor.length === 9; // #RRGGBBAA format
     if (hasAlpha) {
-      const alpha = parseInt(tintColor!.slice(7, 9), 16) / 255;
+      const alpha = parseInt(tintColor.slice(7, 9), 16) / 255;
       ctx.save();
       ctx.globalAlpha *= alpha;
     }

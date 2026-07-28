@@ -23,7 +23,7 @@ export function deriveCategory(filePath: string): string {
 
 /** Parse a YAML string containing prototype definitions. */
 export function parsePrototypeYaml(yamlContent: string, filePath: string): ParsedPrototypes {
-  const docs = yaml.loadAll(yamlContent, undefined, { schema: SS14_SCHEMA }) as unknown[];
+  const docs = yaml.loadAll(yamlContent, undefined, { schema: SS14_SCHEMA });
   const tiles: RawTilePrototype[] = [];
   const entities: RawEntityPrototype[] = [];
   const decals: RawDecalPrototype[] = [];
@@ -138,7 +138,7 @@ export async function discoverPrototypes(
           return parsePrototypeYaml(text, filePath);
         } catch {
           // Skip files that fail to parse (e.g., unsupported YAML features)
-          return { tiles: [], entities: [], decals: [], sourceCategory: 'Other' } as ParsedPrototypes;
+          return { tiles: [], entities: [], decals: [], sourceCategory: 'Other' };
         }
       }),
     );

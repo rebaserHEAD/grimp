@@ -88,9 +88,14 @@ export const PrefabPanel: React.FC<Props> = ({ onSelectPrefab }) => {
   // Auto-load on mount, and reload whenever the library changes (e.g. the
   // select tool's Save as Prefab writing into it).
   useEffect(() => {
-    loadPrefabs();
-    window.addEventListener(PREFABS_CHANGED_EVENT, loadPrefabs);
-    return () => window.removeEventListener(PREFABS_CHANGED_EVENT, loadPrefabs);
+    // The event bus wants a void listener; a failed reload (e.g. IPC error
+    // from the library bridge) just keeps the current list.
+    const onChanged = () => {
+      loadPrefabs().catch((err: unknown) => console.error('Prefab reload failed:', err));
+    };
+    onChanged();
+    window.addEventListener(PREFABS_CHANGED_EVENT, onChanged);
+    return () => window.removeEventListener(PREFABS_CHANGED_EVENT, onChanged);
   }, [loadPrefabs]);
 
   const handleImportClick = useCallback(async () => {
@@ -105,17 +110,20 @@ export const PrefabPanel: React.FC<Props> = ({ onSelectPrefab }) => {
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    file.text().then((json) => {
-      try {
-        const data = parsePrefabJson(json);
-        setPrefabs((prev) => {
-          const filtered = prev.filter((p) => !(p.filename === file.name && p.folder === ''));
-          return [...filtered, { data, filename: file.name, folder: '' }];
-        });
-      } catch (err) {
-        console.error('Failed to parse prefab:', err);
-      }
-    });
+    file
+      .text()
+      .then((json) => {
+        try {
+          const data = parsePrefabJson(json);
+          setPrefabs((prev) => {
+            const filtered = prev.filter((p) => !(p.filename === file.name && p.folder === ''));
+            return [...filtered, { data, filename: file.name, folder: '' }];
+          });
+        } catch (err) {
+          console.error('Failed to parse prefab:', err);
+        }
+      })
+      .catch((err: unknown) => console.error('Could not read prefab file:', err));
     e.target.value = '';
   }, []);
 
@@ -156,14 +164,14 @@ export const PrefabPanel: React.FC<Props> = ({ onSelectPrefab }) => {
       <div className="flex gap-1 p-2 border-b border-subtle">
         <button
           className="px-2 py-1 bg-elevated border border-subtle rounded-sm text-primary text-xs cursor-pointer hover:bg-hover"
-          onClick={handleImportClick}
+          onClick={() => void handleImportClick()}
           title={hasLibrary ? 'Import prefabs into your library' : 'Import prefab .json file'}
         >
           +
         </button>
         <button
           className="px-2 py-1 bg-elevated border border-subtle rounded-sm text-primary text-xs cursor-pointer hover:bg-hover"
-          onClick={loadPrefabs}
+          onClick={() => void loadPrefabs()}
           title={hasLibrary ? 'Refresh prefab library' : 'Refresh from public/prefabs/'}
         >
           {loading ? '...' : '\u21BB'}
@@ -171,7 +179,7 @@ export const PrefabPanel: React.FC<Props> = ({ onSelectPrefab }) => {
         {hasLibrary && (
           <button
             className="px-2 py-1 bg-elevated border border-subtle rounded-sm text-primary text-xs cursor-pointer hover:bg-hover ml-auto"
-            onClick={() => void prefabsBridge!.openFolder()}
+            onClick={() => void prefabsBridge.openFolder()}
             title="Open the prefabs folder"
           >
             &#128193;

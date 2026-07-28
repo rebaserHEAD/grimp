@@ -36,7 +36,7 @@ describe.skipIf(!MAPS_DIR)('full-corpus parity sweep', () => {
       try {
         exported = exportMap(importMap(original));
       } catch (err) {
-        importFailed.push(`${file}: ${err}`);
+        importFailed.push(`${file}: ${String(err)}`);
         continue;
       }
       if (exported === original) {

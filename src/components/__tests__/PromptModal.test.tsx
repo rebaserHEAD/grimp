@@ -27,7 +27,9 @@ describe('PromptModal', () => {
 
   it('seeds the input with defaultValue and selects it for overtyping', () => {
     setup({ defaultValue: 'airlock-block' });
-    const input = screen.getByRole('textbox') as HTMLInputElement;
+    const input = screen.getByRole('textbox');
+    // Runtime narrow instead of a cast: also asserts the textbox really is an <input>.
+    if (!(input instanceof HTMLInputElement)) throw new Error('textbox is not an <input>');
     expect(input.value).toBe('airlock-block');
     expect(input.selectionStart).toBe(0);
     expect(input.selectionEnd).toBe('airlock-block'.length);

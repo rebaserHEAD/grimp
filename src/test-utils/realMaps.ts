@@ -24,7 +24,7 @@ export function findMapFiles(mapsDir: string): string[] {
     }
     for (const name of [...names].sort((a, b) => a.localeCompare(b))) {
       const full = join(dir, name);
-      let isDir = false;
+      let isDir: boolean;
       try {
         isDir = statSync(full).isDirectory();
       } catch {

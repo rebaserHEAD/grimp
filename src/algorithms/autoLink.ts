@@ -157,7 +157,7 @@ export function autoLinkDeviceList(
   }
 
   // 2. Check for DeviceList, instance first, then prototype
-  let deviceListIndex = entity.components.findIndex((c) => (c as Record<string, unknown>).type === 'DeviceList');
+  const deviceListIndex = entity.components.findIndex((c) => c.type === 'DeviceList');
   const hasProtoDeviceList = (() => {
     const resolved = registry.getEntity(entity.prototype);
     return resolved?.components.some((c) => c.type === 'DeviceList') ?? false;
@@ -166,7 +166,7 @@ export function autoLinkDeviceList(
   if (deviceListIndex === -1 && !hasProtoDeviceList) return null;
 
   // 3. Get existing devices
-  const deviceListComp = deviceListIndex >= 0 ? (entity.components[deviceListIndex] as Record<string, unknown>) : null;
+  const deviceListComp = deviceListIndex >= 0 ? entity.components[deviceListIndex] : null;
   const existingDevices: number[] =
     deviceListComp && Array.isArray(deviceListComp.devices) ? (deviceListComp.devices as number[]) : [];
   const existingSet = new Set(existingDevices);

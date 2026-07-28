@@ -5,7 +5,7 @@
  * tile grid) returns to exactly the initial state. Covers both EntitySelectTool
  * and SelectTool.
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { EntitySelectTool } from '../entitySelectTool';
 import { SelectTool } from '../selectTool';
 import type { ToolContext } from '../toolTypes';
@@ -438,14 +438,14 @@ describe('Move + Undo Integrity', () => {
 
       // First invoke (React uses this result)
       rebuildSpatialIndex([e1, e2]); // reset to pre-dispatch state
-      const result1 = editorReducer(baseState, { type: 'APPLY_COMMAND', command: moveCommand });
+      editorReducer(baseState, { type: 'APPLY_COMMAND', command: moveCommand });
 
       // Snapshot spatial index after first invoke
       const spatialAfter1 = snapshotSpatialIndex(0, 0, 20, 20);
       const sizeAfter1 = spatialSize();
 
       // Second invoke (StrictMode purity check, same input state, spatial index already mutated)
-      const result2 = editorReducer(baseState, { type: 'APPLY_COMMAND', command: moveCommand });
+      editorReducer(baseState, { type: 'APPLY_COMMAND', command: moveCommand });
 
       // Spatial index must be identical after second invoke
       const spatialAfter2 = snapshotSpatialIndex(0, 0, 20, 20);
@@ -493,13 +493,13 @@ describe('Move + Undo Integrity', () => {
 
       // First UNDO invoke
       rebuildSpatialIndex([e3, e4]); // reset
-      const result1 = editorReducer(postMoveState, { type: 'UNDO' });
+      editorReducer(postMoveState, { type: 'UNDO' });
 
       const spatialAfter1 = snapshotSpatialIndex(0, 0, 20, 20);
       const sizeAfter1 = spatialSize();
 
       // Second UNDO invoke (StrictMode double-invoke, same input, spatial already mutated)
-      const result2 = editorReducer(postMoveState, { type: 'UNDO' });
+      editorReducer(postMoveState, { type: 'UNDO' });
 
       const spatialAfter2 = snapshotSpatialIndex(0, 0, 20, 20);
       const sizeAfter2 = spatialSize();
@@ -583,8 +583,8 @@ describe('Move + Undo Integrity', () => {
       const ctx: ToolContext = {
         state,
         dispatch: (action: any) => {
-          // First invoke
-          const result1 = editorReducer(state, action);
+          // First invoke (result discarded, like StrictMode's first pass)
+          editorReducer(state, action);
           // Second invoke (StrictMode), same input state, spatial already mutated
           const result2 = editorReducer(state, action);
           // React uses second result

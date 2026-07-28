@@ -71,7 +71,7 @@ export function renderConnections(
     const isSelected = selectedSet.has(entity.uid);
 
     for (const comp of entity.components) {
-      const c = comp as Record<string, unknown>;
+      const c = comp;
 
       // DeviceList, air alarm → vents/scrubbers (cyan)
       if (c.type === 'DeviceList' && Array.isArray(c.devices)) {

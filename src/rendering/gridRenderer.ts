@@ -5,8 +5,6 @@ import { getActiveProvider } from '../loaders/resourceProvider';
 import { Camera } from './camera';
 import { markSceneDirty } from './dirtyFlags';
 
-const TILE_SIZE = 32;
-
 /** Minimal fallback colors when no texture is available. */
 const FALLBACK_COLORS: Record<string, string> = {
   Space: '#111122',

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { filterEntities, type SearchResult } from '../useEntitySearch';
+import { filterEntities } from '../useEntitySearch';
 import type { ImportedEntity } from '../../import/mapImporter';
 import type { IPrototypeRegistry } from '../../loaders/registryTypes';
 

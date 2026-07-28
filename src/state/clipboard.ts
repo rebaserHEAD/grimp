@@ -1,5 +1,4 @@
 import type { TileCell } from '../types';
-import type { ImportedEntity } from '../import/mapImporter';
 
 /** Entity stored relative to selection origin (dx, dy offsets from originX, originY). */
 export interface ClipboardEntity {

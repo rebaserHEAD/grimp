@@ -2,14 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { floodFillRoom, autoLinkDeviceList } from '../autoLink';
 import type { ImportedEntity } from '../../import/mapImporter';
 import type { TileGrid, TileCell } from '../../types';
-import type {
-  IPrototypeRegistry,
-  ResolvedEntity,
-  ResolvedTile,
-  SpriteInfo,
-  DecalPrototypeInfo,
-  RawComponent,
-} from '../../loaders/registryTypes';
+import type { IPrototypeRegistry, ResolvedEntity } from '../../loaders/registryTypes';
 
 // ---- Helpers ----
 
@@ -50,7 +43,7 @@ function makeMockRegistry(entityComponents: Record<string, string[]> = {}): IPro
         abstract: false,
         categories: [],
         placement: {},
-        components: compTypes.map((t) => ({ type: t }) as RawComponent),
+        components: compTypes.map((t) => ({ type: t })),
         spriteInfo: null,
         sourceCategory: '',
         raw: { type: 'entity', id },
@@ -219,9 +212,7 @@ describe('autoLinkDeviceList', () => {
 
     expect(result).not.toBeNull();
     expect(result!.linkedCount).toBe(2);
-    const dl = result!.updatedEntity.components.find(
-      (c) => (c as Record<string, unknown>).type === 'DeviceList',
-    ) as Record<string, unknown>;
+    const dl = result!.updatedEntity.components.find((c) => c.type === 'DeviceList') as Record<string, unknown>;
     expect(dl.devices).toEqual([10, 11]);
     // Vent in other room should NOT be linked
     expect(dl.devices as number[]).not.toContain(12);
@@ -248,9 +239,7 @@ describe('autoLinkDeviceList', () => {
     expect(result).not.toBeNull();
     // Fire alarm searches boundary tiles, firelocks at (0,2) and (4,2) are boundary
     // firelockFar at (4,4) is also reachable boundary (since it's a Firelock, it's boundary)
-    const dl = result!.updatedEntity.components.find(
-      (c) => (c as Record<string, unknown>).type === 'DeviceList',
-    ) as Record<string, unknown>;
+    const dl = result!.updatedEntity.components.find((c) => c.type === 'DeviceList') as Record<string, unknown>;
     const devices = dl.devices as number[];
     expect(devices).toContain(10);
     expect(devices).toContain(11);
@@ -272,9 +261,7 @@ describe('autoLinkDeviceList', () => {
     expect(result).not.toBeNull();
     expect(result!.linkedCount).toBe(1);
     // Should have added a DeviceList component
-    const dl = result!.updatedEntity.components.find(
-      (c) => (c as Record<string, unknown>).type === 'DeviceList',
-    ) as Record<string, unknown>;
+    const dl = result!.updatedEntity.components.find((c) => c.type === 'DeviceList') as Record<string, unknown>;
     expect(dl).toBeDefined();
     expect(dl.devices).toEqual([10]);
   });
@@ -319,9 +306,7 @@ describe('autoLinkDeviceList', () => {
 
     expect(result).not.toBeNull();
     expect(result!.linkedCount).toBe(1);
-    const dl = result!.updatedEntity.components.find(
-      (c) => (c as Record<string, unknown>).type === 'DeviceList',
-    ) as Record<string, unknown>;
+    const dl = result!.updatedEntity.components.find((c) => c.type === 'DeviceList') as Record<string, unknown>;
     // Existing 10 preserved, new 11 appended
     expect(dl.devices).toEqual([10, 11]);
   });

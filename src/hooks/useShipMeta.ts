@@ -48,11 +48,16 @@ export function useShipMeta(
     }
 
     let cancelled = false;
-    scanCache.current.promise.then((result) => {
-      // Stale if the hook unmounted or the fork switched while scanning.
-      if (cancelled || scanCache.current?.provider !== provider) return;
-      setIndex(result);
-    });
+    scanCache.current.promise
+      .then((result) => {
+        // Stale if the hook unmounted or the fork switched while scanning.
+        if (cancelled || scanCache.current?.provider !== provider) return;
+        setIndex(result);
+      })
+      .catch((err: unknown) => {
+        // A failed scan means no salvage badges, not a broken editor.
+        console.error('Ship meta scan failed:', err);
+      });
 
     return () => {
       cancelled = true;

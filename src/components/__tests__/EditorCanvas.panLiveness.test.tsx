@@ -41,7 +41,7 @@ function makeTool(overrides: Partial<ITool> = {}): ITool {
     onMouseMove: vi.fn(),
     onMouseUp: vi.fn(),
     ...overrides,
-  } as unknown as ITool;
+  };
 }
 
 function setup(tool: ITool | null = null) {

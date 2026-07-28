@@ -6,11 +6,10 @@
 import { describe, it, expect } from 'vitest';
 import { placePrefab } from '../prefabPlacer';
 import { serializePrefab } from '../prefabSerializer';
-import type { PrefabData } from '../prefabTypes';
-import type { TileGrid, TileCell } from '../../types';
+import type { TileGrid } from '../../types';
 import type { ImportedEntity } from '../../import/mapImporter';
 import { buildTransformComponent } from '../../tools/entityHelpers';
-import { getCell, setCell } from '../../state/editorState';
+import { setCell } from '../../state/editorState';
 
 function makeGrid(w: number, h: number): TileGrid {
   const cells = new Array(w * h);
