@@ -10,6 +10,8 @@ workflow copies it into the GitHub release notes.
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-07-28
+
 ### Added
 
 - Ship / POI / station badges (#3): opening a file that a shipyard `vessel`,
@@ -162,7 +164,8 @@ Program).
 - First packaged desktop release: Windows portable `.exe` and Linux AppImage
   built by tag-triggered CI, wrapping the browser editor in Electron.
 
-[Unreleased]: https://github.com/rebaserHEAD/grimp/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/rebaserHEAD/grimp/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/rebaserHEAD/grimp/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/rebaserHEAD/grimp/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/rebaserHEAD/grimp/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/rebaserHEAD/grimp/compare/v1.1.0...v1.2.0
