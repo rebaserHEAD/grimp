@@ -1,10 +1,14 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { ShipMetaBadges } from './ShipMetaBadges';
+import type { ShipMetaEntry } from '../loaders/shipMetaIndex';
 
 interface Props {
   onNewMap: () => void;
   onNewGrid: () => void;
   /** Document kind per the engine's meta.category (savemap → Map, savegrid → Grid). */
   documentKind: 'Map' | 'Grid';
+  /** Prototypes referencing the open file (#3): vessel/gameMap/POI/salvage badges. */
+  shipMetaHits?: ShipMetaEntry[];
   onShowMapProperties: () => void;
   onShowSettings: () => void;
   onImport: (content: string, fileName?: string) => void;
@@ -109,6 +113,7 @@ export const MenuBar: React.FC<Props> = ({
   onNewMap,
   onNewGrid,
   documentKind,
+  shipMetaHits,
   onShowMapProperties,
   onShowSettings,
   onImport,
@@ -256,6 +261,8 @@ export const MenuBar: React.FC<Props> = ({
       >
         {documentKind}
       </span>
+
+      <ShipMetaBadges hits={shipMetaHits ?? []} />
 
       {forkName && (
         <div className="relative ml-2" ref={forkMenuRef}>

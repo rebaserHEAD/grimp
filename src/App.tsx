@@ -21,6 +21,7 @@ import { PrefabPlaceTool } from './tools/prefabPlaceTool';
 import type { PrefabData } from './prefab/prefabTypes';
 import { Camera } from './rendering/camera';
 import { useToolLifecycle } from './hooks/useToolLifecycle';
+import { useShipMeta } from './hooks/useShipMeta';
 import { EditorCanvas } from './components/EditorCanvas';
 import { Toolbar } from './components/Toolbar';
 import { PalettePanel } from './components/PalettePanel';
@@ -236,6 +237,11 @@ export const App: React.FC = () => {
   // Cancel the outgoing tool's in-progress interaction on every tool switch
   // (drag anchors, ghost previews, pickers, uncommitted strokes).
   useToolLifecycle(activeTool);
+
+  // What the fork intends the open file to be (#3): vessel / gameMap / POI /
+  // salvage badges in the menu bar. Reading the ref here is safe because
+  // forkDir only ever changes together with forkProvider, which is state.
+  const { hits: shipMetaHits } = useShipMeta(forkProvider, currentForkDirRef.current, currentFilePath);
 
   const selectedEntities = useMemo(() => {
     if (state.selectedEntityUids.length === 0) return [];
@@ -1218,6 +1224,7 @@ export const App: React.FC = () => {
         onNewMap={handleNewMap}
         onNewGrid={handleNewGrid}
         documentKind={getDocumentKind(state)}
+        shipMetaHits={shipMetaHits}
         onShowMapProperties={() => setShowMapProperties(true)}
         onShowSettings={() => setShowSettings(true)}
         onImport={handleImport}

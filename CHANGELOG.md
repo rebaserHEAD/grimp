@@ -10,6 +10,16 @@ workflow copies it into the GitHub release notes.
 
 ## [Unreleased]
 
+### Added
+
+- Ship / POI / station badges (#3): opening a file that a shipyard `vessel`,
+  a `gameMap`, a `pointOfInterest`, or a `salvageMap` prototype points at
+  shows what the fork intends it to be, next to the Map/Grid badge. A
+  purchasable ship typically shows both its shipyard listing and its station
+  wrapper; tooltips carry the prototype id, purchasability (`purchasable:
+false` is called out), station ids, and the defining prototype file.
+  Desktop only in practice: the lookup needs the file's on-disk path.
+
 ### Fixed
 
 - Panning could get stuck "on" when a mouse release went missing (released
