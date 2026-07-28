@@ -88,11 +88,8 @@ whenever you point it somewhere new. On the desktop build this is a native folde
 in the browser it uses the File System Access API, with an upload fallback for Firefox and
 Safari.
 
-> **Note:** There is one dev-only convenience left over from the browser era. The Vite dev
-> server still serves content from `../../Resources` relative to the project root, so a
-> clone that happens to sit two levels below a fork's content (for example
-> `<fork>/Tools/grimp/`) gets that fork's live content with no folder pick. That layout is
-> optional, not the intended home.
+That is the only way in. The editor has no bundled content and no configured content path,
+so where you keep the repository has no bearing on which fork you edit.
 
 ## Getting started (development)
 
@@ -106,8 +103,7 @@ npm run dev
 ```
 
 Open the URL shown in the terminal (e.g. `http://localhost:5174`) and pick your fork's
-root directory with **Open Fork Folder**; the editor scans its `Resources/`. The Vite
-dev server also serves the fork's content live from `../../Resources`.
+root directory with **Open Fork Folder**; the editor scans its `Resources/`.
 
 ### Desktop build
 
