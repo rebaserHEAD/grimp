@@ -69,6 +69,17 @@ if (typeof HTMLCanvasElement !== 'undefined') {
   } as unknown as typeof HTMLCanvasElement.prototype.getContext;
 }
 
+// jsdom does not implement ResizeObserver, which EditorCanvas uses to track its parent's
+// size. A no-op observer is enough: size-driven behavior isn't testable in jsdom anyway
+// (every element measures 0x0), so tests assert on input handling and state instead.
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver;
+}
+
 // jsdom does not implement matchMedia, and components that check a media query throw without
 // it. Defaults to "no match", which is the desktop/light case the editor already assumes.
 if (typeof window !== 'undefined' && !window.matchMedia) {
