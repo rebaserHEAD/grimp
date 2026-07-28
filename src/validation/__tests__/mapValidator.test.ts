@@ -78,7 +78,7 @@ describe('validateMap', () => {
       const issues = validateMap(grid, entities, makeMockRegistry());
       const wallIssues = issues.filter((i) => i.ruleId === 'floor-under-wall');
       expect(wallIssues.length).toBe(1);
-      expect(wallIssues[0].severity).toBe('warning');
+      expect(wallIssues[0]!.severity).toBe('warning');
     });
 
     it('does not flag wall on Plating', () => {
@@ -166,7 +166,7 @@ describe('validateMap', () => {
       const entities = [makeEntity(10, 'AirAlarm', 0, 0, [{ type: 'DeviceList', devices: [999] }])];
       const issues = validateMap(grid, entities, makeMockRegistry());
       expect(issues.filter((i) => i.ruleId === 'dangling-device-ref').length).toBe(1);
-      expect(issues[0].severity).toBe('error');
+      expect(issues[0]!.severity).toBe('error');
     });
 
     it('does not flag DeviceList with valid UID', () => {

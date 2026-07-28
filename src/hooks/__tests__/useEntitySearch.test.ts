@@ -95,16 +95,16 @@ describe('filterEntities', () => {
 
   it('includes displayName and prototypeId in results', () => {
     const results = filterEntities(entities, 'apc', registry);
-    expect(results[0].displayName).toBe('APC');
-    expect(results[0].prototypeId).toBe('APCBasic');
-    expect(results[0].entity.uid).toBe(1);
+    expect(results[0]!.displayName).toBe('APC');
+    expect(results[0]!.prototypeId).toBe('APCBasic');
+    expect(results[0]!.entity.uid).toBe(1);
   });
 
   it('falls back to prototype ID as display name when not in registry', () => {
     const unknownEntity = makeEntity(99, 'UnknownThing', 0, 0);
     const results = filterEntities([unknownEntity], 'unknown', registry);
     expect(results.length).toBe(1);
-    expect(results[0].displayName).toBe('UnknownThing');
+    expect(results[0]!.displayName).toBe('UnknownThing');
   });
 
   it('handles special regex characters in query without crashing', () => {

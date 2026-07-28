@@ -96,7 +96,7 @@ describe('floodFillRoom', () => {
     expect(roomTiles.size).toBe(10);
     // No tile with x >= 2 should be in roomTiles
     for (const key of roomTiles) {
-      const x = parseInt(key.split(',')[0]);
+      const x = parseInt(key.split(',')[0]!);
       expect(x).toBeLessThan(2);
     }
   });
@@ -118,7 +118,7 @@ describe('floodFillRoom', () => {
     // Should only fill top two rows (y=0 and y=1)
     expect(roomTiles.size).toBe(10);
     for (const key of roomTiles) {
-      const y = parseInt(key.split(',')[1]);
+      const y = parseInt(key.split(',')[1]!);
       expect(y).toBeLessThan(2);
     }
     // Wall tiles should be in boundary

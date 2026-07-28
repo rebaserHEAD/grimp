@@ -119,7 +119,7 @@ export function floodFillRoom(
       [0, -1],
       [1, 0],
       [-1, 0],
-    ]) {
+    ] as const) {
       const nx = x + dx;
       const ny = y + dy;
       const nk = `${nx},${ny}`;

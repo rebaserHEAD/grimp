@@ -19,6 +19,7 @@
     "test:dom": "vitest run --project dom",
     "test:node": "vitest run --project node",
     "typecheck": "tsc --noEmit",
+    "typecheck:strict": "node scripts/check-strict-indexing.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
